@@ -1,0 +1,1 @@
+export async function onRequestPost({request,env}){const {password}=await request.json();if(!env.ADMIN_PASSWORD||password!==env.ADMIN_PASSWORD)return new Response("Credenciales incorrectas",{status:401});return Response.json({token:env.ADMIN_TOKEN})}
