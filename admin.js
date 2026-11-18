@@ -104,7 +104,10 @@ function fillSettings(data) {
 async function loadSettings() {
   const response = await api("/api/settings");
 
-  if (!response.ok) throw new Error("No se pudo cargar la identidad de la tienda.");
+  if (!response.ok) {
+  const detail = await response.text();
+  throw new Error(`Error ${response.status}: ${detail}`);
+}
 
   fillSettings(await response.json());
 }
