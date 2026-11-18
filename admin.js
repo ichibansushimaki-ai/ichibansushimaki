@@ -18,6 +18,33 @@ const defaults = {
   color_gold: "#c9a45c"
 };
 
+const defaultTypography = {
+  desktop: {
+    portada: 21,
+    seccion: 18,
+    producto: 25,
+    descripcion: 17,
+    precio: 22,
+    botones: 15,
+    menu: 16,
+    categorias: 15,
+    footer: 15
+  },
+  mobile: {
+    portada: 19,
+    seccion: 17,
+    producto: 23,
+    descripcion: 17,
+    precio: 21,
+    botones: 14,
+    menu: 16,
+    categorias: 15,
+    footer: 15
+  }
+};
+
+let currentTypography = JSON.parse(JSON.stringify(defaultTypography));
+
 async function api(path, options = {}) {
   const headers = {
     "Authorization": "Bearer " + token,
@@ -85,6 +112,77 @@ function previewFile(inputId, previewId) {
   });
 }
 
+function parseTypography(value) {
+  let saved = {};
+
+  try {
+    saved = typeof value === "string"
+      ? JSON.parse(value || "{}")
+      : (value || {});
+  } catch {
+    saved = {};
+  }
+
+  return {
+    desktop: {
+      ...defaultTypography.desktop,
+      ...(saved.desktop || {})
+    },
+    mobile: {
+      ...defaultTypography.mobile,
+      ...(saved.mobile || {})
+    }
+  };
+}
+
+function fillTypography(value) {
+  currentTypography = parseTypography(value);
+
+  const form = $("#typographyForm");
+  if (!form) return;
+
+  ["desktop", "mobile"].forEach(device => {
+    Object.entries(currentTypography[device]).forEach(([key, number]) => {
+      const field = form.elements[`${device}_${key}`];
+
+      if (field) {
+        field.value = number;
+      }
+    });
+  });
+}
+
+function readTypography() {
+  const form = $("#typographyForm");
+
+  const result = {
+    desktop: {},
+    mobile: {}
+  };
+
+  ["desktop", "mobile"].forEach(device => {
+    Object.keys(defaultTypography[device]).forEach(key => {
+      const field = form.elements[`${device}_${key}`];
+
+      const minimum = Number(field.min);
+      const maximum = Number(field.max);
+
+      let value = Number.parseInt(field.value, 10);
+
+      if (!Number.isFinite(value)) {
+        value = defaultTypography[device][key];
+      }
+
+      value = Math.max(minimum, Math.min(maximum, value));
+
+      field.value = value;
+      result[device][key] = value;
+    });
+  });
+
+  return result;
+}
+
 function fillSettings(data) {
   settings = { ...defaults, ...data };
 
@@ -110,15 +208,17 @@ function fillSettings(data) {
       preview.style.display = "none";
     }
   });
+
+  fillTypography(settings.typography);
 }
 
 async function loadSettings() {
   const response = await api("/api/settings");
 
   if (!response.ok) {
-  const detail = await response.text();
-  throw new Error(`Error ${response.status}: ${detail}`);
-}
+    const detail = await response.text();
+    throw new Error(`Error ${response.status}: ${detail}`);
+  }
 
   fillSettings(await response.json());
 }
@@ -161,11 +261,15 @@ $("#settingsForm").onsubmit = async event => {
 
   try {
     const data = Object.fromEntries(new FormData(form));
+
     data.whatsapp = form.elements.whatsapp.value.trim() || settings.whatsapp || "";
 
     data.logo = settings.logo || "";
     data.mobile_logo = settings.mobile_logo || "";
     data.hero_image = settings.hero_image || "";
+
+    // Conservar la tipografía al guardar la identidad.
+    data.typography = JSON.stringify(currentTypography);
 
     const images = [
       ["logoFile", "logo"],
@@ -188,9 +292,9 @@ $("#settingsForm").onsubmit = async event => {
     });
 
     if (!response.ok) {
-  const detail = await response.text();
-  throw new Error(`Error ${response.status}: ${detail}`);
-}
+      const detail = await response.text();
+      throw new Error(`Error ${response.status}: ${detail}`);
+    }
 
     settings = data;
     fillSettings(data);
@@ -200,6 +304,45 @@ $("#settingsForm").onsubmit = async event => {
     });
 
     message.textContent = "Identidad guardada correctamente.";
+  } catch (error) {
+    message.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+};
+
+// Guardar tamaños de tipografía.
+$("#typographyForm").onsubmit = async event => {
+  event.preventDefault();
+
+  const form = event.target;
+  const button = form.querySelector('button[type="submit"]');
+  const message = $("#typographyMsg");
+
+  button.disabled = true;
+  message.textContent = "Guardando tamaños de texto...";
+
+  try {
+    currentTypography = readTypography();
+
+    const data = {
+      ...settings,
+      typography: JSON.stringify(currentTypography)
+    };
+
+    const response = await api("/api/settings", {
+      method: "PUT",
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(`Error ${response.status}: ${detail}`);
+    }
+
+    settings.typography = data.typography;
+
+    message.textContent = "Tamaños de texto guardados correctamente.";
   } catch (error) {
     message.textContent = error.message;
   } finally {
