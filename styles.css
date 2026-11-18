@@ -381,34 +381,73 @@ button:disabled {
     height: 190px;
   }
 }
-/* MEJORA DE LEGIBILIDAD */
+
+/* MEJORA GENERAL DE LEGIBILIDAD */
+
 body {
   font-size: 16px;
 }
 
-.hero-copy > p:not(.eyebrow) {
-  font-size: 18px;
-  line-height: 1.7;
-}
-
-.section-head > p {
-  font-size: 16px;
-  line-height: 1.6;
+/* PORTADA */
+.hero-copy > p:not(.eyebrow):not(.note) {
+  font-size: 19px;
+  line-height: 1.8;
 }
 
 .note {
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.product-card p,
-.promo-card p {
-  font-size: 15px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
-@media (max-width: 600px) {
-  .hero-copy > p:not(.eyebrow) {
+/* TEXTOS DE SECCIONES */
+.section-head > p {
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* NOMBRES DE PRODUCTOS */
+.product h3 {
+  font-size: 23px;
+}
+
+/* DESCRIPCIONES DE PRODUCTOS */
+.product p {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* PRECIOS */
+.price {
+  font-size: 20px;
+}
+
+/* BOTONES */
+.btn {
+  font-size: 14px;
+}
+
+/* NAVEGACIÓN */
+.top nav a {
+  font-size: 15px;
+}
+
+/* CATEGORÍAS */
+.chip {
+  font-size: 14px;
+}
+
+/* PIE DE PÁGINA */
+footer {
+  font-size: 13px;
+}
+
+footer p {
+  font-size: 14px;
+}
+
+/* AJUSTES PARA CELULARES */
+@media (max-width: 760px) {
+  .hero-copy > p:not(.eyebrow):not(.note) {
     font-size: 17px;
   }
 
@@ -416,8 +455,25 @@ body {
     font-size: 15px;
   }
 
-  .product-card p,
-  .promo-card p {
+  .product h3 {
+    font-size: 21px;
+  }
+
+  .product p {
     font-size: 15px;
   }
+
+  .price {
+    font-size: 19px;
+  }
+
+  .btn {
+    font-size: 13px;
+  }
+
+  footer,
+  footer p {
+    font-size: 14px;
+  }
 }
+
