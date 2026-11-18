@@ -16,18 +16,18 @@ body{
 }
 
 .admin{
-  max-width:1100px;
+  max-width:1150px;
   margin:35px auto;
   padding:25px;
 }
 
 .box{
   background:#fff;
-  padding:25px;
-  margin:20px 0;
+  padding:26px;
+  margin:22px 0;
   border:1px solid #e4ddd3;
-  border-radius:12px;
-  box-shadow:0 4px 18px rgba(0,0,0,.035);
+  border-radius:15px;
+  box-shadow:0 5px 22px rgba(0,0,0,.045);
 }
 
 .box h2{
@@ -47,7 +47,7 @@ body{
   width:100%;
   padding:12px;
   border:1px solid #d8d0c6;
-  border-radius:7px;
+  border-radius:8px;
   font:inherit;
   background:#fff;
 }
@@ -82,7 +82,7 @@ body{
   padding:18px;
   background:#f8f5f0;
   border:1px dashed #c9bdae;
-  border-radius:9px;
+  border-radius:10px;
 }
 
 .photo-upload input{
@@ -97,7 +97,7 @@ body{
   object-fit:contain;
   display:none;
   margin-top:12px;
-  border-radius:8px;
+  border-radius:9px;
 }
 
 #uploadMsg{
@@ -110,26 +110,14 @@ body{
   margin:18px 0;
   background:#f8f5f0;
   border:1px solid #e5ddd2;
-  border-radius:9px;
+  border-radius:10px;
 }
 
-.typography-group h3{
-  margin-top:0;
-}
-
-.typography-group h4{
-  margin:22px 0 12px;
-}
-
-.typography-group label{
-  display:block;
-  font-size:14px;
-}
-
+.typography-group h3{margin-top:0}
+.typography-group h4{margin:22px 0 12px}
+.typography-group label{display:block;font-size:14px}
 .typography-group input,
-.typography-group select{
-  margin-top:6px;
-}
+.typography-group select{margin-top:6px}
 
 .typography-note{
   font-size:13px;
@@ -139,7 +127,7 @@ body{
   border-radius:7px;
 }
 
-/* CATÁLOGO DE PRODUCTOS */
+/* CATÁLOGO */
 
 #list{
   overflow:hidden;
@@ -148,107 +136,102 @@ body{
 #items{
   display:grid;
   grid-template-columns:1fr;
-  gap:12px;
-  margin-top:18px;
+  gap:15px;
+  margin-top:22px;
 }
 
-.rowitem{
-  display:flex;
+/* TARJETAS DE PRODUCTOS */
+
+.rowitem.product-admin-card{
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr) auto;
   align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  padding:16px;
-  background:#faf8f5;
+  gap:20px;
+  padding:17px;
+  background:#fcfaf7;
   border:1px solid #e9e1d7;
-  border-radius:10px;
-  transition:border-color .2s,box-shadow .2s;
+  border-radius:13px;
+  transition:all .2s ease;
 }
 
-.rowitem:hover{
+.rowitem.product-admin-card:hover{
   border-color:#c9a45c;
-  box-shadow:0 3px 12px rgba(0,0,0,.04);
+  box-shadow:0 5px 18px rgba(0,0,0,.06);
+  transform:translateY(-1px);
 }
-
-.rowitem > span:first-child{
-  flex:1;
-  min-width:0;
-  line-height:1.6;
-}
-
-.rowitem b{
-  color:#292521;
-  font-size:16px;
-}
-
-.rowitem small{
-  color:#777;
-  font-size:13px;
-}
-
-.rowitem > span:last-child{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  gap:7px;
-}
-
-.rowitem button{
-  padding:9px 14px;
-  border:1px solid #d7cfc4;
-  border-radius:6px;
-  background:white;
-  color:#292521;
-  cursor:pointer;
-  font-weight:600;
-}
-
-.rowitem button:hover{
-  border-color:#b51f2b;
-  color:#b51f2b;
-}
-
-.rowitem button[data-del]{
-  color:#a52a2a;
-}
-
-.rowitem button[data-del]:hover{
-  background:#fff0ef;
-  border-color:#a52a2a;
-}
-
-/* PREPARACIÓN PARA FOTOGRAFÍAS Y ESTADOS */
 
 .product-admin-photo{
-  width:85px;
-  height:85px;
-  object-fit:cover;
-  border-radius:8px;
+  width:112px;
+  height:112px;
+  overflow:hidden;
+  border-radius:11px;
   background:#eee8df;
   flex-shrink:0;
 }
 
+.product-admin-photo img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+.product-no-photo{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:35px;
+  background:#eee8df;
+}
+
 .product-admin-info{
-  flex:1;
   min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:5px;
 }
 
 .product-admin-info b{
   display:block;
-  margin-bottom:4px;
+  color:#292521;
+  font-size:18px;
+  line-height:1.3;
+}
+
+.product-admin-info small{
+  color:#82786e;
+  font-size:13px;
 }
 
 .product-admin-price{
-  font-weight:700;
+  display:block;
+  margin-top:4px;
   color:#b51f2b;
+  font-size:21px;
+  font-weight:800;
 }
 
 .product-admin-status{
-  display:inline-block;
-  margin-top:6px;
-  padding:4px 8px;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:7px;
+  margin-top:5px;
+}
+
+.status-available,
+.status-unavailable,
+.status-featured{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
   border-radius:20px;
   font-size:11px;
   font-weight:700;
+  white-space:nowrap;
 }
 
 .status-available{
@@ -266,11 +249,66 @@ body{
   color:#85651f;
 }
 
-/* BOTONES Y FORMULARIOS */
+/* BOTONES DEL CATÁLOGO */
 
-button{
-  cursor:pointer;
+.product-admin-actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  align-items:center;
+  gap:8px;
+  max-width:390px;
 }
+
+.product-admin-actions button{
+  padding:10px 12px;
+  border:1px solid #ded5ca;
+  border-radius:8px;
+  background:#fff;
+  color:#37312c;
+  font-size:12px;
+  font-weight:700;
+  transition:all .2s ease;
+}
+
+.product-admin-actions button:hover{
+  border-color:#b51f2b;
+  color:#b51f2b;
+  background:#fff8f7;
+}
+
+.product-admin-actions button[data-toggle-available]{
+  color:#26733c;
+  border-color:#cfe4d3;
+}
+
+.product-admin-actions button[data-toggle-featured]{
+  color:#85651f;
+  border-color:#e9ddbb;
+}
+
+.product-admin-actions button[data-edit]{
+  color:#514b43;
+}
+
+.product-admin-actions button[data-del]{
+  color:#a52a2a;
+  border-color:#efd0ce;
+}
+
+.product-admin-actions button[data-del]:hover{
+  background:#fff0ef;
+  border-color:#a52a2a;
+}
+
+.product-admin-actions button:disabled{
+  opacity:.5;
+  cursor:wait;
+}
+
+/* BOTONES GENERALES */
+
+button{cursor:pointer}
 
 button:disabled{
   opacity:.6;
@@ -286,43 +324,73 @@ button:disabled{
 #password{
   padding:12px;
   border:1px solid #ccc;
-  border-radius:7px;
+  border-radius:8px;
   width:100%;
   max-width:400px;
   margin-bottom:12px;
 }
 
-@media(max-width:650px){
-  .form{
-    grid-template-columns:1fr;
+/* CELULARES */
+
+@media(max-width:800px){
+  .rowitem.product-admin-card{
+    grid-template-columns:85px minmax(0,1fr);
+    gap:13px;
   }
+
+  .product-admin-photo{
+    width:85px;
+    height:85px;
+  }
+
+  .product-admin-actions{
+    grid-column:1/-1;
+    max-width:none;
+    justify-content:flex-start;
+  }
+}
+
+@media(max-width:650px){
+  .form{grid-template-columns:1fr}
 
   .admin{
     padding:12px;
     margin:15px auto;
   }
 
-  .box{
-    padding:17px;
-  }
+  .box{padding:17px}
 
-  .rowitem{
-    align-items:flex-start;
-    flex-wrap:wrap;
-  }
-
-  .rowitem > span:last-child{
-    width:100%;
-    justify-content:flex-start;
-  }
-
-  .rowitem button{
-    flex:1;
+  .rowitem.product-admin-card{
+    padding:13px;
+    gap:12px;
   }
 
   .product-admin-photo{
-    width:68px;
-    height:68px;
+    width:76px;
+    height:76px;
+  }
+
+  .product-admin-info b{font-size:16px}
+
+  .product-admin-price{font-size:19px}
+
+  .product-admin-actions{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+  }
+
+  .product-admin-actions button{
+    width:100%;
+    padding:11px 6px;
+    font-size:11px;
+  }
+
+  .status-available,
+  .status-unavailable,
+  .status-featured{
+    font-size:10px;
+    padding:5px 8px;
   }
 }
 </style>
@@ -416,49 +484,38 @@ button:disabled{
 <h4>Tamaños de texto</h4>
 
 <div class="form">
-
 <label>Descripción de portada (px)
 <input type="number" name="desktop_portada" min="12" max="40" value="21">
 </label>
-
 <label>Descripción de secciones (px)
 <input type="number" name="desktop_seccion" min="12" max="40" value="18">
 </label>
-
 <label>Nombre de productos (px)
 <input type="number" name="desktop_producto" min="14" max="40" value="25">
 </label>
-
 <label>Descripción de productos (px)
 <input type="number" name="desktop_descripcion" min="12" max="32" value="17">
 </label>
-
 <label>Precio (px)
 <input type="number" name="desktop_precio" min="14" max="36" value="22">
 </label>
-
 <label>Botones (px)
 <input type="number" name="desktop_botones" min="11" max="28" value="15">
 </label>
-
 <label>Menú principal (px)
 <input type="number" name="desktop_menu" min="11" max="28" value="16">
 </label>
-
 <label>Categorías (px)
 <input type="number" name="desktop_categorias" min="11" max="28" value="15">
 </label>
-
 <label>Pie de página (px)
 <input type="number" name="desktop_footer" min="11" max="28" value="15">
 </label>
-
 </div>
 
 <h4>Tipo y estilo de letra</h4>
 
 <div class="form">
-
 <label>Familia tipográfica
 <select name="desktop_font">
 <option value="DM Sans">DM Sans - Moderna</option>
@@ -467,7 +524,6 @@ button:disabled{
 <option value="Lato">Lato - Limpia</option>
 </select>
 </label>
-
 <label>Grosor de letra
 <select name="desktop_weight">
 <option value="400">Normal</option>
@@ -476,7 +532,6 @@ button:disabled{
 <option value="700">Negrita</option>
 </select>
 </label>
-
 <label>Espaciado entre letras
 <select name="desktop_spacing">
 <option value="0">Normal</option>
@@ -486,7 +541,6 @@ button:disabled{
 <option value="2">Muy amplio</option>
 </select>
 </label>
-
 <label>Altura de línea
 <select name="desktop_lineheight">
 <option value="1.4">Compacta</option>
@@ -495,7 +549,6 @@ button:disabled{
 <option value="2">Muy amplia</option>
 </select>
 </label>
-
 </div>
 </div>
 
@@ -504,49 +557,38 @@ button:disabled{
 <h4>Tamaños de texto</h4>
 
 <div class="form">
-
 <label>Descripción de portada (px)
 <input type="number" name="mobile_portada" min="12" max="40" value="19">
 </label>
-
 <label>Descripción de secciones (px)
 <input type="number" name="mobile_seccion" min="12" max="40" value="17">
 </label>
-
 <label>Nombre de productos (px)
 <input type="number" name="mobile_producto" min="14" max="40" value="23">
 </label>
-
 <label>Descripción de productos (px)
 <input type="number" name="mobile_descripcion" min="12" max="32" value="17">
 </label>
-
 <label>Precio (px)
 <input type="number" name="mobile_precio" min="14" max="36" value="21">
 </label>
-
 <label>Botones (px)
 <input type="number" name="mobile_botones" min="11" max="28" value="14">
 </label>
-
 <label>Menú principal (px)
 <input type="number" name="mobile_menu" min="11" max="28" value="16">
 </label>
-
 <label>Categorías (px)
 <input type="number" name="mobile_categorias" min="11" max="28" value="15">
 </label>
-
 <label>Pie de página (px)
 <input type="number" name="mobile_footer" min="11" max="28" value="15">
 </label>
-
 </div>
 
 <h4>Tipo y estilo de letra</h4>
 
 <div class="form">
-
 <label>Familia tipográfica
 <select name="mobile_font">
 <option value="DM Sans">DM Sans - Moderna</option>
@@ -555,7 +597,6 @@ button:disabled{
 <option value="Lato">Lato - Limpia</option>
 </select>
 </label>
-
 <label>Grosor de letra
 <select name="mobile_weight">
 <option value="400">Normal</option>
@@ -564,7 +605,6 @@ button:disabled{
 <option value="700">Negrita</option>
 </select>
 </label>
-
 <label>Espaciado entre letras
 <select name="mobile_spacing">
 <option value="0">Normal</option>
@@ -574,7 +614,6 @@ button:disabled{
 <option value="2">Muy amplio</option>
 </select>
 </label>
-
 <label>Altura de línea
 <select name="mobile_lineheight">
 <option value="1.4">Compacta</option>
@@ -583,7 +622,6 @@ button:disabled{
 <option value="2">Muy amplia</option>
 </select>
 </label>
-
 </div>
 </div>
 
@@ -591,10 +629,7 @@ button:disabled{
 Configura los estilos de texto para computador y celular. Los cambios se guardan en la configuración de tu tienda.
 </p>
 
-<button class="btn btn-red" type="submit">
-Guardar diseño y tipografía
-</button>
-
+<button class="btn btn-red" type="submit">Guardar diseño y tipografía</button>
 <p id="typographyMsg"></p>
 
 </form>
