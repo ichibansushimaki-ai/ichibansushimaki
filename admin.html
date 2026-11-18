@@ -90,6 +90,100 @@ body{background:#eee8df}
 </form>
 </section>
 
+<section class="box" id="typographyBox">
+  <h2>Diseño y tipografía</h2>
+  <p>Ajusta el tamaño de los textos de tu página. Puedes configurar computador y celular por separado.</p>
+
+  <form id="typographyForm">
+
+    <h3>Computador</h3>
+    <div class="form">
+      <label>Descripción de portada (px)
+        <input type="number" name="desktop_portada" min="12" max="40" value="21">
+      </label>
+
+      <label>Descripción de secciones (px)
+        <input type="number" name="desktop_seccion" min="12" max="40" value="18">
+      </label>
+
+      <label>Nombre de productos (px)
+        <input type="number" name="desktop_producto" min="14" max="40" value="25">
+      </label>
+
+      <label>Descripción de productos (px)
+        <input type="number" name="desktop_descripcion" min="12" max="32" value="17">
+      </label>
+
+      <label>Precio (px)
+        <input type="number" name="desktop_precio" min="14" max="36" value="22">
+      </label>
+
+      <label>Botones (px)
+        <input type="number" name="desktop_botones" min="11" max="28" value="15">
+      </label>
+
+      <label>Menú principal (px)
+        <input type="number" name="desktop_menu" min="11" max="28" value="16">
+      </label>
+
+      <label>Categorías (px)
+        <input type="number" name="desktop_categorias" min="11" max="28" value="15">
+      </label>
+
+      <label>Pie de página (px)
+        <input type="number" name="desktop_footer" min="11" max="28" value="15">
+      </label>
+    </div>
+
+    <hr>
+
+    <h3>Celular</h3>
+    <div class="form">
+      <label>Descripción de portada (px)
+        <input type="number" name="mobile_portada" min="12" max="40" value="19">
+      </label>
+
+      <label>Descripción de secciones (px)
+        <input type="number" name="mobile_seccion" min="12" max="40" value="17">
+      </label>
+
+      <label>Nombre de productos (px)
+        <input type="number" name="mobile_producto" min="14" max="40" value="23">
+      </label>
+
+      <label>Descripción de productos (px)
+        <input type="number" name="mobile_descripcion" min="12" max="32" value="17">
+      </label>
+
+      <label>Precio (px)
+        <input type="number" name="mobile_precio" min="14" max="36" value="21">
+      </label>
+
+      <label>Botones (px)
+        <input type="number" name="mobile_botones" min="11" max="28" value="14">
+      </label>
+
+      <label>Menú principal (px)
+        <input type="number" name="mobile_menu" min="11" max="28" value="16">
+      </label>
+
+      <label>Categorías (px)
+        <input type="number" name="mobile_categorias" min="11" max="28" value="15">
+      </label>
+
+      <label>Pie de página (px)
+        <input type="number" name="mobile_footer" min="11" max="28" value="15">
+      </label>
+    </div>
+
+    <button class="btn btn-red" type="submit">
+      Guardar tamaños de texto
+    </button>
+
+    <p id="typographyMsg"></p>
+  </form>
+</section>
+
 <section class="box">
 <h2>Agregar o editar producto</h2>
 <form id="productForm" class="form">
