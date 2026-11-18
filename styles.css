@@ -382,98 +382,88 @@ button:disabled {
   }
 }
 
-/* MEJORA GENERAL DE LEGIBILIDAD */
+/* TIPOGRAFÍA MEJORADA - ICHIBAN */
 
 body {
-  font-size: 16px;
+  font-size: 18px;
 }
 
-/* PORTADA */
 .hero-copy > p:not(.eyebrow):not(.note) {
-  font-size: 19px;
+  font-size: 21px;
   line-height: 1.8;
 }
 
 .note {
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 15px;
 }
 
-/* TEXTOS DE SECCIONES */
 .section-head > p {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.7;
 }
 
-/* NOMBRES DE PRODUCTOS */
 .product h3 {
-  font-size: 23px;
+  font-size: 25px;
 }
 
-/* DESCRIPCIONES DE PRODUCTOS */
 .product p {
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 17px;
+  line-height: 1.8;
 }
 
-/* PRECIOS */
 .price {
-  font-size: 20px;
+  font-size: 22px;
 }
 
-/* BOTONES */
 .btn {
-  font-size: 14px;
-}
-
-/* NAVEGACIÓN */
-.top nav a {
   font-size: 15px;
 }
 
-/* CATEGORÍAS */
-.chip {
-  font-size: 14px;
+.top nav a {
+  font-size: 16px;
 }
 
-/* PIE DE PÁGINA */
+.chip {
+  font-size: 15px;
+}
+
 footer {
-  font-size: 13px;
+  font-size: 14px;
 }
 
 footer p {
-  font-size: 14px;
+  font-size: 15px;
 }
 
-/* AJUSTES PARA CELULARES */
 @media (max-width: 760px) {
   .hero-copy > p:not(.eyebrow):not(.note) {
-    font-size: 17px;
-  }
-
-  .section-head > p {
-    font-size: 15px;
-  }
-
-  .product h3 {
-    font-size: 21px;
-  }
-
-  .product p {
-    font-size: 15px;
-  }
-
-  .price {
     font-size: 19px;
   }
 
+  .section-head > p {
+    font-size: 17px;
+  }
+
+  .product h3 {
+    font-size: 23px;
+  }
+
+  .product p {
+    font-size: 17px;
+  }
+
+  .price {
+    font-size: 21px;
+  }
+
   .btn {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   footer,
   footer p {
-    font-size: 14px;
+    font-size: 15px;
   }
 }
+
 
