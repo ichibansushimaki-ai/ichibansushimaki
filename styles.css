@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap');
 
 :root {
   --bg: #101010;
@@ -8,9 +8,41 @@
   --gold: #c9a56a;
   --red: #b9272e;
   --muted: #b8b0a5;
+
+  /* TAMAÑOS DE TEXTO */
+  --texto-general: 18px;
+  --texto-portada: 21px;
+  --texto-descripcion-seccion: 18px;
+  --texto-producto: 25px;
+  --texto-descripcion-producto: 17px;
+  --texto-precio: 22px;
+  --texto-botones: 15px;
+  --texto-menu: 16px;
+  --texto-categorias: 15px;
+  --texto-footer: 15px;
+
+  /* FAMILIAS TIPOGRÁFICAS */
+  --font-general: 'DM Sans', sans-serif;
+  --font-display: 'Playfair Display', serif;
+
+  /* GROSOR DE LETRA */
+  --peso-general: 400;
+  --peso-menu: 600;
+  --peso-botones: 700;
+  --peso-producto: 600;
+  --peso-precio: 700;
+  --peso-titulos: 700;
+
+  /* ESPACIADO Y ALTURA */
+  --espaciado-general: 0px;
+  --espaciado-titulos: 0px;
+  --altura-linea-general: 1.7;
+  --altura-linea-descripcion: 1.8;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 html {
   scroll-behavior: smooth;
@@ -20,7 +52,11 @@ body {
   margin: 0;
   background: var(--cream);
   color: #191715;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-general);
+  font-size: var(--texto-general);
+  font-weight: var(--peso-general);
+  letter-spacing: var(--espaciado-general);
+  line-height: var(--altura-linea-general);
 }
 
 .top {
@@ -78,14 +114,15 @@ body {
 .top nav a {
   color: #eee;
   text-decoration: none;
-  font-size: 13px;
+  font-size: var(--texto-menu);
+  font-weight: var(--peso-menu);
 }
 
 .btn {
   padding: 14px 21px;
   text-decoration: none;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--texto-botones);
+  font-weight: var(--peso-botones);
   letter-spacing: .5px;
   display: inline-block;
   border: 1px solid transparent;
@@ -121,7 +158,11 @@ body {
 }
 
 .hero h1 {
-  font: 700 clamp(45px,6vw,76px)/1.08 'Playfair Display',serif;
+  font-family: var(--font-display);
+  font-size: clamp(45px, 6vw, 76px);
+  font-weight: var(--peso-titulos);
+  line-height: 1.08;
+  letter-spacing: var(--espaciado-titulos);
   margin: 18px 0;
 }
 
@@ -130,10 +171,11 @@ h2 em {
   color: var(--gold);
 }
 
-.hero-copy>p:not(.eyebrow):not(.note) {
+.hero-copy > p:not(.eyebrow):not(.note) {
   max-width: 470px;
   color: #d0cbc3;
-  line-height: 1.8;
+  font-size: var(--texto-portada);
+  line-height: var(--altura-linea-descripcion);
 }
 
 .actions {
@@ -144,7 +186,7 @@ h2 em {
 }
 
 .note {
-  font-size: 10px;
+  font-size: 15px;
   color: #888;
   margin-top: 28px;
 }
@@ -155,7 +197,7 @@ h2 em {
   display: grid;
   place-items: center;
   background-color: var(--panel);
-  background-image: radial-gradient(circle at 50% 48%,#3a2520,#1b1716 55%,#111 75%);
+  background-image: radial-gradient(circle at 50% 48%, #3a2520, #1b1716 55%, #111 75%);
   background-size: cover;
   background-position: center;
   border: 1px solid var(--gold);
@@ -165,7 +207,7 @@ h2 em {
   width: 230px;
   height: 230px;
   border-radius: 50%;
-  background: linear-gradient(140deg,var(--gold),var(--red));
+  background: linear-gradient(140deg, var(--gold), var(--red));
   opacity: .85;
   box-shadow: 0 0 80px #9e542b55;
 }
@@ -180,7 +222,9 @@ h2 em {
 }
 
 .hero-label b {
-  font: 600 48px 'Playfair Display';
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 48px;
   color: var(--gold);
 }
 
@@ -210,18 +254,21 @@ h2 em {
 
 .section-head h2,
 .callout h2 {
-  font: 700 clamp(32px,4vw,48px) 'Playfair Display';
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: var(--peso-titulos);
+  letter-spacing: var(--espaciado-titulos);
   margin: 8px 0;
 }
 
-.section-head>p {
+.section-head > p {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--texto-descripcion-seccion);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
 
@@ -251,20 +298,24 @@ h2 em {
 
 .product h3 {
   margin: 0 0 7px;
-  font: 600 21px 'Playfair Display';
+  font-family: var(--font-display);
+  font-size: var(--texto-producto);
+  font-weight: var(--peso-producto);
+  letter-spacing: var(--espaciado-titulos);
 }
 
 .product p {
-  font-size: 12px;
-  line-height: 1.6;
+  font-family: var(--font-general);
+  font-size: var(--texto-descripcion-producto);
+  line-height: var(--altura-linea-descripcion);
   color: #8b8176;
   min-height: 38px;
 }
 
 .price {
-  font-weight: 700;
+  font-weight: var(--peso-precio);
   color: var(--red);
-  font-size: 18px;
+  font-size: var(--texto-precio);
 }
 
 .dark .price {
@@ -284,6 +335,9 @@ h2 em {
   border: 1px solid var(--gold);
   padding: 9px 14px;
   cursor: pointer;
+  font-family: var(--font-general);
+  font-size: var(--texto-categorias);
+  font-weight: var(--peso-general);
 }
 
 .chip.active {
@@ -307,11 +361,12 @@ footer {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  font-size: 11px;
+  font-size: var(--texto-footer);
 }
 
 footer p {
   color: #aaa;
+  font-size: var(--texto-footer);
 }
 
 button:disabled {
@@ -319,7 +374,22 @@ button:disabled {
   cursor: wait;
 }
 
-@media(max-width:760px) {
+/* AJUSTES PARA CELULARES */
+
+@media (max-width: 760px) {
+  :root {
+    --texto-general: 17px;
+    --texto-portada: 19px;
+    --texto-descripcion-seccion: 17px;
+    --texto-producto: 23px;
+    --texto-descripcion-producto: 17px;
+    --texto-precio: 21px;
+    --texto-botones: 14px;
+    --texto-menu: 16px;
+    --texto-categorias: 15px;
+    --texto-footer: 15px;
+  }
+
   .top {
     padding: 12px 18px;
   }
@@ -328,9 +398,9 @@ button:disabled {
     display: none;
   }
 
-  .top>.btn {
+  .top > .btn {
     padding: 11px;
-    font-size: 10px;
+    font-size: var(--texto-botones);
   }
 
   .hero {
@@ -367,12 +437,12 @@ button:disabled {
     margin-top: 15px;
   }
 
-  footer>* {
+  footer > * {
     margin: 12px 0;
   }
 }
 
-@media(max-width:430px) {
+@media (max-width: 430px) {
   .grid {
     grid-template-columns: 1fr;
   }
@@ -381,90 +451,3 @@ button:disabled {
     height: 190px;
   }
 }
-
-/* =====================================
-   PANEL DE CONTROL DE TIPOGRAFÍA ICHIBAN
-   MODIFICA LOS VALORES A TU GUSTO
-===================================== */
-
-:root {
-  --texto-general: 18px;
-  --texto-portada: 21px;
-  --texto-descripcion-seccion: 18px;
-  --texto-producto: 25px;
-  --texto-descripcion-producto: 17px;
-  --texto-precio: 22px;
-  --texto-botones: 15px;
-  --texto-menu: 16px;
-  --texto-categorias: 15px;
-  --texto-footer: 15px;
-}
-
-/* APLICACIÓN DE TAMAÑOS */
-
-body {
-  font-size: var(--texto-general);
-}
-
-.hero-copy > p:not(.eyebrow):not(.note) {
-  font-size: var(--texto-portada);
-}
-
-.section-head > p {
-  font-size: var(--texto-descripcion-seccion);
-}
-
-.product h3 {
-  font-size: var(--texto-producto);
-}
-
-.product p {
-  font-size: var(--texto-descripcion-producto);
-  line-height: 1.8;
-}
-
-.price {
-  font-size: var(--texto-precio);
-}
-
-.btn {
-  font-size: var(--texto-botones);
-}
-
-.top nav a {
-  font-size: var(--texto-menu);
-}
-
-.chip {
-  font-size: var(--texto-categorias);
-}
-
-footer,
-footer p {
-  font-size: var(--texto-footer);
-}
-
-.note {
-  font-size: 15px;
-}
-
-/* AJUSTES PARA CELULARES */
-
-@media (max-width: 760px) {
-  :root {
-    --texto-general: 17px;
-    --texto-portada: 19px;
-    --texto-descripcion-seccion: 17px;
-    --texto-producto: 23px;
-    --texto-descripcion-producto: 17px;
-    --texto-precio: 21px;
-    --texto-botones: 14px;
-    --texto-menu: 16px;
-    --texto-categorias: 15px;
-    --texto-footer: 15px;
-  }
-}
-
-
-
-
