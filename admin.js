@@ -20,42 +20,27 @@ const defaults = {
 
 const defaultTypography = {
   desktop: {
-    portada: 21,
-    seccion: 18,
-    producto: 25,
-    descripcion: 17,
-    precio: 22,
-    botones: 15,
-    menu: 16,
-    categorias: 15,
-    footer: 15,
-    font: "DM Sans",
-    weight: "400",
-    spacing: "0",
-    lineheight: "1.6"
+    portada: 21, seccion: 18, producto: 25,
+    descripcion: 17, precio: 22, botones: 15,
+    menu: 16, categorias: 15, footer: 15,
+    font: "DM Sans", weight: "400",
+    spacing: "0", lineheight: "1.6"
   },
   mobile: {
-    portada: 19,
-    seccion: 17,
-    producto: 23,
-    descripcion: 17,
-    precio: 21,
-    botones: 14,
-    menu: 16,
-    categorias: 15,
-    footer: 15,
-    font: "DM Sans",
-    weight: "400",
-    spacing: "0",
-    lineheight: "1.6"
+    portada: 19, seccion: 17, producto: 23,
+    descripcion: 17, precio: 21, botones: 14,
+    menu: 16, categorias: 15, footer: 15,
+    font: "DM Sans", weight: "400",
+    spacing: "0", lineheight: "1.6"
   }
 };
 
 let currentTypography = JSON.parse(JSON.stringify(defaultTypography));
+let products = [];
 
 async function api(path, options = {}) {
   const headers = {
-    "Authorization": "Bearer " + token,
+    Authorization: "Bearer " + token,
     ...(options.body instanceof FormData
       ? {}
       : options.body
@@ -79,7 +64,6 @@ async function uploadImage(file) {
   });
 
   const detail = await response.text();
-
   let data = {};
 
   try {
@@ -90,7 +74,9 @@ async function uploadImage(file) {
 
   if (!response.ok) {
     throw new Error(
-      `Error ${response.status}: ${data.error || data.message || detail || "Error al subir imagen"}`
+      `Error ${response.status}: ${
+        data.error || data.message || detail || "Error al subir imagen"
+      }`
     );
   }
 
@@ -109,7 +95,6 @@ function previewFile(inputId, previewId) {
 
   input.addEventListener("change", () => {
     const file = input.files[0];
-
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
@@ -159,21 +144,14 @@ function fillTypography(value) {
   ["desktop", "mobile"].forEach(device => {
     Object.entries(currentTypography[device]).forEach(([key, value]) => {
       const field = form.elements[`${device}_${key}`];
-
-      if (field) {
-        field.value = value;
-      }
+      if (field) field.value = value;
     });
   });
 }
 
 function readTypography() {
   const form = $("#typographyForm");
-
-  const result = {
-    desktop: {},
-    mobile: {}
-  };
+  const result = { desktop: {}, mobile: {} };
 
   ["desktop", "mobile"].forEach(device => {
     Object.keys(defaultTypography[device]).forEach(key => {
@@ -191,7 +169,6 @@ function readTypography() {
 
       const minimum = Number(field.min);
       const maximum = Number(field.max);
-
       let value = Number.parseInt(field.value, 10);
 
       if (!Number.isFinite(value)) {
@@ -199,7 +176,6 @@ function readTypography() {
       }
 
       value = Math.max(minimum, Math.min(maximum, value));
-
       field.value = value;
       result[device][key] = value;
     });
@@ -225,7 +201,6 @@ function fillSettings(data) {
     ["hero_image", "heroPreview"]
   ].forEach(([key, previewId]) => {
     const preview = $("#" + previewId);
-
     if (!preview) return;
 
     if (settings[key]) {
@@ -243,12 +218,15 @@ async function loadSettings() {
   const response = await api("/api/settings");
 
   if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`Error ${response.status}: ${detail}`);
+    throw new Error(
+      `Error ${response.status}: ${await response.text()}`
+    );
   }
 
   fillSettings(await response.json());
 }
+
+// INGRESO AL PANEL
 
 $("#loginBtn").onclick = async () => {
   const response = await fetch("/api/login", {
@@ -258,7 +236,8 @@ $("#loginBtn").onclick = async () => {
   });
 
   if (!response.ok) {
-    $("#loginMsg").textContent = "No se pudo ingresar. Revisa la contraseña.";
+    $("#loginMsg").textContent =
+      "No se pudo ingresar. Revisa la contraseña.";
     return;
   }
 
@@ -276,6 +255,8 @@ $("#loginBtn").onclick = async () => {
   }
 };
 
+// GUARDAR IDENTIDAD
+
 $("#settingsForm").onsubmit = async event => {
   event.preventDefault();
 
@@ -289,12 +270,12 @@ $("#settingsForm").onsubmit = async event => {
   try {
     const data = Object.fromEntries(new FormData(form));
 
-    data.whatsapp = form.elements.whatsapp.value.trim() || settings.whatsapp || "";
+    data.whatsapp =
+      form.elements.whatsapp.value.trim() || settings.whatsapp || "";
 
     data.logo = settings.logo || "";
     data.mobile_logo = settings.mobile_logo || "";
     data.hero_image = settings.hero_image || "";
-
     data.typography = JSON.stringify(currentTypography);
 
     const images = [
@@ -318,15 +299,10 @@ $("#settingsForm").onsubmit = async event => {
     });
 
     if (!response.ok) {
-      const detail = await response.text();
-      throw new Error(`Error ${response.status}: ${detail}`);
+      throw new Error(await response.text());
     }
 
-    settings = {
-      ...settings,
-      ...data
-    };
-
+    settings = { ...settings, ...data };
     fillSettings(settings);
 
     ["logoFile", "mobileLogoFile", "heroFile"].forEach(id => {
@@ -342,7 +318,7 @@ $("#settingsForm").onsubmit = async event => {
   }
 };
 
-// GUARDAR TAMAÑOS Y ESTILOS DE TIPOGRAFÍA
+// GUARDAR TIPOGRAFÍA
 
 $("#typographyForm").onsubmit = async event => {
   event.preventDefault();
@@ -368,12 +344,10 @@ $("#typographyForm").onsubmit = async event => {
     });
 
     if (!response.ok) {
-      const detail = await response.text();
-      throw new Error(`Error ${response.status}: ${detail}`);
+      throw new Error(await response.text());
     }
 
     settings.typography = data.typography;
-
     message.textContent = "Diseño y tipografía guardados correctamente.";
 
   } catch (error) {
@@ -383,7 +357,7 @@ $("#typographyForm").onsubmit = async event => {
   }
 };
 
-let products = [];
+// CATÁLOGO DE PRODUCTOS
 
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -395,6 +369,101 @@ function escapeHTML(value) {
   })[char]);
 }
 
+function isTrue(value) {
+  return value === true || value === 1 || value === "1";
+}
+
+function money(value) {
+  return "$" + Number(value || 0).toLocaleString("es-CL");
+}
+
+function safeImageURL(value) {
+  try {
+    const url = new URL(String(value || ""), location.origin);
+    if (url.protocol === "https:" || url.origin === location.origin) {
+      return url.href;
+    }
+  } catch {}
+  return "";
+}
+
+function renderProducts() {
+  const container = $("#items");
+
+  if (!products.length) {
+    container.innerHTML = `
+      <div class="rowitem">
+        <span>No hay productos registrados todavía.</span>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = products.map(product => {
+    const id = escapeHTML(product.id);
+    const name = escapeHTML(product.name);
+    const category = escapeHTML(product.category);
+    const price = money(product.price);
+    const available = isTrue(product.available);
+    const featured = isTrue(product.featured);
+    const image = safeImageURL(product.image);
+
+    return `
+      <div class="rowitem product-admin-card">
+
+        <div class="product-admin-photo">
+          ${
+            image
+              ? `<img src="${escapeHTML(image)}"
+                    alt="${name}"
+                    loading="lazy"
+                    onerror="this.style.display='none'">`
+              : `<div class="product-no-photo">🍣</div>`
+          }
+        </div>
+
+        <div class="product-admin-info">
+          <b>${name}</b>
+          <small>${category}</small>
+
+          <strong class="product-admin-price">${price}</strong>
+
+          <div class="product-admin-status">
+            <span class="${available ? "status-available" : "status-unavailable"}">
+              ${available ? "● Disponible" : "● Agotado"}
+            </span>
+
+            ${
+              featured
+                ? `<span class="status-featured">★ Destacado</span>`
+                : ""
+            }
+          </div>
+        </div>
+
+        <div class="product-admin-actions">
+          <button type="button" data-toggle-available="${id}">
+            ${available ? "Marcar agotado" : "Activar"}
+          </button>
+
+          <button type="button" data-toggle-featured="${id}">
+            ${featured ? "Quitar destacado" : "Destacar"}
+          </button>
+
+          <button type="button" data-edit="${id}">
+            Editar
+          </button>
+
+          <button type="button" data-del="${id}">
+            Eliminar
+          </button>
+        </div>
+
+      </div>
+    `;
+  }).join("");
+}
+
 async function load() {
   const response = await api("/api/products");
 
@@ -403,67 +472,120 @@ async function load() {
   }
 
   products = await response.json();
+  renderProducts();
+}
 
-  $("#items").innerHTML = products.map(product => `
-    <div class="rowitem">
-      <span>
-        <b>${escapeHTML(product.name)}</b>
-        · $${Number(product.price).toLocaleString("es-CL")}
-        <br><small>${escapeHTML(product.category)}</small>
-      </span>
-      <span>
-        <button type="button" data-edit="${escapeHTML(product.id)}">Editar</button>
-        <button type="button" data-del="${escapeHTML(product.id)}">Eliminar</button>
-      </span>
-    </div>
-  `).join("");
+// ACTUALIZAR DISPONIBILIDAD O DESTACADO
 
-  products.forEach(product => {
-    const editButton = document.querySelector(
-      `[data-edit="${CSS.escape(String(product.id))}"]`
-    );
+async function updateProduct(product, changes) {
+  const buttons = $("#items").querySelectorAll("button");
+  buttons.forEach(button => button.disabled = true);
 
-    const deleteButton = document.querySelector(
-      `[data-del="${CSS.escape(String(product.id))}"]`
-    );
-
-    editButton.onclick = () => {
-      const form = $("#productForm");
-
-      Object.entries(product).forEach(([key, value]) => {
-        if (form.elements[key]) {
-          if (form.elements[key].type === "checkbox") {
-            form.elements[key].checked = !!value;
-          } else {
-            form.elements[key].value = value ?? "";
-          }
-        }
-      });
-
-      $("#preview").style.display = product.image ? "block" : "none";
-      $("#preview").src = product.image || "";
-      $("#imageFile").value = "";
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  try {
+    const updated = {
+      ...product,
+      ...changes,
+      available: changes.available !== undefined
+        ? changes.available
+        : isTrue(product.available),
+      featured: changes.featured !== undefined
+        ? changes.featured
+        : isTrue(product.featured)
     };
 
-    deleteButton.onclick = async () => {
-      if (!confirm("¿Eliminar este producto?")) return;
+    const response = await api("/api/products", {
+      method: "POST",
+      body: JSON.stringify(updated)
+    });
 
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+
+    await load();
+
+  } catch (error) {
+    alert("No se pudo actualizar el producto: " + error.message);
+    buttons.forEach(button => button.disabled = false);
+  }
+}
+
+// ACCIONES DEL CATÁLOGO
+
+$("#items").addEventListener("click", async event => {
+  const button = event.target.closest("button");
+  if (!button) return;
+
+  const id = button.dataset.toggleAvailable ||
+             button.dataset.toggleFeatured ||
+             button.dataset.edit ||
+             button.dataset.del;
+
+  if (!id) return;
+
+  const product = products.find(item => String(item.id) === id);
+  if (!product) return;
+
+  if (button.dataset.toggleAvailable !== undefined) {
+    await updateProduct(product, {
+      available: !isTrue(product.available)
+    });
+    return;
+  }
+
+  if (button.dataset.toggleFeatured !== undefined) {
+    await updateProduct(product, {
+      featured: !isTrue(product.featured)
+    });
+    return;
+  }
+
+  if (button.dataset.edit !== undefined) {
+    const form = $("#productForm");
+
+    Object.entries(product).forEach(([key, value]) => {
+      if (form.elements[key]) {
+        if (form.elements[key].type === "checkbox") {
+          form.elements[key].checked = isTrue(value);
+        } else {
+          form.elements[key].value = value ?? "";
+        }
+      }
+    });
+
+    $("#preview").style.display = product.image ? "block" : "none";
+    $("#preview").src = product.image || "";
+    $("#imageFile").value = "";
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (button.dataset.del !== undefined) {
+    if (!confirm("¿Eliminar este producto?")) return;
+
+    button.disabled = true;
+
+    try {
       const response = await api(
         "/api/products/" + encodeURIComponent(product.id),
         { method: "DELETE" }
       );
 
       if (!response.ok) {
-        alert("No se pudo eliminar el producto.");
-        return;
+        throw new Error(await response.text());
       }
 
       await load();
-    };
-  });
-}
+
+    } catch (error) {
+      alert("No se pudo eliminar: " + error.message);
+      button.disabled = false;
+    }
+  }
+});
+
+// CREAR O EDITAR PRODUCTOS
 
 $("#productForm").onsubmit = async event => {
   event.preventDefault();
@@ -483,6 +605,10 @@ $("#productForm").onsubmit = async event => {
     const file = $("#imageFile").files[0];
 
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("La imagen supera el límite de 5 MB.");
+      }
+
       $("#uploadMsg").textContent = "Subiendo fotografía...";
       data.image = await uploadImage(file);
     }
@@ -493,7 +619,7 @@ $("#productForm").onsubmit = async event => {
     });
 
     if (!response.ok) {
-      throw new Error("No se pudo guardar el producto.");
+      throw new Error(await response.text());
     }
 
     form.reset();
@@ -514,6 +640,8 @@ $("#productForm").onsubmit = async event => {
     button.disabled = false;
   }
 };
+
+// PREVISUALIZACIÓN DE IMÁGENES
 
 previewFile("logoFile", "logoPreview");
 previewFile("mobileLogoFile", "mobileLogoPreview");
