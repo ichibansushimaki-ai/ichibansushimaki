@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Administración · Ichiban</title>
 <link rel="stylesheet" href="/styles.css">
+
 <style>
 body{background:#eee8df}
 .admin{max-width:1050px;margin:45px auto;padding:25px}
@@ -18,10 +19,21 @@ body{background:#eee8df}
 .photo-upload input{margin-top:10px}
 .photo-upload img{max-width:180px;max-height:150px;display:block;margin-top:10px}
 #uploadMsg{font-size:14px;margin-top:8px}
-@media(max-width:650px){.form{grid-template-columns:1fr}.admin{padding:12px}}
+.typography-group{padding:16px;margin:15px 0;background:#f8f5f0;border:1px solid #e5ddd2}
+.typography-group h3{margin-top:0}
+.typography-group h4{margin:20px 0 10px}
+.typography-group label{display:block;font-size:14px}
+.typography-group input,.typography-group select{margin-top:6px}
+.typography-note{font-size:13px;color:#777}
+@media(max-width:650px){
+.form{grid-template-columns:1fr}
+.admin{padding:12px}
+}
 </style>
 </head>
+
 <body>
+
 <header class="top">
 <a class="brand" href="/">
 <span class="mark">一</span>
@@ -31,6 +43,7 @@ body{background:#eee8df}
 </header>
 
 <main class="admin">
+
 <p class="eyebrow">PANEL DE CONTROL</p>
 <h1>Administrar carta y tienda</h1>
 
@@ -49,6 +62,7 @@ body{background:#eee8df}
 <p>Personaliza la imagen y los datos de Ichiban Sushi Maki.</p>
 
 <form id="settingsForm" class="form">
+
 <input name="store_name" placeholder="Nombre del negocio" required>
 <input name="slogan" placeholder="Eslogan">
 <textarea name="description" placeholder="Descripción de la tienda"></textarea>
@@ -75,118 +89,228 @@ body{background:#eee8df}
 <label>Color principal
 <input type="color" name="color_primary">
 </label>
+
 <label>Fondo
 <input type="color" name="color_background">
 </label>
+
 <label>Color crema
 <input type="color" name="color_cream">
 </label>
+
 <label>Dorado
 <input type="color" name="color_gold">
 </label>
 
 <button class="btn btn-red" type="submit">Guardar identidad de la tienda</button>
 <p id="settingsMsg"></p>
+
 </form>
 </section>
 
 <section class="box" id="typographyBox">
-  <h2>Diseño y tipografía</h2>
-  <p>Ajusta el tamaño de los textos de tu página. Puedes configurar computador y celular por separado.</p>
 
-  <form id="typographyForm">
+<h2>Diseño y tipografía</h2>
+<p>Ajusta la apariencia de los textos de tu página. Puedes configurar computador y celular por separado.</p>
 
-    <h3>Computador</h3>
-    <div class="form">
-      <label>Descripción de portada (px)
-        <input type="number" name="desktop_portada" min="12" max="40" value="21">
-      </label>
+<form id="typographyForm">
 
-      <label>Descripción de secciones (px)
-        <input type="number" name="desktop_seccion" min="12" max="40" value="18">
-      </label>
+<div class="typography-group">
+<h3>Computador</h3>
 
-      <label>Nombre de productos (px)
-        <input type="number" name="desktop_producto" min="14" max="40" value="25">
-      </label>
+<h4>Tamaños de texto</h4>
 
-      <label>Descripción de productos (px)
-        <input type="number" name="desktop_descripcion" min="12" max="32" value="17">
-      </label>
+<div class="form">
 
-      <label>Precio (px)
-        <input type="number" name="desktop_precio" min="14" max="36" value="22">
-      </label>
+<label>Descripción de portada (px)
+<input type="number" name="desktop_portada" min="12" max="40" value="21">
+</label>
 
-      <label>Botones (px)
-        <input type="number" name="desktop_botones" min="11" max="28" value="15">
-      </label>
+<label>Descripción de secciones (px)
+<input type="number" name="desktop_seccion" min="12" max="40" value="18">
+</label>
 
-      <label>Menú principal (px)
-        <input type="number" name="desktop_menu" min="11" max="28" value="16">
-      </label>
+<label>Nombre de productos (px)
+<input type="number" name="desktop_producto" min="14" max="40" value="25">
+</label>
 
-      <label>Categorías (px)
-        <input type="number" name="desktop_categorias" min="11" max="28" value="15">
-      </label>
+<label>Descripción de productos (px)
+<input type="number" name="desktop_descripcion" min="12" max="32" value="17">
+</label>
 
-      <label>Pie de página (px)
-        <input type="number" name="desktop_footer" min="11" max="28" value="15">
-      </label>
-    </div>
+<label>Precio (px)
+<input type="number" name="desktop_precio" min="14" max="36" value="22">
+</label>
 
-    <hr>
+<label>Botones (px)
+<input type="number" name="desktop_botones" min="11" max="28" value="15">
+</label>
 
-    <h3>Celular</h3>
-    <div class="form">
-      <label>Descripción de portada (px)
-        <input type="number" name="mobile_portada" min="12" max="40" value="19">
-      </label>
+<label>Menú principal (px)
+<input type="number" name="desktop_menu" min="11" max="28" value="16">
+</label>
 
-      <label>Descripción de secciones (px)
-        <input type="number" name="mobile_seccion" min="12" max="40" value="17">
-      </label>
+<label>Categorías (px)
+<input type="number" name="desktop_categorias" min="11" max="28" value="15">
+</label>
 
-      <label>Nombre de productos (px)
-        <input type="number" name="mobile_producto" min="14" max="40" value="23">
-      </label>
+<label>Pie de página (px)
+<input type="number" name="desktop_footer" min="11" max="28" value="15">
+</label>
 
-      <label>Descripción de productos (px)
-        <input type="number" name="mobile_descripcion" min="12" max="32" value="17">
-      </label>
+</div>
 
-      <label>Precio (px)
-        <input type="number" name="mobile_precio" min="14" max="36" value="21">
-      </label>
+<h4>Tipo y estilo de letra</h4>
 
-      <label>Botones (px)
-        <input type="number" name="mobile_botones" min="11" max="28" value="14">
-      </label>
+<div class="form">
 
-      <label>Menú principal (px)
-        <input type="number" name="mobile_menu" min="11" max="28" value="16">
-      </label>
+<label>Familia tipográfica
+<select name="desktop_font">
+<option value="DM Sans">DM Sans - Moderna</option>
+<option value="Playfair Display">Playfair Display - Elegante</option>
+<option value="Montserrat">Montserrat - Comercial</option>
+<option value="Lato">Lato - Limpia</option>
+</select>
+</label>
 
-      <label>Categorías (px)
-        <input type="number" name="mobile_categorias" min="11" max="28" value="15">
-      </label>
+<label>Grosor de letra
+<select name="desktop_weight">
+<option value="400">Normal</option>
+<option value="500">Medio</option>
+<option value="600">Seminegrita</option>
+<option value="700">Negrita</option>
+</select>
+</label>
 
-      <label>Pie de página (px)
-        <input type="number" name="mobile_footer" min="11" max="28" value="15">
-      </label>
-    </div>
+<label>Espaciado entre letras
+<select name="desktop_spacing">
+<option value="0">Normal</option>
+<option value="0.5">Ligero</option>
+<option value="1">Medio</option>
+<option value="1.5">Amplio</option>
+<option value="2">Muy amplio</option>
+</select>
+</label>
 
-    <button class="btn btn-red" type="submit">
-      Guardar tamaños de texto
-    </button>
+<label>Altura de línea
+<select name="desktop_lineheight">
+<option value="1.4">Compacta</option>
+<option value="1.6">Normal</option>
+<option value="1.8">Amplia</option>
+<option value="2">Muy amplia</option>
+</select>
+</label>
 
-    <p id="typographyMsg"></p>
-  </form>
+</div>
+</div>
+
+<div class="typography-group">
+<h3>Celular</h3>
+
+<h4>Tamaños de texto</h4>
+
+<div class="form">
+
+<label>Descripción de portada (px)
+<input type="number" name="mobile_portada" min="12" max="40" value="19">
+</label>
+
+<label>Descripción de secciones (px)
+<input type="number" name="mobile_seccion" min="12" max="40" value="17">
+</label>
+
+<label>Nombre de productos (px)
+<input type="number" name="mobile_producto" min="14" max="40" value="23">
+</label>
+
+<label>Descripción de productos (px)
+<input type="number" name="mobile_descripcion" min="12" max="32" value="17">
+</label>
+
+<label>Precio (px)
+<input type="number" name="mobile_precio" min="14" max="36" value="21">
+</label>
+
+<label>Botones (px)
+<input type="number" name="mobile_botones" min="11" max="28" value="14">
+</label>
+
+<label>Menú principal (px)
+<input type="number" name="mobile_menu" min="11" max="28" value="16">
+</label>
+
+<label>Categorías (px)
+<input type="number" name="mobile_categorias" min="11" max="28" value="15">
+</label>
+
+<label>Pie de página (px)
+<input type="number" name="mobile_footer" min="11" max="28" value="15">
+</label>
+
+</div>
+
+<h4>Tipo y estilo de letra</h4>
+
+<div class="form">
+
+<label>Familia tipográfica
+<select name="mobile_font">
+<option value="DM Sans">DM Sans - Moderna</option>
+<option value="Playfair Display">Playfair Display - Elegante</option>
+<option value="Montserrat">Montserrat - Comercial</option>
+<option value="Lato">Lato - Limpia</option>
+</select>
+</label>
+
+<label>Grosor de letra
+<select name="mobile_weight">
+<option value="400">Normal</option>
+<option value="500">Medio</option>
+<option value="600">Seminegrita</option>
+<option value="700">Negrita</option>
+</select>
+</label>
+
+<label>Espaciado entre letras
+<select name="mobile_spacing">
+<option value="0">Normal</option>
+<option value="0.5">Ligero</option>
+<option value="1">Medio</option>
+<option value="1.5">Amplio</option>
+<option value="2">Muy amplio</option>
+</select>
+</label>
+
+<label>Altura de línea
+<select name="mobile_lineheight">
+<option value="1.4">Compacta</option>
+<option value="1.6">Normal</option>
+<option value="1.8">Amplia</option>
+<option value="2">Muy amplia</option>
+</select>
+</label>
+
+</div>
+</div>
+
+<p class="typography-note">
+Los nuevos controles se conectarán al sistema de guardado en el siguiente paso. No cambies los valores todavía.
+</p>
+
+<button class="btn btn-red" type="submit">
+Guardar diseño y tipografía
+</button>
+
+<p id="typographyMsg"></p>
+
+</form>
 </section>
 
 <section class="box">
 <h2>Agregar o editar producto</h2>
+
 <form id="productForm" class="form">
+
 <input name="id" type="hidden">
 <input name="name" placeholder="Nombre del producto" required>
 <input name="category" placeholder="Categoría" required>
@@ -202,10 +326,13 @@ body{background:#eee8df}
 </div>
 
 <textarea name="description" placeholder="Descripción e ingredientes"></textarea>
+
 <label><input name="available" type="checkbox" checked> Disponible</label>
 <label><input name="featured" type="checkbox"> Destacar en promociones</label>
+
 <button class="btn btn-red">Guardar producto</button>
 <button class="btn" type="reset">Limpiar</button>
+
 </form>
 </section>
 
@@ -213,10 +340,14 @@ body{background:#eee8df}
 <h2>Productos actuales</h2>
 <div id="items"></div>
 </section>
+
 </div>
 
 <p><small>La administración requiere acceso autorizado.</small></p>
+
 </main>
+
 <script src="/admin.js"></script>
+
 </body>
 </html>
