@@ -381,3 +381,43 @@ button:disabled {
     height: 190px;
   }
 }
+/* MEJORA DE LEGIBILIDAD */
+body {
+  font-size: 16px;
+}
+
+.hero-copy > p:not(.eyebrow) {
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.section-head > p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.note {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.product-card p,
+.promo-card p {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .hero-copy > p:not(.eyebrow) {
+    font-size: 17px;
+  }
+
+  .section-head > p {
+    font-size: 15px;
+  }
+
+  .product-card p,
+  .promo-card p {
+    font-size: 15px;
+  }
+}
