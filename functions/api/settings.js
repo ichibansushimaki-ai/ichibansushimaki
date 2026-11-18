@@ -56,6 +56,31 @@ export async function onRequestPut({ request, env }) {
       );
     }
 
+    let typography = "{}";
+
+    if (data.typography !== undefined) {
+      try {
+        const parsed = typeof data.typography === "string"
+          ? JSON.parse(data.typography)
+          : data.typography;
+
+        if (
+          !parsed ||
+          typeof parsed !== "object" ||
+          Array.isArray(parsed)
+        ) {
+          throw new Error("Formato de tipografía inválido");
+        }
+
+        typography = JSON.stringify(parsed);
+      } catch {
+        return Response.json(
+          { error: "La configuración de tipografía no es válida" },
+          { status: 400 }
+        );
+      }
+    }
+
     const values = fields.map(field => data[field] ?? "");
 
     await env.DB.prepare(`
@@ -70,9 +95,10 @@ export async function onRequestPut({ request, env }) {
         color_primary = ?,
         color_background = ?,
         color_cream = ?,
-        color_gold = ?
+        color_gold = ?,
+        typography = ?
       WHERE id = 1
-    `).bind(...values).run();
+    `).bind(...values, typography).run();
 
     return Response.json({ ok: true });
 
