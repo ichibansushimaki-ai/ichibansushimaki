@@ -175,7 +175,10 @@ $("#settingsForm").onsubmit = async event => {
       body: JSON.stringify(data)
     });
 
-    if (!response.ok) throw new Error("No se pudo guardar la identidad.");
+    if (!response.ok) {
+  const detail = await response.text();
+  throw new Error(`Error ${response.status}: ${detail}`);
+}
 
     settings = data;
     fillSettings(data);
