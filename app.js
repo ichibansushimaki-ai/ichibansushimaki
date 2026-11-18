@@ -11,7 +11,7 @@ const sample = [
   {id:"p3",name:"Crispy Rice",category:"Street Food",description:"Bocados de arroz crocante con topping especial.",price:5990,image:"",available:true,featured:true},
   {id:"p4",name:"Gohan Chicken",category:"Gohan",description:"Bowl de arroz con pollo y acompañamientos.",price:6490,image:"",available:true,featured:false},
   {id:"p5",name:"Loaded Fries",category:"Street Food",description:"Papas con topping y salsas de la casa.",price:5490,image:"",available:true,featured:true},
-  {id:"p6",name:"Ebi Crunch",category:"Rolls clásicos",description:"Roll de camarón con textura crocante.",price:6490,image:"",available:true,featured:false}
+  {id:"p6",name:"Ebi Crunch",category:"Rolls clásicos",description:"Roll de camarón con textura crocante.",price:6490,image:"",available:false,featured:false}
 ];
 
 const defaultSettings = {
@@ -28,21 +28,125 @@ const defaultSettings = {
   color_gold: "#c9a45c"
 };
 
+const defaultTypography = {
+  desktop: {
+    portada: 21,
+    seccion: 18,
+    producto: 25,
+    descripcion: 17,
+    precio: 22,
+    botones: 15,
+    menu: 16,
+    categorias: 15,
+    footer: 15
+  },
+  mobile: {
+    portada: 19,
+    seccion: 17,
+    producto: 23,
+    descripcion: 17,
+    precio: 21,
+    botones: 14,
+    menu: 16,
+    categorias: 15,
+    footer: 15
+  }
+};
+
+function parseTypography(value) {
+  let saved = {};
+
+  try {
+    saved = typeof value === "string"
+      ? JSON.parse(value || "{}")
+      : (value || {});
+  } catch {
+    saved = {};
+  }
+
+  const result = {
+    desktop: { ...defaultTypography.desktop },
+    mobile: { ...defaultTypography.mobile }
+  };
+
+  ["desktop", "mobile"].forEach(device => {
+    Object.keys(defaultTypography[device]).forEach(key => {
+      const value = Number(saved[device]?.[key]);
+      const fallback = defaultTypography[device][key];
+
+      if (Number.isFinite(value)) {
+        result[device][key] = Math.max(
+          10,
+          Math.min(40, value)
+        );
+      } else {
+        result[device][key] = fallback;
+      }
+    });
+  });
+
+  return result;
+}
+
+function applyTypography(value) {
+  const typography = parseTypography(value);
+
+  const cssVariables = {
+    portada: "--texto-portada",
+    seccion: "--texto-descripcion-seccion",
+    producto: "--texto-producto",
+    descripcion: "--texto-descripcion-producto",
+    precio: "--texto-precio",
+    botones: "--texto-botones",
+    menu: "--texto-menu",
+    categorias: "--texto-categorias",
+    footer: "--texto-footer"
+  };
+
+  function createRules(device) {
+    return Object.entries(cssVariables)
+      .map(([key, variable]) => {
+        return `${variable}:${typography[device][key]}px;`;
+      })
+      .join("");
+  }
+
+  let style = document.querySelector("#ichibanDynamicTypography");
+
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "ichibanDynamicTypography";
+    document.head.appendChild(style);
+  }
+
+  style.textContent = `
+    :root {
+      ${createRules("desktop")}
+    }
+
+    @media (max-width: 760px) {
+      :root {
+        ${createRules("mobile")}
+      }
+    }
+  `;
+}
+
 function updateBrand(settings) {
   document.querySelectorAll(".brand").forEach(brand => {
     const mark = brand.querySelector(".mark");
     const name = settings.store_name || defaultSettings.store_name;
 
-    if (settings.logo) {
+    if (settings.logo && mark) {
       const img = document.createElement("img");
       img.src = settings.logo;
       img.alt = name;
       img.style.cssText = "width:48px;height:48px;object-fit:contain";
-
-      if (mark) mark.replaceWith(img);
+      mark.replaceWith(img);
     }
 
     const text = brand.querySelector("span:not(.mark)");
+
     if (text) {
       text.textContent = name;
 
@@ -56,26 +160,38 @@ function updateBrand(settings) {
 function applySettings(settings) {
   const root = document.documentElement;
 
-  root.style.setProperty("--red", settings.color_primary);
-  root.style.setProperty("--primary", settings.color_primary);
-  root.style.setProperty("--dark", settings.color_background);
-  root.style.setProperty("--cream", settings.color_cream);
-  root.style.setProperty("--gold", settings.color_gold);
+  root.style.setProperty("--red", settings.color_primary || defaultSettings.color_primary);
+  root.style.setProperty("--primary", settings.color_primary || defaultSettings.color_primary);
+  root.style.setProperty("--dark", settings.color_background || defaultSettings.color_background);
+  root.style.setProperty("--cream", settings.color_cream || defaultSettings.color_cream);
+  root.style.setProperty("--gold", settings.color_gold || defaultSettings.color_gold);
+
+  // Aplicar tamaños de texto guardados.
+  applyTypography(settings.typography);
 
   updateBrand(settings);
 
   document.title = settings.store_name || defaultSettings.store_name;
 
   const descriptionMeta = document.querySelector('meta[name="description"]');
+
   if (descriptionMeta) {
     descriptionMeta.content = settings.description || "";
   }
 
   const slogan = document.querySelector(".hero-copy .eyebrow");
-  if (slogan) slogan.textContent = settings.slogan || "";
 
-  const description = document.querySelector(".hero-copy > p:not(.eyebrow):not(.note)");
-  if (description) description.textContent = settings.description || "";
+  if (slogan) {
+    slogan.textContent = settings.slogan || "";
+  }
+
+  const description = document.querySelector(
+    ".hero-copy > p:not(.eyebrow):not(.note)"
+  );
+
+  if (description) {
+    description.textContent = settings.description || "";
+  }
 
   const hero = document.querySelector(".hero-art");
 
@@ -86,16 +202,19 @@ function applySettings(settings) {
   }
 
   const heroLabel = document.querySelector(".hero-label");
+
   if (heroLabel) {
     heroLabel.textContent = settings.store_name || defaultSettings.store_name;
   }
 
   const footerText = document.querySelector("footer > p");
+
   if (footerText) {
     footerText.textContent = "Los Ángeles, Chile · Pedidos y consultas por WhatsApp.";
   }
 
   const phone = String(settings.whatsapp || DEFAULT_PHONE).replace(/\D/g, "");
+
   const message = encodeURIComponent(
     "Hola " + (settings.store_name || "Ichiban Sushi Maki") + ", quiero hacer un pedido."
   );
@@ -104,6 +223,7 @@ function applySettings(settings) {
 
   ["#whatsTop", "#whatsBottom"].forEach(selector => {
     const button = document.querySelector(selector);
+
     if (button) {
       button.href = url;
       button.target = "_blank";
@@ -116,23 +236,37 @@ async function loadSettings() {
   try {
     const response = await fetch("/api/settings");
 
-    if (!response.ok) throw new Error("No se pudo cargar la configuración.");
+    if (!response.ok) {
+      throw new Error("No se pudo cargar la configuración.");
+    }
 
     const settings = await response.json();
+
     applySettings({ ...defaultSettings, ...settings });
+
   } catch (error) {
     applySettings(defaultSettings);
     console.error("Configuración de tienda:", error);
   }
 }
 
+function isEnabled(value) {
+  return value !== false &&
+    value !== 0 &&
+    value !== "0" &&
+    value !== "false";
+}
+
 async function loadProducts() {
   try {
     const response = await fetch("/api/products");
 
-    if (!response.ok) throw new Error("No se pudieron cargar los productos.");
+    if (!response.ok) {
+      throw new Error("No se pudieron cargar los productos.");
+    }
 
     products = await response.json();
+
   } catch (error) {
     products = JSON.parse(
       localStorage.getItem("ichiban-demo-products") || "null"
@@ -171,12 +305,15 @@ function card(product) {
 }
 
 function render() {
-  const visible = products.filter(product => product.available !== false);
+  const visible = products.filter(product => isEnabled(product.available));
 
   const promoGrid = document.querySelector("#promoGrid");
+
+  if (!promoGrid) return;
+
   promoGrid.replaceChildren();
 
-  const featured = visible.filter(product => product.featured).slice(0, 3);
+  const featured = visible.filter(product => isEnabled(product.featured)).slice(0, 3);
 
   if (featured.length) {
     featured.forEach(product => promoGrid.appendChild(card(product)));
@@ -190,36 +327,45 @@ function render() {
   ];
 
   const categoryContainer = document.querySelector("#categories");
-  categoryContainer.replaceChildren();
 
-  categories.forEach(item => {
-    const button = document.createElement("button");
-    button.className = "chip" + (category === item ? " active" : "");
-    button.textContent = item;
+  if (categoryContainer) {
+    categoryContainer.replaceChildren();
 
-    button.onclick = () => {
-      category = item;
-      render();
-    };
+    categories.forEach(item => {
+      const button = document.createElement("button");
+      button.className = "chip" + (category === item ? " active" : "");
+      button.textContent = item;
 
-    categoryContainer.appendChild(button);
-  });
+      button.onclick = () => {
+        category = item;
+        render();
+      };
+
+      categoryContainer.appendChild(button);
+    });
+  }
 
   const productGrid = document.querySelector("#productGrid");
-  productGrid.replaceChildren();
 
-  const filtered = visible.filter(product =>
-    category === "Todos" || product.category === category
-  );
+  if (productGrid) {
+    productGrid.replaceChildren();
 
-  if (filtered.length) {
-    filtered.forEach(product => productGrid.appendChild(card(product)));
-  } else {
-    productGrid.textContent = "No hay productos disponibles en esta categoría.";
+    const filtered = visible.filter(product =>
+      category === "Todos" || product.category === category
+    );
+
+    if (filtered.length) {
+      filtered.forEach(product => productGrid.appendChild(card(product)));
+    } else {
+      productGrid.textContent = "No hay productos disponibles en esta categoría.";
+    }
   }
 
   const year = document.querySelector("#year");
-  if (year) year.textContent = new Date().getFullYear();
+
+  if (year) {
+    year.textContent = new Date().getFullYear();
+  }
 }
 
 async function initialize() {
