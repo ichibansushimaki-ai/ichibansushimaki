@@ -150,6 +150,7 @@ $("#settingsForm").onsubmit = async event => {
 
   try {
     const data = Object.fromEntries(new FormData(form));
+    data.whatsapp = form.elements.whatsapp.value.trim();
 
     data.logo = settings.logo || "";
     data.mobile_logo = settings.mobile_logo || "";
