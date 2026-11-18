@@ -7,7 +7,7 @@ export async function onRequestPost({ request, env }) {
     return new Response("No autorizado", { status: 401 });
   }
 
-  if (!env.IMAGES) {
+  if (env.IMAGENES) {
     return new Response("Almacenamiento R2 no configurado", { status: 500 });
   }
 
