@@ -43,13 +43,24 @@ async function uploadImage(file) {
     body: form
   });
 
-  const data = await response.json().catch(() => ({}));
+  const detail = await response.text();
 
-  if (!response.ok) {
-    throw new Error(data.error || data.message || "No se pudo subir la imagen.");
+  let data = {};
+  try {
+    data = JSON.parse(detail);
+  } catch {
+    data = {};
   }
 
-  if (!data.url) throw new Error("El servidor no devolvió la dirección de la imagen.");
+  if (!response.ok) {
+    throw new Error(
+      `Error ${response.status}: ${data.error || data.message || detail || "Error al subir imagen"}`
+    );
+  }
+
+  if (!data.url) {
+    throw new Error("El servidor no devolvió la dirección de la imagen.");
+  }
 
   return data.url;
 }
