@@ -382,88 +382,89 @@ button:disabled {
   }
 }
 
-/* TIPOGRAFÍA MEJORADA - ICHIBAN */
+/* =====================================
+   PANEL DE CONTROL DE TIPOGRAFÍA ICHIBAN
+   MODIFICA LOS VALORES A TU GUSTO
+===================================== */
+
+:root {
+  --texto-general: 18px;
+  --texto-portada: 21px;
+  --texto-descripcion-seccion: 18px;
+  --texto-producto: 25px;
+  --texto-descripcion-producto: 17px;
+  --texto-precio: 22px;
+  --texto-botones: 15px;
+  --texto-menu: 16px;
+  --texto-categorias: 15px;
+  --texto-footer: 15px;
+}
+
+/* APLICACIÓN DE TAMAÑOS */
 
 body {
-  font-size: 18px;
+  font-size: var(--texto-general);
 }
 
 .hero-copy > p:not(.eyebrow):not(.note) {
-  font-size: 21px;
+  font-size: var(--texto-portada);
+}
+
+.section-head > p {
+  font-size: var(--texto-descripcion-seccion);
+}
+
+.product h3 {
+  font-size: var(--texto-producto);
+}
+
+.product p {
+  font-size: var(--texto-descripcion-producto);
   line-height: 1.8;
+}
+
+.price {
+  font-size: var(--texto-precio);
+}
+
+.btn {
+  font-size: var(--texto-botones);
+}
+
+.top nav a {
+  font-size: var(--texto-menu);
+}
+
+.chip {
+  font-size: var(--texto-categorias);
+}
+
+footer,
+footer p {
+  font-size: var(--texto-footer);
 }
 
 .note {
   font-size: 15px;
 }
 
-.section-head > p {
-  font-size: 18px;
-  line-height: 1.7;
-}
-
-.product h3 {
-  font-size: 25px;
-}
-
-.product p {
-  font-size: 17px;
-  line-height: 1.8;
-}
-
-.price {
-  font-size: 22px;
-}
-
-.btn {
-  font-size: 15px;
-}
-
-.top nav a {
-  font-size: 16px;
-}
-
-.chip {
-  font-size: 15px;
-}
-
-footer {
-  font-size: 14px;
-}
-
-footer p {
-  font-size: 15px;
-}
+/* AJUSTES PARA CELULARES */
 
 @media (max-width: 760px) {
-  .hero-copy > p:not(.eyebrow):not(.note) {
-    font-size: 19px;
-  }
-
-  .section-head > p {
-    font-size: 17px;
-  }
-
-  .product h3 {
-    font-size: 23px;
-  }
-
-  .product p {
-    font-size: 17px;
-  }
-
-  .price {
-    font-size: 21px;
-  }
-
-  .btn {
-    font-size: 14px;
-  }
-
-  footer,
-  footer p {
-    font-size: 15px;
+  :root {
+    --texto-general: 17px;
+    --texto-portada: 19px;
+    --texto-descripcion-seccion: 17px;
+    --texto-producto: 23px;
+    --texto-descripcion-producto: 17px;
+    --texto-precio: 21px;
+    --texto-botones: 14px;
+    --texto-menu: 16px;
+    --texto-categorias: 15px;
+    --texto-footer: 15px;
   }
 }
+
+
 
 
