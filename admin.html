@@ -1,1 +1,128 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administración · Ichiban</title><link rel="stylesheet" href="/styles.css"><style>body{background:#eee8df}.admin{max-width:1050px;margin:45px auto;padding:25px}.box{background:white;padding:24px;margin:18px 0;border:1px solid #ddd}.form{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.form input,.form textarea,.form select{width:100%;padding:12px;border:1px solid #ccc;font:inherit}.form textarea{grid-column:1/-1}.rowitem{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #ddd;gap:12px}@media(max-width:650px){.form{grid-template-columns:1fr}.admin{padding:12px}}</style></head><body><header class="top"><a class="brand" href="/"><span class="mark">一</span><span>ICHIBAN <small>ADMINISTRACIÓN</small></span></a><a class="btn btn-outline" href="/">Ver página</a></header><main class="admin"><p class="eyebrow">PANEL DE CONTROL</p><h1>Administrar carta</h1><section class="box" id="login"><h2>Acceso privado</h2><p>Ingresa la contraseña configurada para el administrador.</p><input id="password" type="password" placeholder="Contraseña"><button class="btn btn-red" id="loginBtn">Ingresar</button><p id="loginMsg"></p></section><section class="box" id="editor" hidden><h2>Agregar o editar producto</h2><form id="productForm" class="form"><input name="id" type="hidden"><input name="name" placeholder="Nombre del producto" required><input name="category" placeholder="Categoría" required><input name="price" type="number" min="0" placeholder="Precio en pesos" required><input name="image" placeholder="URL de fotografía (https://...)"><textarea name="description" placeholder="Descripción e ingredientes"></textarea><label><input name="available" type="checkbox" checked> Disponible</label><label><input name="featured" type="checkbox"> Destacar en promociones</label><button class="btn btn-red">Guardar producto</button><button class="btn" type="reset">Limpiar</button></form></section><section class="box" id="list" hidden><h2>Productos actuales</h2><div id="items"></div></section><p><small>La administración requiere configurar la base de datos y la contraseña en Cloudflare. Consulta README.md antes de publicar.</small></p></main><script src="/admin.js"></script></body></html>
+
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administración · Ichiban</title>
+<link rel="stylesheet" href="/styles.css">
+<style>
+body{background:#eee8df}
+.admin{max-width:1050px;margin:45px auto;padding:25px}
+.box{background:white;padding:24px;margin:18px 0;border:1px solid #ddd}
+.form{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.form input,.form textarea,.form select{width:100%;padding:12px;border:1px solid #ccc;font:inherit}
+.form textarea{grid-column:1/-1}
+.rowitem{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #ddd;gap:12px}
+.photo-upload{grid-column:1/-1;padding:15px;background:#f8f5f0;border:1px dashed #aaa}
+.photo-upload input{margin-top:10px}
+.photo-upload img{max-width:180px;max-height:150px;display:block;margin-top:10px}
+#uploadMsg{font-size:14px;margin-top:8px}
+@media(max-width:650px){.form{grid-template-columns:1fr}.admin{padding:12px}}
+</style>
+</head>
+<body>
+<header class="top">
+<a class="brand" href="/">
+<span class="mark">一</span>
+<span>ICHIBAN <small>ADMINISTRACIÓN</small></span>
+</a>
+<a class="btn btn-outline" href="/">Ver página</a>
+</header>
+
+<main class="admin">
+<p class="eyebrow">PANEL DE CONTROL</p>
+<h1>Administrar carta y tienda</h1>
+
+<section class="box" id="login">
+<h2>Acceso privado</h2>
+<p>Ingresa la contraseña configurada para el administrador.</p>
+<input id="password" type="password" placeholder="Contraseña">
+<button class="btn btn-red" id="loginBtn">Ingresar</button>
+<p id="loginMsg"></p>
+</section>
+
+<div id="editor" hidden>
+
+<section class="box">
+<h2>Identidad de la tienda</h2>
+<p>Personaliza la imagen y los datos de Ichiban Sushi Maki.</p>
+
+<form id="settingsForm" class="form">
+<input name="store_name" placeholder="Nombre del negocio" required>
+<input name="slogan" placeholder="Eslogan">
+<textarea name="description" placeholder="Descripción de la tienda"></textarea>
+<input name="whatsapp" placeholder="WhatsApp (569XXXXXXXX)">
+
+<div class="photo-upload">
+<strong>Logo principal</strong>
+<input type="file" id="logoFile" accept="image/jpeg,image/png,image/webp">
+<img id="logoPreview" alt="Vista previa del logo">
+</div>
+
+<div class="photo-upload">
+<strong>Logo para móviles (opcional)</strong>
+<input type="file" id="mobileLogoFile" accept="image/jpeg,image/png,image/webp">
+<img id="mobileLogoPreview" alt="Vista previa del logo móvil">
+</div>
+
+<div class="photo-upload">
+<strong>Imagen de portada</strong>
+<input type="file" id="heroFile" accept="image/jpeg,image/png,image/webp">
+<img id="heroPreview" alt="Vista previa de portada">
+</div>
+
+<label>Color principal
+<input type="color" name="color_primary">
+</label>
+<label>Fondo
+<input type="color" name="color_background">
+</label>
+<label>Color crema
+<input type="color" name="color_cream">
+</label>
+<label>Dorado
+<input type="color" name="color_gold">
+</label>
+
+<button class="btn btn-red" type="submit">Guardar identidad de la tienda</button>
+<p id="settingsMsg"></p>
+</form>
+</section>
+
+<section class="box">
+<h2>Agregar o editar producto</h2>
+<form id="productForm" class="form">
+<input name="id" type="hidden">
+<input name="name" placeholder="Nombre del producto" required>
+<input name="category" placeholder="Categoría" required>
+<input name="price" type="number" min="0" placeholder="Precio en pesos" required>
+<input name="image" id="imageUrl" placeholder="URL de fotografía">
+
+<div class="photo-upload">
+<strong>Fotografía desde tu computador</strong>
+<p>JPG, PNG o WebP. Máximo 5 MB.</p>
+<input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp">
+<img id="preview" alt="Vista previa del producto">
+<p id="uploadMsg"></p>
+</div>
+
+<textarea name="description" placeholder="Descripción e ingredientes"></textarea>
+<label><input name="available" type="checkbox" checked> Disponible</label>
+<label><input name="featured" type="checkbox"> Destacar en promociones</label>
+<button class="btn btn-red">Guardar producto</button>
+<button class="btn" type="reset">Limpiar</button>
+</form>
+</section>
+
+<section class="box" id="list">
+<h2>Productos actuales</h2>
+<div id="items"></div>
+</section>
+</div>
+
+<p><small>La administración requiere acceso autorizado.</small></p>
+</main>
+<script src="/admin.js"></script>
+</body>
+</html>
