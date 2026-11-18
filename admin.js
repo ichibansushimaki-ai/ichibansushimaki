@@ -28,7 +28,11 @@ const defaultTypography = {
     botones: 15,
     menu: 16,
     categorias: 15,
-    footer: 15
+    footer: 15,
+    font: "DM Sans",
+    weight: "400",
+    spacing: "0",
+    lineheight: "1.6"
   },
   mobile: {
     portada: 19,
@@ -39,7 +43,11 @@ const defaultTypography = {
     botones: 14,
     menu: 16,
     categorias: 15,
-    footer: 15
+    footer: 15,
+    font: "DM Sans",
+    weight: "400",
+    spacing: "0",
+    lineheight: "1.6"
   }
 };
 
@@ -73,6 +81,7 @@ async function uploadImage(file) {
   const detail = await response.text();
 
   let data = {};
+
   try {
     data = JSON.parse(detail);
   } catch {
@@ -95,6 +104,8 @@ async function uploadImage(file) {
 function previewFile(inputId, previewId) {
   const input = $("#" + inputId);
   const preview = $("#" + previewId);
+
+  if (!input || !preview) return;
 
   input.addEventListener("change", () => {
     const file = input.files[0];
@@ -123,16 +134,20 @@ function parseTypography(value) {
     saved = {};
   }
 
-  return {
-    desktop: {
-      ...defaultTypography.desktop,
-      ...(saved.desktop || {})
-    },
-    mobile: {
-      ...defaultTypography.mobile,
-      ...(saved.mobile || {})
-    }
+  const result = {
+    desktop: { ...defaultTypography.desktop },
+    mobile: { ...defaultTypography.mobile }
   };
+
+  ["desktop", "mobile"].forEach(device => {
+    Object.keys(result[device]).forEach(key => {
+      if (saved[device]?.[key] !== undefined) {
+        result[device][key] = saved[device][key];
+      }
+    });
+  });
+
+  return result;
 }
 
 function fillTypography(value) {
@@ -142,11 +157,11 @@ function fillTypography(value) {
   if (!form) return;
 
   ["desktop", "mobile"].forEach(device => {
-    Object.entries(currentTypography[device]).forEach(([key, number]) => {
+    Object.entries(currentTypography[device]).forEach(([key, value]) => {
       const field = form.elements[`${device}_${key}`];
 
       if (field) {
-        field.value = number;
+        field.value = value;
       }
     });
   });
@@ -163,6 +178,16 @@ function readTypography() {
   ["desktop", "mobile"].forEach(device => {
     Object.keys(defaultTypography[device]).forEach(key => {
       const field = form.elements[`${device}_${key}`];
+
+      if (!field) {
+        result[device][key] = defaultTypography[device][key];
+        return;
+      }
+
+      if (["font", "weight", "spacing", "lineheight"].includes(key)) {
+        result[device][key] = field.value;
+        return;
+      }
 
       const minimum = Number(field.min);
       const maximum = Number(field.max);
@@ -200,6 +225,8 @@ function fillSettings(data) {
     ["hero_image", "heroPreview"]
   ].forEach(([key, previewId]) => {
     const preview = $("#" + previewId);
+
+    if (!preview) return;
 
     if (settings[key]) {
       preview.src = settings[key];
@@ -268,7 +295,6 @@ $("#settingsForm").onsubmit = async event => {
     data.mobile_logo = settings.mobile_logo || "";
     data.hero_image = settings.hero_image || "";
 
-    // Conservar la tipografía al guardar la identidad.
     data.typography = JSON.stringify(currentTypography);
 
     const images = [
@@ -296,14 +322,19 @@ $("#settingsForm").onsubmit = async event => {
       throw new Error(`Error ${response.status}: ${detail}`);
     }
 
-    settings = data;
-    fillSettings(data);
+    settings = {
+      ...settings,
+      ...data
+    };
+
+    fillSettings(settings);
 
     ["logoFile", "mobileLogoFile", "heroFile"].forEach(id => {
       $("#" + id).value = "";
     });
 
     message.textContent = "Identidad guardada correctamente.";
+
   } catch (error) {
     message.textContent = error.message;
   } finally {
@@ -311,7 +342,8 @@ $("#settingsForm").onsubmit = async event => {
   }
 };
 
-// Guardar tamaños de tipografía.
+// GUARDAR TAMAÑOS Y ESTILOS DE TIPOGRAFÍA
+
 $("#typographyForm").onsubmit = async event => {
   event.preventDefault();
 
@@ -320,7 +352,7 @@ $("#typographyForm").onsubmit = async event => {
   const message = $("#typographyMsg");
 
   button.disabled = true;
-  message.textContent = "Guardando tamaños de texto...";
+  message.textContent = "Guardando diseño y tipografía...";
 
   try {
     currentTypography = readTypography();
@@ -342,7 +374,8 @@ $("#typographyForm").onsubmit = async event => {
 
     settings.typography = data.typography;
 
-    message.textContent = "Tamaños de texto guardados correctamente.";
+    message.textContent = "Diseño y tipografía guardados correctamente.";
+
   } catch (error) {
     message.textContent = error.message;
   } finally {
@@ -459,7 +492,9 @@ $("#productForm").onsubmit = async event => {
       body: JSON.stringify(data)
     });
 
-    if (!response.ok) throw new Error("No se pudo guardar el producto.");
+    if (!response.ok) {
+      throw new Error("No se pudo guardar el producto.");
+    }
 
     form.reset();
     form.elements.id.value = "";
@@ -472,6 +507,7 @@ $("#productForm").onsubmit = async event => {
     await load();
 
     alert("Producto guardado correctamente.");
+
   } catch (error) {
     alert(error.message);
   } finally {
