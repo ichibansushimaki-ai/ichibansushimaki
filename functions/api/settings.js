@@ -15,23 +15,51 @@ export async function onRequestPut({ request, env }) {
     return new Response("No autorizado", { status: 401 });
   }
 
-  const data = await request.json();
+  let data;
+
+  try {
+    data = await request.json();
+  } catch {
+    return new Response("Datos inválidos", { status: 400 });
+  }
 
   const fields = [
-    "store_name", "slogan", "description",
-    "logo", "mobile_logo", "hero_image",
-    "whatsapp", "color_primary", "color_background",
-    "color_cream", "color_gold"
+    "store_name",
+    "slogan",
+    "description",
+    "logo",
+    "mobile_logo",
+    "hero_image",
+    "whatsapp",
+    "color_primary",
+    "color_background",
+    "color_cream",
+    "color_gold"
   ];
+
+  const required = ["store_name", "whatsapp"];
+
+  for (const field of required) {
+    if (!String(data[field] || "").trim()) {
+      return new Response(`Falta completar ${field}`, { status: 400 });
+    }
+  }
 
   const values = fields.map(field => data[field] ?? "");
 
   await env.DB.prepare(`
     UPDATE store_settings SET
-      store_name = ?, slogan = ?, description = ?,
-      logo = ?, mobile_logo = ?, hero_image = ?,
-      whatsapp = ?, color_primary = ?, color_background = ?,
-      color_cream = ?, color_gold = ?
+      store_name = ?,
+      slogan = ?,
+      description = ?,
+      logo = ?,
+      mobile_logo = ?,
+      hero_image = ?,
+      whatsapp = ?,
+      color_primary = ?,
+      color_background = ?,
+      color_cream = ?,
+      color_gold = ?
     WHERE id = 1
   `).bind(...values).run();
 
