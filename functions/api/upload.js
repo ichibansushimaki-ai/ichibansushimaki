@@ -7,7 +7,7 @@ export async function onRequestPost({ request, env }) {
     return new Response("No autorizado", { status: 401 });
   }
 
-  if (env.IMAGENES) {
+  if (!env.IMAGENES) {
     return new Response("Almacenamiento R2 no configurado", { status: 500 });
   }
 
@@ -36,9 +36,9 @@ export async function onRequestPost({ request, env }) {
 
   const key = `${crypto.randomUUID()}.${ext}`;
 
-  await env.IMAGES.put(key, file.stream(), {
-    httpMetadata: { contentType: file.type }
-  });
+  await env.IMAGENES.put(key, file.stream(), {
+  httpMetadata: { contentType: file.type }
+});
 
   return Response.json({
     ok: true,
