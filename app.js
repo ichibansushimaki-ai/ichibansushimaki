@@ -38,7 +38,11 @@ const defaultTypography = {
     botones: 15,
     menu: 16,
     categorias: 15,
-    footer: 15
+    footer: 15,
+    font: "DM Sans",
+    weight: "400",
+    spacing: "0",
+    lineheight: "1.6"
   },
   mobile: {
     portada: 19,
@@ -49,9 +53,24 @@ const defaultTypography = {
     botones: 14,
     menu: 16,
     categorias: 15,
-    footer: 15
+    footer: 15,
+    font: "DM Sans",
+    weight: "400",
+    spacing: "0",
+    lineheight: "1.6"
   }
 };
+
+const allowedFonts = [
+  "DM Sans",
+  "Playfair Display",
+  "Montserrat",
+  "Lato"
+];
+
+const allowedWeights = ["400", "500", "600", "700"];
+const allowedSpacing = ["0", "0.5", "1", "1.5", "2"];
+const allowedLineHeights = ["1.4", "1.6", "1.8", "2"];
 
 function parseTypography(value) {
   let saved = {};
@@ -70,17 +89,44 @@ function parseTypography(value) {
   };
 
   ["desktop", "mobile"].forEach(device => {
-    Object.keys(defaultTypography[device]).forEach(key => {
-      const value = Number(saved[device]?.[key]);
-      const fallback = defaultTypography[device][key];
+    const savedDevice = saved[device] || {};
 
-      if (Number.isFinite(value)) {
-        result[device][key] = Math.max(
-          10,
-          Math.min(40, value)
-        );
-      } else {
-        result[device][key] = fallback;
+    Object.keys(defaultTypography[device]).forEach(key => {
+      const fallback = defaultTypography[device][key];
+      const current = savedDevice[key];
+
+      if ([
+        "portada",
+        "seccion",
+        "producto",
+        "descripcion",
+        "precio",
+        "botones",
+        "menu",
+        "categorias",
+        "footer"
+      ].includes(key)) {
+        const number = Number(current);
+
+        result[device][key] = Number.isFinite(number)
+          ? Math.max(10, Math.min(40, number))
+          : fallback;
+      } else if (key === "font") {
+        result[device][key] = allowedFonts.includes(current)
+          ? current
+          : fallback;
+      } else if (key === "weight") {
+        result[device][key] = allowedWeights.includes(String(current))
+          ? String(current)
+          : fallback;
+      } else if (key === "spacing") {
+        result[device][key] = allowedSpacing.includes(String(current))
+          ? String(current)
+          : fallback;
+      } else if (key === "lineheight") {
+        result[device][key] = allowedLineHeights.includes(String(current))
+          ? String(current)
+          : fallback;
       }
     });
   });
@@ -104,11 +150,34 @@ function applyTypography(value) {
   };
 
   function createRules(device) {
-    return Object.entries(cssVariables)
+    const settings = typography[device];
+
+    const font = settings.font === "Playfair Display"
+      ? "'Playfair Display', serif"
+      : `'${settings.font}', sans-serif`;
+
+    let rules = Object.entries(cssVariables)
       .map(([key, variable]) => {
-        return `${variable}:${typography[device][key]}px;`;
+        return `${variable}:${settings[key]}px;`;
       })
       .join("");
+
+    rules += `
+      --font-general:${font};
+      --font-display:${font};
+      --peso-general:${settings.weight};
+      --peso-menu:${settings.weight};
+      --peso-botones:${settings.weight};
+      --peso-producto:${settings.weight};
+      --peso-precio:${settings.weight};
+      --peso-titulos:${settings.weight};
+      --espaciado-general:${settings.spacing}px;
+      --espaciado-titulos:${settings.spacing}px;
+      --altura-linea-general:${settings.lineheight};
+      --altura-linea-descripcion:${settings.lineheight};
+    `;
+
+    return rules;
   }
 
   let style = document.querySelector("#ichibanDynamicTypography");
@@ -166,7 +235,6 @@ function applySettings(settings) {
   root.style.setProperty("--cream", settings.color_cream || defaultSettings.color_cream);
   root.style.setProperty("--gold", settings.color_gold || defaultSettings.color_gold);
 
-  // Aplicar tamaños de texto guardados.
   applyTypography(settings.typography);
 
   updateBrand(settings);
