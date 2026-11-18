@@ -4,30 +4,326 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Administración · Ichiban</title>
+<title>Administración · Ichiban Sushi Maki</title>
 <link rel="stylesheet" href="/styles.css">
 
 <style>
-body{background:#eee8df}
-.admin{max-width:1050px;margin:45px auto;padding:25px}
-.box{background:white;padding:24px;margin:18px 0;border:1px solid #ddd}
-.form{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.form input,.form textarea,.form select{width:100%;padding:12px;border:1px solid #ccc;font:inherit}
-.form textarea{grid-column:1/-1}
-.rowitem{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #ddd;gap:12px}
-.photo-upload{grid-column:1/-1;padding:15px;background:#f8f5f0;border:1px dashed #aaa}
-.photo-upload input{margin-top:10px}
-.photo-upload img{max-width:180px;max-height:150px;display:block;margin-top:10px}
-#uploadMsg{font-size:14px;margin-top:8px}
-.typography-group{padding:16px;margin:15px 0;background:#f8f5f0;border:1px solid #e5ddd2}
-.typography-group h3{margin-top:0}
-.typography-group h4{margin:20px 0 10px}
-.typography-group label{display:block;font-size:14px}
-.typography-group input,.typography-group select{margin-top:6px}
-.typography-note{font-size:13px;color:#777}
+*{box-sizing:border-box}
+
+body{
+  background:#eee8df;
+  color:#292521;
+}
+
+.admin{
+  max-width:1100px;
+  margin:35px auto;
+  padding:25px;
+}
+
+.box{
+  background:#fff;
+  padding:25px;
+  margin:20px 0;
+  border:1px solid #e4ddd3;
+  border-radius:12px;
+  box-shadow:0 4px 18px rgba(0,0,0,.035);
+}
+
+.box h2{
+  margin-top:0;
+  color:#292521;
+}
+
+.form{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+
+.form input:not([type="checkbox"]),
+.form textarea,
+.form select{
+  width:100%;
+  padding:12px;
+  border:1px solid #d8d0c6;
+  border-radius:7px;
+  font:inherit;
+  background:#fff;
+}
+
+.form input:focus,
+.form textarea:focus,
+.form select:focus{
+  outline:2px solid rgba(181,31,43,.18);
+  border-color:#b51f2b;
+}
+
+.form textarea{
+  grid-column:1/-1;
+  min-height:90px;
+}
+
+.form label{
+  display:block;
+  font-size:14px;
+  font-weight:600;
+}
+
+.form label input[type="checkbox"]{
+  width:17px;
+  height:17px;
+  vertical-align:middle;
+  accent-color:#b51f2b;
+}
+
+.photo-upload{
+  grid-column:1/-1;
+  padding:18px;
+  background:#f8f5f0;
+  border:1px dashed #c9bdae;
+  border-radius:9px;
+}
+
+.photo-upload input{
+  display:block;
+  margin-top:12px;
+  max-width:100%;
+}
+
+.photo-upload img{
+  max-width:180px;
+  max-height:150px;
+  object-fit:contain;
+  display:none;
+  margin-top:12px;
+  border-radius:8px;
+}
+
+#uploadMsg{
+  font-size:14px;
+  margin-top:8px;
+}
+
+.typography-group{
+  padding:18px;
+  margin:18px 0;
+  background:#f8f5f0;
+  border:1px solid #e5ddd2;
+  border-radius:9px;
+}
+
+.typography-group h3{
+  margin-top:0;
+}
+
+.typography-group h4{
+  margin:22px 0 12px;
+}
+
+.typography-group label{
+  display:block;
+  font-size:14px;
+}
+
+.typography-group input,
+.typography-group select{
+  margin-top:6px;
+}
+
+.typography-note{
+  font-size:13px;
+  color:#777;
+  padding:12px;
+  background:#f8f5f0;
+  border-radius:7px;
+}
+
+/* CATÁLOGO DE PRODUCTOS */
+
+#list{
+  overflow:hidden;
+}
+
+#items{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+  margin-top:18px;
+}
+
+.rowitem{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:16px;
+  background:#faf8f5;
+  border:1px solid #e9e1d7;
+  border-radius:10px;
+  transition:border-color .2s,box-shadow .2s;
+}
+
+.rowitem:hover{
+  border-color:#c9a45c;
+  box-shadow:0 3px 12px rgba(0,0,0,.04);
+}
+
+.rowitem > span:first-child{
+  flex:1;
+  min-width:0;
+  line-height:1.6;
+}
+
+.rowitem b{
+  color:#292521;
+  font-size:16px;
+}
+
+.rowitem small{
+  color:#777;
+  font-size:13px;
+}
+
+.rowitem > span:last-child{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:7px;
+}
+
+.rowitem button{
+  padding:9px 14px;
+  border:1px solid #d7cfc4;
+  border-radius:6px;
+  background:white;
+  color:#292521;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.rowitem button:hover{
+  border-color:#b51f2b;
+  color:#b51f2b;
+}
+
+.rowitem button[data-del]{
+  color:#a52a2a;
+}
+
+.rowitem button[data-del]:hover{
+  background:#fff0ef;
+  border-color:#a52a2a;
+}
+
+/* PREPARACIÓN PARA FOTOGRAFÍAS Y ESTADOS */
+
+.product-admin-photo{
+  width:85px;
+  height:85px;
+  object-fit:cover;
+  border-radius:8px;
+  background:#eee8df;
+  flex-shrink:0;
+}
+
+.product-admin-info{
+  flex:1;
+  min-width:0;
+}
+
+.product-admin-info b{
+  display:block;
+  margin-bottom:4px;
+}
+
+.product-admin-price{
+  font-weight:700;
+  color:#b51f2b;
+}
+
+.product-admin-status{
+  display:inline-block;
+  margin-top:6px;
+  padding:4px 8px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.status-available{
+  background:#e5f3e8;
+  color:#26733c;
+}
+
+.status-unavailable{
+  background:#fbe8e6;
+  color:#a52a2a;
+}
+
+.status-featured{
+  background:#f6edd9;
+  color:#85651f;
+}
+
+/* BOTONES Y FORMULARIOS */
+
+button{
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:wait;
+}
+
+#loginMsg,
+#settingsMsg,
+#typographyMsg{
+  font-size:14px;
+}
+
+#password{
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:7px;
+  width:100%;
+  max-width:400px;
+  margin-bottom:12px;
+}
+
 @media(max-width:650px){
-.form{grid-template-columns:1fr}
-.admin{padding:12px}
+  .form{
+    grid-template-columns:1fr;
+  }
+
+  .admin{
+    padding:12px;
+    margin:15px auto;
+  }
+
+  .box{
+    padding:17px;
+  }
+
+  .rowitem{
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+
+  .rowitem > span:last-child{
+    width:100%;
+    justify-content:flex-start;
+  }
+
+  .rowitem button{
+    flex:1;
+  }
+
+  .product-admin-photo{
+    width:68px;
+    height:68px;
+  }
 }
 </style>
 </head>
@@ -117,7 +413,6 @@ body{background:#eee8df}
 
 <div class="typography-group">
 <h3>Computador</h3>
-
 <h4>Tamaños de texto</h4>
 
 <div class="form">
@@ -206,7 +501,6 @@ body{background:#eee8df}
 
 <div class="typography-group">
 <h3>Celular</h3>
-
 <h4>Tamaños de texto</h4>
 
 <div class="form">
@@ -294,7 +588,7 @@ body{background:#eee8df}
 </div>
 
 <p class="typography-note">
-Los nuevos controles se conectarán al sistema de guardado en el siguiente paso. No cambies los valores todavía.
+Configura los estilos de texto para computador y celular. Los cambios se guardan en la configuración de tu tienda.
 </p>
 
 <button class="btn btn-red" type="submit">
@@ -308,6 +602,7 @@ Guardar diseño y tipografía
 
 <section class="box">
 <h2>Agregar o editar producto</h2>
+<p>Administra los productos de tu carta, sus fotografías, precios y disponibilidad.</p>
 
 <form id="productForm" class="form">
 
@@ -330,14 +625,15 @@ Guardar diseño y tipografía
 <label><input name="available" type="checkbox" checked> Disponible</label>
 <label><input name="featured" type="checkbox"> Destacar en promociones</label>
 
-<button class="btn btn-red">Guardar producto</button>
+<button class="btn btn-red" type="submit">Guardar producto</button>
 <button class="btn" type="reset">Limpiar</button>
 
 </form>
 </section>
 
 <section class="box" id="list">
-<h2>Productos actuales</h2>
+<h2>Catálogo de productos</h2>
+<p>Desde aquí podrás revisar y administrar los productos de tu tienda.</p>
 <div id="items"></div>
 </section>
 
