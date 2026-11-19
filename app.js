@@ -1,17 +1,21 @@
 
 const DEFAULT_PHONE = "56900000000";
 const money = n => "$" + Number(n || 0).toLocaleString("es-CL");
+const $ = selector => document.querySelector(selector);
 
 let products = [];
 let category = "Todos";
+let settings = {};
+let cart = JSON.parse(localStorage.getItem("ichiban-cart") || "[]");
+let currentProduct = null;
 
 const sample = [
-  {id:"p1",name:"Golden Ichiban",category:"Rolls Signature",description:"Nuestra preparación especial de la casa.",price:7990,image:"",available:true,featured:true},
-  {id:"p2",name:"California Ichiban",category:"Rolls clásicos",description:"Una combinación clásica para disfrutar.",price:5990,image:"",available:true,featured:false},
-  {id:"p3",name:"Crispy Rice",category:"Street Food",description:"Bocados de arroz crocante con topping especial.",price:5990,image:"",available:true,featured:true},
-  {id:"p4",name:"Gohan Chicken",category:"Gohan",description:"Bowl de arroz con pollo y acompañamientos.",price:6490,image:"",available:true,featured:false},
-  {id:"p5",name:"Loaded Fries",category:"Street Food",description:"Papas con topping y salsas de la casa.",price:5490,image:"",available:true,featured:true},
-  {id:"p6",name:"Ebi Crunch",category:"Rolls clásicos",description:"Roll de camarón con textura crocante.",price:6490,image:"",available:false,featured:false}
+  {id:"p1",name:"Golden Ichiban",category:"Rolls Signature",description:"Nuestra preparación especial de la casa.",price:7990,image:"",available:true,featured:true,product_type:"roll"},
+  {id:"p2",name:"California Ichiban",category:"Rolls clásicos",description:"Una combinación clásica para disfrutar.",price:5990,image:"",available:true,featured:false,product_type:"roll"},
+  {id:"p3",name:"Crispy Rice",category:"Street Food",description:"Bocados de arroz crocante con topping especial.",price:5990,image:"",available:true,featured:true,product_type:"side"},
+  {id:"p4",name:"Gohan Chicken",category:"Street Food",description:"Bowl de arroz con pollo y acompañamientos.",price:6490,image:"",available:true,featured:false,product_type:"dish"},
+  {id:"p5",name:"Loaded Fries",category:"Entradas & para compartir",description:"Papas con topping y salsas de la casa.",price:5490,image:"",available:true,featured:true,product_type:"side"},
+  {id:"p6",name:"Ebi Crunch",category:"Rolls clásicos",description:"Roll de camarón con textura crocante.",price:6490,image:"",available:false,featured:false,product_type:"roll"}
 ];
 
 const defaultSettings = {
@@ -30,44 +34,22 @@ const defaultSettings = {
 
 const defaultTypography = {
   desktop: {
-    portada: 21,
-    seccion: 18,
-    producto: 25,
-    descripcion: 17,
-    precio: 22,
-    botones: 15,
-    menu: 16,
-    categorias: 15,
-    footer: 15,
-    font: "DM Sans",
-    weight: "400",
-    spacing: "0",
-    lineheight: "1.6"
+    portada: 21, seccion: 18, producto: 25,
+    descripcion: 17, precio: 22, botones: 15,
+    menu: 16, categorias: 15, footer: 15,
+    font: "DM Sans", weight: "400",
+    spacing: "0", lineheight: "1.6"
   },
   mobile: {
-    portada: 19,
-    seccion: 17,
-    producto: 23,
-    descripcion: 17,
-    precio: 21,
-    botones: 14,
-    menu: 16,
-    categorias: 15,
-    footer: 15,
-    font: "DM Sans",
-    weight: "400",
-    spacing: "0",
-    lineheight: "1.6"
+    portada: 19, seccion: 17, producto: 23,
+    descripcion: 17, precio: 21, botones: 14,
+    menu: 16, categorias: 15, footer: 15,
+    font: "DM Sans", weight: "400",
+    spacing: "0", lineheight: "1.6"
   }
 };
 
-const allowedFonts = [
-  "DM Sans",
-  "Playfair Display",
-  "Montserrat",
-  "Lato"
-];
-
+const allowedFonts = ["DM Sans", "Playfair Display", "Montserrat", "Lato"];
 const allowedWeights = ["400", "500", "600", "700"];
 const allowedSpacing = ["0", "0.5", "1", "1.5", "2"];
 const allowedLineHeights = ["1.4", "1.6", "1.8", "2"];
@@ -79,9 +61,7 @@ function parseTypography(value) {
     saved = typeof value === "string"
       ? JSON.parse(value || "{}")
       : (value || {});
-  } catch {
-    saved = {};
-  }
+  } catch {}
 
   const result = {
     desktop: { ...defaultTypography.desktop },
@@ -92,41 +72,25 @@ function parseTypography(value) {
     const savedDevice = saved[device] || {};
 
     Object.keys(defaultTypography[device]).forEach(key => {
-      const fallback = defaultTypography[device][key];
       const current = savedDevice[key];
+      const fallback = defaultTypography[device][key];
 
       if ([
-        "portada",
-        "seccion",
-        "producto",
-        "descripcion",
-        "precio",
-        "botones",
-        "menu",
-        "categorias",
-        "footer"
+        "portada", "seccion", "producto", "descripcion",
+        "precio", "botones", "menu", "categorias", "footer"
       ].includes(key)) {
         const number = Number(current);
-
         result[device][key] = Number.isFinite(number)
           ? Math.max(10, Math.min(40, number))
           : fallback;
       } else if (key === "font") {
-        result[device][key] = allowedFonts.includes(current)
-          ? current
-          : fallback;
+        result[device][key] = allowedFonts.includes(current) ? current : fallback;
       } else if (key === "weight") {
-        result[device][key] = allowedWeights.includes(String(current))
-          ? String(current)
-          : fallback;
+        result[device][key] = allowedWeights.includes(String(current)) ? String(current) : fallback;
       } else if (key === "spacing") {
-        result[device][key] = allowedSpacing.includes(String(current))
-          ? String(current)
-          : fallback;
+        result[device][key] = allowedSpacing.includes(String(current)) ? String(current) : fallback;
       } else if (key === "lineheight") {
-        result[device][key] = allowedLineHeights.includes(String(current))
-          ? String(current)
-          : fallback;
+        result[device][key] = allowedLineHeights.includes(String(current)) ? String(current) : fallback;
       }
     });
   });
@@ -151,15 +115,12 @@ function applyTypography(value) {
 
   function createRules(device) {
     const settings = typography[device];
-
     const font = settings.font === "Playfair Display"
       ? "'Playfair Display', serif"
       : `'${settings.font}', sans-serif`;
 
     let rules = Object.entries(cssVariables)
-      .map(([key, variable]) => {
-        return `${variable}:${settings[key]}px;`;
-      })
+      .map(([key, variable]) => `${variable}:${settings[key]}px;`)
       .join("");
 
     rules += `
@@ -180,7 +141,7 @@ function applyTypography(value) {
     return rules;
   }
 
-  let style = document.querySelector("#ichibanDynamicTypography");
+  let style = $("#ichibanDynamicTypography");
 
   if (!style) {
     style = document.createElement("style");
@@ -189,26 +150,21 @@ function applyTypography(value) {
   }
 
   style.textContent = `
-    :root {
-      ${createRules("desktop")}
-    }
-
-    @media (max-width: 760px) {
-      :root {
-        ${createRules("mobile")}
-      }
+    :root { ${createRules("desktop")} }
+    @media (max-width:760px) {
+      :root { ${createRules("mobile")} }
     }
   `;
 }
 
-function updateBrand(settings) {
+function updateBrand(data) {
   document.querySelectorAll(".brand").forEach(brand => {
     const mark = brand.querySelector(".mark");
-    const name = settings.store_name || defaultSettings.store_name;
+    const name = data.store_name || defaultSettings.store_name;
 
-    if (settings.logo && mark) {
+    if (data.logo && mark && mark.tagName !== "IMG") {
       const img = document.createElement("img");
-      img.src = settings.logo;
+      img.src = data.logo;
       img.alt = name;
       img.style.cssText = "width:48px;height:48px;object-fit:contain";
       mark.replaceWith(img);
@@ -218,7 +174,6 @@ function updateBrand(settings) {
 
     if (text) {
       text.textContent = name;
-
       const small = document.createElement("small");
       small.textContent = "SUSHI MAKI";
       text.appendChild(small);
@@ -226,42 +181,32 @@ function updateBrand(settings) {
   });
 }
 
-function applySettings(settings) {
+function applySettings(data) {
+  settings = { ...defaultSettings, ...data };
+
   const root = document.documentElement;
 
-  root.style.setProperty("--red", settings.color_primary || defaultSettings.color_primary);
-  root.style.setProperty("--primary", settings.color_primary || defaultSettings.color_primary);
-  root.style.setProperty("--dark", settings.color_background || defaultSettings.color_background);
-  root.style.setProperty("--cream", settings.color_cream || defaultSettings.color_cream);
-  root.style.setProperty("--gold", settings.color_gold || defaultSettings.color_gold);
+  root.style.setProperty("--red", settings.color_primary);
+  root.style.setProperty("--primary", settings.color_primary);
+  root.style.setProperty("--dark", settings.color_background);
+  root.style.setProperty("--cream", settings.color_cream);
+  root.style.setProperty("--gold", settings.color_gold);
 
   applyTypography(settings.typography);
-
   updateBrand(settings);
 
-  document.title = settings.store_name || defaultSettings.store_name;
+  document.title = settings.store_name;
 
-  const descriptionMeta = document.querySelector('meta[name="description"]');
+  const descriptionMeta = $('meta[name="description"]');
+  if (descriptionMeta) descriptionMeta.content = settings.description || "";
 
-  if (descriptionMeta) {
-    descriptionMeta.content = settings.description || "";
-  }
+  const slogan = $(".hero-copy .eyebrow");
+  if (slogan) slogan.textContent = settings.slogan || "";
 
-  const slogan = document.querySelector(".hero-copy .eyebrow");
+  const description = $(".hero-copy > p:not(.eyebrow):not(.note)");
+  if (description) description.textContent = settings.description || "";
 
-  if (slogan) {
-    slogan.textContent = settings.slogan || "";
-  }
-
-  const description = document.querySelector(
-    ".hero-copy > p:not(.eyebrow):not(.note)"
-  );
-
-  if (description) {
-    description.textContent = settings.description || "";
-  }
-
-  const hero = document.querySelector(".hero-art");
+  const hero = $(".hero-art");
 
   if (hero && settings.hero_image) {
     hero.style.backgroundImage = `url("${settings.hero_image}")`;
@@ -269,31 +214,18 @@ function applySettings(settings) {
     hero.style.backgroundPosition = "center";
   }
 
-  const heroLabel = document.querySelector(".hero-label");
-
-  if (heroLabel) {
-    heroLabel.textContent = settings.store_name || defaultSettings.store_name;
-  }
-
-  const footerText = document.querySelector("footer > p");
-
-  if (footerText) {
-    footerText.textContent = "Los Ángeles, Chile · Pedidos y consultas por WhatsApp.";
-  }
+  const heroLabel = $(".hero-label");
+  if (heroLabel) heroLabel.textContent = settings.store_name;
 
   const phone = String(settings.whatsapp || DEFAULT_PHONE).replace(/\D/g, "");
-
   const message = encodeURIComponent(
-    "Hola " + (settings.store_name || "Ichiban Sushi Maki") + ", quiero hacer un pedido."
+    `Hola ${settings.store_name}, quiero hacer un pedido.`
   );
 
-  const url = `https://wa.me/${phone}?text=${message}`;
-
   ["#whatsTop", "#whatsBottom"].forEach(selector => {
-    const button = document.querySelector(selector);
-
+    const button = $(selector);
     if (button) {
-      button.href = url;
+      button.href = `https://wa.me/${phone}?text=${message}`;
       button.target = "_blank";
       button.rel = "noopener";
     }
@@ -303,15 +235,8 @@ function applySettings(settings) {
 async function loadSettings() {
   try {
     const response = await fetch("/api/settings");
-
-    if (!response.ok) {
-      throw new Error("No se pudo cargar la configuración.");
-    }
-
-    const settings = await response.json();
-
-    applySettings({ ...defaultSettings, ...settings });
-
+    if (!response.ok) throw new Error("No se pudo cargar la configuración.");
+    applySettings(await response.json());
   } catch (error) {
     applySettings(defaultSettings);
     console.error("Configuración de tienda:", error);
@@ -319,37 +244,558 @@ async function loadSettings() {
 }
 
 function isEnabled(value) {
-  return value !== false &&
-    value !== 0 &&
-    value !== "0" &&
-    value !== "false";
+  return value !== false && value !== 0 && value !== "0" && value !== "false";
+}
+
+function parseOptions(value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) return value;
+
+  try {
+    const parsed = JSON.parse(value || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function getType(product) {
+  if (product.product_type && product.product_type !== "other") {
+    return product.product_type;
+  }
+
+  const category = String(product.category || "").toLowerCase();
+  const name = String(product.name || "").toLowerCase();
+
+  if (category.includes("promoc")) return "promotion";
+  if (name.includes("handroll")) return "handroll";
+  if (name.includes("gohan") || name.includes("bowl") ||
+      name.includes("sushi burger") || name.includes("plato")) return "dish";
+  if (category.includes("roll")) return "roll";
+  if (category.includes("bebida")) return "beverage";
+  if (category.includes("salsa")) return "sauce";
+
+  return "other";
 }
 
 async function loadProducts() {
   try {
     const response = await fetch("/api/products");
-
-    if (!response.ok) {
-      throw new Error("No se pudieron cargar los productos.");
-    }
-
+    if (!response.ok) throw new Error("No se pudieron cargar los productos.");
     products = await response.json();
-
   } catch (error) {
-    products = JSON.parse(
-      localStorage.getItem("ichiban-demo-products") || "null"
-    ) || sample;
+    products = JSON.parse(localStorage.getItem("ichiban-demo-products") || "null") || sample;
   }
 
   render();
 }
+
+// DISEÑO DEL CARRITO Y VENTANAS
+
+function addStoreStyles() {
+  if ($("#ichibanStoreStyles")) return;
+
+  const style = document.createElement("style");
+  style.id = "ichibanStoreStyles";
+
+  style.textContent = `
+    .product .inside { display:flex; flex-direction:column; gap:10px; }
+    .product-add {
+      border:0; border-radius:8px; padding:12px 16px;
+      background:var(--red,#b51f2b); color:white;
+      font-weight:700; cursor:pointer; width:100%;
+    }
+    .product-add:hover,.cart-checkout:hover { filter:brightness(1.1); }
+    .ichiban-cart-button {
+      position:fixed; right:22px; bottom:22px; z-index:900;
+      border:0; border-radius:50px; padding:15px 20px;
+      background:var(--red,#b51f2b); color:white;
+      font-weight:700; font-size:15px; cursor:pointer;
+      box-shadow:0 5px 24px #0005;
+    }
+    .ichiban-cart-count {
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:23px; height:23px; margin-left:7px;
+      border-radius:50%; background:white; color:#222;
+    }
+    .ichiban-overlay {
+      display:none; position:fixed; inset:0; z-index:1000;
+      background:#000a; padding:16px; overflow-y:auto;
+      align-items:center; justify-content:center;
+    }
+    .ichiban-overlay.open { display:flex; }
+    .ichiban-dialog {
+      width:min(100%,560px); max-height:92vh; overflow:auto;
+      background:var(--cream,#f3eee5); color:#28231f;
+      border-radius:16px; padding:23px;
+      box-shadow:0 15px 50px #0005;
+    }
+    .ichiban-dialog h2 { margin:0 35px 8px 0; }
+    .ichiban-dialog p { line-height:1.5; }
+    .ichiban-dialog label { display:block; font-weight:600; margin:13px 0 6px; }
+    .ichiban-dialog select,.ichiban-dialog input {
+      width:100%; min-height:42px; padding:9px;
+      border:1px solid #c9bfb2; border-radius:7px;
+      background:white; color:#222; font:inherit;
+    }
+    .ichiban-dialog button { cursor:pointer; }
+    .ichiban-dialog .dialog-close {
+      float:right; border:0; background:transparent;
+      font-size:26px; color:#333;
+    }
+    .ichiban-dialog .dialog-primary,.cart-checkout {
+      border:0; border-radius:8px; padding:13px 18px;
+      background:var(--red,#b51f2b); color:white;
+      font-weight:700; width:100%; margin-top:16px;
+    }
+    .dialog-secondary {
+      border:1px solid #aaa; border-radius:8px; padding:11px 16px;
+      background:transparent; color:#333; width:100%; margin-top:8px;
+    }
+    .dialog-note {
+      padding:12px; background:#e9e0d4; border-radius:8px;
+      font-size:14px; margin:12px 0;
+    }
+    .dialog-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:12px;
+    }
+    .cart-line {
+      padding:13px 0; border-bottom:1px solid #d1c7bb;
+    }
+    .cart-line-head {
+      display:flex; justify-content:space-between; gap:12px;
+      font-weight:700;
+    }
+    .cart-line small { display:block; margin-top:5px; line-height:1.5; }
+    .cart-line-actions {
+      display:flex; align-items:center; gap:9px; margin-top:9px;
+    }
+    .cart-line-actions button {
+      border:1px solid #b7aa9c; border-radius:6px;
+      padding:5px 10px; background:white; color:#222;
+    }
+    .cart-total {
+      display:flex; justify-content:space-between;
+      font-size:20px; font-weight:800; padding-top:17px;
+    }
+    .cart-empty { text-align:center; padding:28px 8px; }
+    .veg-row { display:grid; grid-template-columns:1fr 1.2fr; gap:8px; align-items:center; margin:8px 0; }
+    .veg-row label { margin:0; }
+    .cart-checkout:disabled { opacity:.5; cursor:not-allowed; }
+    @media(max-width:600px) {
+      .ichiban-cart-button { right:14px; bottom:14px; }
+      .ichiban-dialog { padding:18px; }
+      .dialog-grid { grid-template-columns:1fr; }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+function ensureCartUI() {
+  if ($("#ichibanCartButton")) return;
+
+  const button = document.createElement("button");
+  button.id = "ichibanCartButton";
+  button.className = "ichiban-cart-button";
+  button.type = "button";
+  button.innerHTML = `🛒 Mi pedido <span class="ichiban-cart-count" id="cartCount">0</span>`;
+  button.addEventListener("click", openCart);
+
+  const overlay = document.createElement("div");
+  overlay.id = "ichibanOverlay";
+  overlay.className = "ichiban-overlay";
+  overlay.innerHTML = `
+    <section class="ichiban-dialog" role="dialog" aria-modal="true">
+      <button type="button" class="dialog-close" data-close aria-label="Cerrar">×</button>
+      <div id="ichibanDialogContent"></div>
+    </section>
+  `;
+
+  overlay.addEventListener("click", event => {
+    if (event.target === overlay || event.target.closest("[data-close]")) {
+      closeDialog();
+    }
+  });
+
+  document.body.append(button, overlay);
+  updateCartCount();
+}
+
+function openDialog(content) {
+  $("#ichibanDialogContent").innerHTML = content;
+  $("#ichibanOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDialog() {
+  $("#ichibanOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+  currentProduct = null;
+}
+
+function updateCartCount() {
+  const count = cart.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
+  const badge = $("#cartCount");
+  if (badge) badge.textContent = count;
+}
+
+function saveCart() {
+  localStorage.setItem("ichiban-cart", JSON.stringify(cart));
+  updateCartCount();
+}
+
+function cartTotal() {
+  return cart.reduce((sum, item) =>
+    sum + Number(item.price || 0) * Number(item.quantity || 1), 0
+  );
+}
+
+function cartItemDescription(item) {
+  const parts = [];
+  const config = item.config || {};
+
+  if (config.vegetables?.length) {
+    parts.push("Vegetales: " + config.vegetables.join(", "));
+  }
+
+  if (config.soy || config.teriyaki) {
+    parts.push(`Salsas de cortesía: ${config.soy || 0} soya, ${config.teriyaki || 0} teriyaki`);
+  }
+
+  if (config.note) parts.push(config.note);
+
+  return parts.join(" · ");
+}
+
+// PERSONALIZACIÓN DE PRODUCTOS
+
+function openProduct(product) {
+  currentProduct = product;
+
+  const type = getType(product);
+  const options = parseOptions(product.options);
+
+  const isPromo = type === "promotion";
+  const isRoll = type === "roll";
+  const isHandroll = type === "handroll";
+  const isDish = type === "dish";
+
+  const rollCount = isPromo
+    ? Math.max(1, Number(options.rolls_count || 1))
+    : 1;
+
+  const freePerUnit = isPromo
+    ? rollCount
+    : isRoll || isHandroll
+      ? 1
+      : isDish
+        ? 2
+        : 0;
+
+  const chopsticksPerUnit = isPromo || isRoll ? (isPromo ? rollCount : 1) : 0;
+
+  let configuration = "";
+
+  if (isPromo) {
+    configuration = `
+      <div class="dialog-note">
+        <strong>Promoción de ${rollCount} rolls.</strong><br>
+        Los rellenos y envolturas son fijos. Puedes elegir el vegetal de cada roll.
+        Incluye una salsa por roll y palitos según las reglas de la tienda.
+      </div>
+      <div id="vegetableChoices">
+        ${Array.from({length:rollCount},(_,i)=>`
+          <div class="veg-row">
+            <label for="veg${i}">Roll ${i+1}</label>
+            <select id="veg${i}" class="veg-choice">
+              <option>Cebollín</option>
+              <option>Pimentón</option>
+              <option>Palta</option>
+              <option>Sin vegetal</option>
+            </select>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  } else if (isRoll) {
+    configuration = `<div class="dialog-note">Incluye una salsa de cortesía y un par de palitos por roll. Máximo 6 pares de palitos por pedido.</div>`;
+  } else if (isHandroll) {
+    configuration = `<div class="dialog-note">Incluye una salsa de cortesía por handroll. No incluye palitos.</div>`;
+  } else if (isDish) {
+    configuration = `<div class="dialog-note">Incluye hasta 2 salsas de cortesía por unidad. No incluye palitos.</div>`;
+  }
+
+  const sauceFields = freePerUnit > 0 ? `
+    <h3>Salsas de cortesía</h3>
+    <p>Elige cómo distribuir las ${freePerUnit} salsas incluidas por unidad.</p>
+    <div class="dialog-grid">
+      <div>
+        <label for="soyCount">Soya</label>
+        <input id="soyCount" type="number" min="0" max="${freePerUnit}" value="${freePerUnit}">
+      </div>
+      <div>
+        <label for="teriyakiCount">Teriyaki</label>
+        <input id="teriyakiCount" type="number" min="0" max="${freePerUnit}" value="0">
+      </div>
+    </div>
+    <p id="sauceValidation" class="dialog-note">
+      Total de cortesía: ${freePerUnit}. No se pueden superar las unidades incluidas.
+    </p>
+  ` : `<div class="dialog-note">Este producto no incluye salsas de cortesía.</div>`;
+
+  openDialog(`
+    <h2>${escapeHTML(product.name)}</h2>
+    <p>${escapeHTML(product.description || "")}</p>
+    <h3>${money(product.price)}</h3>
+    ${configuration}
+    <label for="productQuantity">Cantidad de productos</label>
+    <input id="productQuantity" type="number" min="1" max="20" value="1">
+    ${sauceFields}
+    <button type="button" class="dialog-primary" id="confirmAdd">Agregar al carrito</button>
+    <button type="button" class="dialog-secondary" data-close>Seguir mirando la carta</button>
+  `);
+
+  const soy = $("#soyCount");
+  const teriyaki = $("#teriyakiCount");
+  const quantity = $("#productQuantity");
+
+  function validateSauces() {
+    if (!soy || !teriyaki) return true;
+
+    const total = Number(soy.value || 0) + Number(teriyaki.value || 0);
+    const maximum = freePerUnit * Number(quantity.value || 1);
+    const valid = total === maximum;
+
+    $("#sauceValidation").textContent = valid
+      ? `Correcto: ${total} salsas de cortesía seleccionadas.`
+      : `Debes distribuir exactamente ${maximum} salsas entre soya y teriyaki.`;
+
+    return valid;
+  }
+
+  [soy, teriyaki, quantity].filter(Boolean).forEach(field => {
+    field.addEventListener("input", validateSauces);
+  });
+
+  $("#confirmAdd").addEventListener("click", () => {
+    const qty = Math.max(1, Math.min(20, Number(quantity.value) || 1));
+    const config = {};
+
+    if (freePerUnit > 0) {
+      const soyValue = Math.max(0, Number(soy.value) || 0);
+      const teriyakiValue = Math.max(0, Number(teriyaki.value) || 0);
+
+      if (soyValue + teriyakiValue !== freePerUnit * qty) {
+        alert("Distribuye todas las salsas de cortesía entre soya y teriyaki.");
+        return;
+      }
+
+      config.soy = soyValue;
+      config.teriyaki = teriyakiValue;
+    }
+
+    if (isPromo) {
+      config.vegetables = Array.from(
+        document.querySelectorAll(".veg-choice")
+      ).map(select => select.value);
+    }
+
+    const item = {
+      key: Date.now().toString() + Math.random().toString(16).slice(2),
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      quantity: qty,
+      product_type: type,
+      config
+    };
+
+    cart.push(item);
+    saveCart();
+    closeDialog();
+    openCart();
+  });
+}
+
+// CARRITO
+
+function openCart() {
+  if (!cart.length) {
+    openDialog(`
+      <h2>Mi pedido</h2>
+      <div class="cart-empty">
+        <div style="font-size:42px">🛒</div>
+        <h3>Tu carrito está vacío</h3>
+        <p>Agrega tus preparaciones favoritas para comenzar tu pedido.</p>
+      </div>
+      <button type="button" class="dialog-primary" data-close>Volver a la carta</button>
+    `);
+    return;
+  }
+
+  const lines = cart.map(item => {
+    const description = cartItemDescription(item);
+
+    return `
+      <div class="cart-line">
+        <div class="cart-line-head">
+          <span>${escapeHTML(item.name)}</span>
+          <span>${money(item.price * item.quantity)}</span>
+        </div>
+        <small>${item.quantity} × ${money(item.price)}</small>
+        ${description ? `<small>${escapeHTML(description)}</small>` : ""}
+        <div class="cart-line-actions">
+          <button type="button" data-cart-minus="${item.key}">−</button>
+          <strong>${item.quantity}</strong>
+          <button type="button" data-cart-plus="${item.key}">+</button>
+          <button type="button" data-cart-remove="${item.key}">Eliminar</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  openDialog(`
+    <h2>Mi pedido</h2>
+    ${lines}
+    <div class="cart-total">
+      <span>Total</span>
+      <span>${money(cartTotal())}</span>
+    </div>
+    <p class="dialog-note">
+      Los palitos se calculan automáticamente: un par por roll, con máximo 6 pares por pedido. Los handrolls y platos no llevan palitos.
+    </p>
+    <button type="button" class="cart-checkout" id="sendWhatsApp">
+      Continuar pedido por WhatsApp
+    </button>
+    <button type="button" class="dialog-secondary" data-close>Seguir comprando</button>
+  `);
+
+  $("#sendWhatsApp").addEventListener("click", sendOrder);
+}
+
+function updateCartQuantity(key, change) {
+  const item = cart.find(entry => entry.key === key);
+  if (!item) return;
+
+  const next = item.quantity + change;
+
+  if (next <= 0) {
+    cart = cart.filter(entry => entry.key !== key);
+  } else {
+    item.quantity = Math.min(20, next);
+
+    if (item.config?.vegetables && item.product_type === "promotion") {
+      const product = products.find(p => String(p.id) === String(item.id));
+      const rollsPerPromo = Number(parseOptions(product?.options).rolls_count || 1);
+      const totalRolls = rollsPerPromo * item.quantity;
+
+      while (item.config.vegetables.length < totalRolls) {
+        item.config.vegetables.push("Cebollín");
+      }
+
+      item.config.vegetables = item.config.vegetables.slice(0, totalRolls);
+    }
+
+    if (item.config && (item.config.soy !== undefined || item.config.teriyaki !== undefined)) {
+      const totalSauces = getFreeSaucesPerUnit(item) * item.quantity;
+      const oldSoy = Number(item.config.soy || 0);
+      item.config.soy = Math.min(oldSoy, totalSauces);
+      item.config.teriyaki = totalSauces - item.config.soy;
+    }
+  }
+
+  saveCart();
+  openCart();
+}
+
+function getFreeSaucesPerUnit(item) {
+  if (item.product_type === "promotion") {
+    const product = products.find(p => String(p.id) === String(item.id));
+    return Number(parseOptions(product?.options).rolls_count || 1);
+  }
+
+  if (item.product_type === "roll" || item.product_type === "handroll") return 1;
+  if (item.product_type === "dish") return 2;
+  return 0;
+}
+
+function calculateChopsticks() {
+  let total = 0;
+
+  cart.forEach(item => {
+    if (item.product_type === "roll") {
+      total += item.quantity;
+    }
+
+    if (item.product_type === "promotion") {
+      const product = products.find(p => String(p.id) === String(item.id));
+      const rolls = Number(parseOptions(product?.options).rolls_count || 1);
+      total += rolls * item.quantity;
+    }
+  });
+
+  return Math.min(6, total);
+}
+
+function sendOrder() {
+  if (!cart.length) return;
+
+  const details = cart.map(item => {
+    const config = item.config || {};
+    const lines = [`${item.quantity} × ${item.name} — ${money(item.price * item.quantity)}`];
+
+    if (config.vegetables?.length) {
+      lines.push("Vegetales por roll: " + config.vegetables.join(", "));
+    }
+
+    if (config.soy !== undefined || config.teriyaki !== undefined) {
+      lines.push(`Salsas de cortesía: ${config.soy || 0} soya y ${config.teriyaki || 0} teriyaki`);
+    }
+
+    return lines.join("\n");
+  });
+
+  const message = [
+    `Hola ${settings.store_name || "Ichiban Sushi Maki"}, quiero realizar este pedido:`,
+    "",
+    ...details,
+    "",
+    `Palitos: ${calculateChopsticks()} pares`,
+    `TOTAL: ${money(cartTotal())}`,
+    "",
+    "Quedo atento/a para confirmar mi pedido. ¡Gracias!"
+  ].join("\n");
+
+  const phone = String(settings.whatsapp || DEFAULT_PHONE).replace(/\D/g, "");
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+}
+
+// EVENTOS DEL CARRITO
+
+document.addEventListener("click", event => {
+  const plus = event.target.closest("[data-cart-plus]");
+  const minus = event.target.closest("[data-cart-minus]");
+  const remove = event.target.closest("[data-cart-remove]");
+
+  if (plus) updateCartQuantity(plus.dataset.cartPlus, 1);
+  if (minus) updateCartQuantity(minus.dataset.cartMinus, -1);
+
+  if (remove) {
+    cart = cart.filter(item => item.key !== remove.dataset.cartRemove);
+    saveCart();
+    openCart();
+  }
+});
+
+// CATÁLOGO Y TARJETAS
 
 function card(product) {
   const article = document.createElement("article");
   article.className = "product";
 
   const img = document.createElement("img");
-  img.src = product.image || "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800";
+  img.src = product.image ||
+    "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800";
   img.alt = product.name || "Producto Ichiban";
   img.loading = "lazy";
 
@@ -366,7 +812,13 @@ function card(product) {
   price.className = "price";
   price.textContent = money(product.price);
 
-  inside.append(title, description, price);
+  const addButton = document.createElement("button");
+  addButton.className = "product-add";
+  addButton.type = "button";
+  addButton.textContent = "Agregar al pedido";
+  addButton.addEventListener("click", () => openProduct(product));
+
+  inside.append(title, description, price, addButton);
   article.append(img, inside);
 
   return article;
@@ -375,8 +827,7 @@ function card(product) {
 function render() {
   const visible = products.filter(product => isEnabled(product.available));
 
-  const promoGrid = document.querySelector("#promoGrid");
-
+  const promoGrid = $("#promoGrid");
   if (!promoGrid) return;
 
   promoGrid.replaceChildren();
@@ -389,12 +840,26 @@ function render() {
     promoGrid.textContent = "Pronto anunciaremos promociones.";
   }
 
-  const categories = [
-    "Todos",
-    ...new Set(visible.map(product => product.category).filter(Boolean))
+  const standardCategories = [
+    "Rolls Signature",
+    "Rolls clásicos",
+    "Street Food",
+    "Promociones Ichiban",
+    "Entradas & para compartir",
+    "Bebidas",
+    "Salsas y extras"
   ];
 
-  const categoryContainer = document.querySelector("#categories");
+  const usedCategories = standardCategories.filter(item =>
+    visible.some(product => product.category === item)
+  );
+
+  const otherCategories = [...new Set(visible.map(product => product.category).filter(Boolean))]
+    .filter(item => !standardCategories.includes(item));
+
+  const categories = ["Todos", ...usedCategories, ...otherCategories];
+
+  const categoryContainer = $("#categories");
 
   if (categoryContainer) {
     categoryContainer.replaceChildren();
@@ -413,7 +878,7 @@ function render() {
     });
   }
 
-  const productGrid = document.querySelector("#productGrid");
+  const productGrid = $("#productGrid");
 
   if (productGrid) {
     productGrid.replaceChildren();
@@ -429,16 +894,16 @@ function render() {
     }
   }
 
-  const year = document.querySelector("#year");
-
-  if (year) {
-    year.textContent = new Date().getFullYear();
-  }
+  const year = $("#year");
+  if (year) year.textContent = new Date().getFullYear();
 }
 
 async function initialize() {
+  addStoreStyles();
+  ensureCartUI();
   await loadSettings();
   await loadProducts();
+  updateCartCount();
 }
 
 initialize();
