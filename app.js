@@ -867,12 +867,25 @@ function updateCartQuantity(key, change) {
       item.config.vegetables = item.config.vegetables.slice(0, totalRolls);
     }
 
-    if (item.config && (item.config.soy !== undefined || item.config.teriyaki !== undefined)) {
-      const totalSauces = getFreeSaucesPerUnit(item) * item.quantity;
-      const oldSoy = Number(item.config.soy || 0);
-      item.config.soy = Math.min(oldSoy, totalSauces);
-      item.config.teriyaki = totalSauces - item.config.soy;
-    }
+if (item.config && (item.config.soy !== undefined || item.config.teriyaki !== undefined)) {
+  const totalSauces = getFreeSaucesPerUnit(item) * item.quantity;
+
+  const oldSoy = Number(item.config.soy || 0);
+  const oldTeriyaki = Number(item.config.teriyaki || 0);
+  const oldTotal = oldSoy + oldTeriyaki;
+
+  if (oldTotal > 0) {
+    item.config.soy = Math.round(
+      totalSauces * oldSoy / oldTotal
+    );
+
+    item.config.teriyaki =
+      totalSauces - item.config.soy;
+  } else {
+    item.config.soy = totalSauces;
+    item.config.teriyaki = 0;
+  }
+}
   }
 
   saveCart();
