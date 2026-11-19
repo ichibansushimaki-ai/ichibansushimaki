@@ -35,6 +35,28 @@ const defaultTypography = {
   }
 };
 
+const commercialCategories = [
+  "Rolls Signature",
+  "Rolls clásicos",
+  "Street Food",
+  "Promociones Ichiban",
+  "Entradas & para compartir",
+  "Bebidas",
+  "Salsas y extras"
+];
+
+const productTypes = [
+  ["roll", "Roll"],
+  ["promotion", "Promoción"],
+  ["handroll", "Handroll"],
+  ["dish", "Plato / Gohan / Bowl / Sushi Burger"],
+  ["side", "Acompañamiento"],
+  ["beverage", "Bebida"],
+  ["sauce", "Salsa"],
+  ["extra", "Extra"],
+  ["other", "Otro"]
+];
+
 let currentTypography = JSON.parse(JSON.stringify(defaultTypography));
 let products = [];
 
@@ -50,6 +72,173 @@ async function api(path, options = {}) {
   };
 
   return fetch(path, { ...options, headers });
+}
+
+// CONFIGURACIÓN DE LOS NUEVOS CAMPOS DEL CATÁLOGO
+
+function ensureProductFields() {
+  const form = $("#productForm");
+  if (!form || form.elements.product_type) return;
+
+  const categoryField = form.elements.category;
+
+  if (categoryField) {
+    const categorySelect = document.createElement("select");
+    categorySelect.name = "category";
+    categorySelect.required = true;
+    categorySelect.innerHTML =
+      '<option value="">Seleccionar categoría comercial</option>' +
+      commercialCategories.map(category =>
+        `<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`
+      ).join("");
+
+    categoryField.replaceWith(categorySelect);
+  }
+
+  const typeField = document.createElement("div");
+  typeField.className = "product-rules-fields";
+  typeField.innerHTML = `
+    <label for="productType">
+      Tipo interno de producto
+    </label>
+
+    <select name="product_type" id="productType" required>
+      ${productTypes.map(([value, label]) =>
+        `<option value="${value}">${label}</option>`
+      ).join("")}
+    </select>
+
+    <div id="productRules" class="product-rules-box">
+      <label for="rollsCount">Cantidad de rolls que incluye</label>
+      <input
+        type="number"
+        id="rollsCount"
+        min="1"
+        max="100"
+        value="1"
+      >
+      <p id="productRulesHelp">
+        Las reglas de salsas y palitos se aplicarán según el tipo de producto.
+      </p>
+    </div>
+  `;
+
+  const priceField = form.elements.price;
+
+  if (priceField) {
+    const priceContainer = priceField.parentElement;
+    if (priceContainer && priceContainer !== form) {
+      priceContainer.before(typeField);
+    } else {
+      priceField.before(typeField);
+    }
+  } else {
+    form.appendChild(typeField);
+  }
+
+  $("#productType").addEventListener("change", updateProductRules);
+  updateProductRules();
+}
+
+function updateProductRules() {
+  const type = $("#productType")?.value || "other";
+  const rules = $("#productRules");
+  const count = $("#rollsCount");
+  const help = $("#productRulesHelp");
+
+  if (!rules || !count || !help) return;
+
+  if (type === "promotion") {
+    rules.style.display = "block";
+    count.disabled = false;
+    help.textContent =
+      "Promoción: rellenos y envolturas fijos. Vegetal elegible por roll: cebollín, pimentón, palta o sin vegetal. Una salsa de cortesía por roll y un par de palitos por roll, con máximo 6 pares por pedido.";
+  } else if (type === "roll") {
+    rules.style.display = "block";
+    count.value = "1";
+    count.disabled = true;
+    help.textContent =
+      "Roll: una salsa de cortesía y un par de palitos. Máximo 6 pares de palitos por pedido.";
+  } else if (type === "handroll") {
+    rules.style.display = "none";
+    help.textContent =
+      "Handroll: una salsa de cortesía por unidad. No incluye palitos.";
+  } else if (type === "dish") {
+    rules.style.display = "none";
+    help.textContent =
+      "Plato, Gohan, Bowl o Sushi Burger: hasta 2 salsas de cortesía por unidad. No incluye palitos.";
+  } else {
+    rules.style.display = "none";
+    help.textContent =
+      "Este tipo de producto no incluye salsas ni palitos de cortesía automáticamente.";
+  }
+}
+
+function buildProductOptions(type, rollsCount) {
+  if (type === "promotion") {
+    return {
+      rolls_count: rollsCount,
+      fillings_fixed: true,
+      wrap_fixed: true,
+      vegetable_choice: true,
+      vegetable_options: [
+        "Cebollín",
+        "Pimentón",
+        "Palta",
+        "Sin vegetal"
+      ],
+      complimentary_sauces_per_roll: 1,
+      chopsticks_per_roll: 1,
+      chopsticks_order_limit: 6
+    };
+  }
+
+  if (type === "roll") {
+    return {
+      rolls_count: 1,
+      complimentary_sauces_per_roll: 1,
+      chopsticks_per_roll: 1,
+      chopsticks_order_limit: 6
+    };
+  }
+
+  if (type === "handroll") {
+    return {
+      complimentary_sauces_per_unit: 1,
+      chopsticks_per_unit: 0
+    };
+  }
+
+  if (type === "dish") {
+    return {
+      complimentary_sauces_per_unit: 2,
+      chopsticks_per_unit: 0
+    };
+  }
+
+  return {
+    complimentary_sauces_per_unit: 0,
+    chopsticks_per_unit: 0
+  };
+}
+
+function parseOptions(value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+        ? parsed
+        : {};
+    } catch {
+      return {};
+    }
+  }
+
+  return {};
 }
 
 async function uploadImage(file) {
@@ -248,6 +437,7 @@ $("#loginBtn").onclick = async () => {
   $("#editor").hidden = false;
 
   try {
+    ensureProductFields();
     await loadSettings();
     await load();
   } catch (error) {
@@ -387,6 +577,10 @@ function safeImageURL(value) {
   return "";
 }
 
+function productTypeLabel(type) {
+  return productTypes.find(item => item[0] === type)?.[1] || "Otro";
+}
+
 function renderProducts() {
   const container = $("#items");
 
@@ -403,6 +597,7 @@ function renderProducts() {
     const id = escapeHTML(product.id);
     const name = escapeHTML(product.name);
     const category = escapeHTML(product.category);
+    const type = escapeHTML(productTypeLabel(product.product_type));
     const price = money(product.price);
     const available = isTrue(product.available);
     const featured = isTrue(product.featured);
@@ -425,6 +620,7 @@ function renderProducts() {
         <div class="product-admin-info">
           <b>${name}</b>
           <small>${category}</small>
+          <small>Tipo: ${type}</small>
 
           <strong class="product-admin-price">${price}</strong>
 
@@ -485,6 +681,7 @@ async function updateProduct(product, changes) {
     const updated = {
       ...product,
       ...changes,
+      options: parseOptions(product.options),
       available: changes.available !== undefined
         ? changes.available
         : isTrue(product.available),
@@ -508,6 +705,67 @@ async function updateProduct(product, changes) {
     alert("No se pudo actualizar el producto: " + error.message);
     buttons.forEach(button => button.disabled = false);
   }
+}
+
+// CARGAR PRODUCTO PARA EDITAR
+
+function fillProductForm(product) {
+  const form = $("#productForm");
+
+  ensureProductFields();
+
+  Object.entries(product).forEach(([key, value]) => {
+    if (!form.elements[key]) return;
+
+    const field = form.elements[key];
+
+    if (field.type === "checkbox") {
+      field.checked = isTrue(value);
+    } else if (key !== "options") {
+      field.value = value ?? "";
+    }
+  });
+
+  // Mantener categorías antiguas para que no se pierdan
+  // al editar productos que ya estaban registrados.
+  const categoryField = form.elements.category;
+
+  if (
+    product.category &&
+    !Array.from(categoryField.options).some(
+      option => option.value === product.category
+    )
+  ) {
+    const option = document.createElement("option");
+    option.value = product.category;
+    option.textContent = product.category;
+    categoryField.appendChild(option);
+  }
+
+  categoryField.value = product.category || "";
+
+  const type = product.product_type || "other";
+  form.elements.product_type.value = type;
+
+  const options = parseOptions(product.options);
+
+  if (type === "promotion") {
+    $("#rollsCount").value = Math.max(
+      1,
+      Number(options.rolls_count || 1)
+    );
+  } else {
+    $("#rollsCount").value = "1";
+  }
+
+  updateProductRules();
+
+  $("#preview").style.display = product.image ? "block" : "none";
+  $("#preview").src = product.image || "";
+  $("#imageFile").value = "";
+
+  $("#uploadMsg").textContent = "Editando producto existente.";
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 // ACCIONES DEL CATÁLOGO
@@ -541,23 +799,7 @@ $("#items").addEventListener("click", async event => {
   }
 
   if (button.dataset.edit !== undefined) {
-    const form = $("#productForm");
-
-    Object.entries(product).forEach(([key, value]) => {
-      if (form.elements[key]) {
-        if (form.elements[key].type === "checkbox") {
-          form.elements[key].checked = isTrue(value);
-        } else {
-          form.elements[key].value = value ?? "";
-        }
-      }
-    });
-
-    $("#preview").style.display = product.image ? "block" : "none";
-    $("#preview").src = product.image || "";
-    $("#imageFile").value = "";
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    fillProductForm(product);
     return;
   }
 
@@ -601,6 +843,17 @@ $("#productForm").onsubmit = async event => {
     data.price = Number(data.price);
     data.available = form.elements.available.checked;
     data.featured = form.elements.featured.checked;
+    data.product_type = form.elements.product_type.value;
+
+    const rollsCount = Math.max(
+      1,
+      Math.min(100, Number($("#rollsCount").value) || 1)
+    );
+
+    data.options = buildProductOptions(
+      data.product_type,
+      rollsCount
+    );
 
     const file = $("#imageFile").files[0];
 
@@ -611,6 +864,8 @@ $("#productForm").onsubmit = async event => {
 
       $("#uploadMsg").textContent = "Subiendo fotografía...";
       data.image = await uploadImage(file);
+    } else if (!data.image) {
+      data.image = "";
     }
 
     const response = await api("/api/products", {
@@ -624,6 +879,10 @@ $("#productForm").onsubmit = async event => {
 
     form.reset();
     form.elements.id.value = "";
+    form.elements.product_type.value = "roll";
+    $("#rollsCount").value = "1";
+    updateProductRules();
+
     $("#preview").style.display = "none";
     $("#preview").src = "";
     $("#imageUrl").value = "";
@@ -642,6 +901,8 @@ $("#productForm").onsubmit = async event => {
 };
 
 // PREVISUALIZACIÓN DE IMÁGENES
+
+ensureProductFields();
 
 previewFile("logoFile", "logoPreview");
 previewFile("mobileLogoFile", "mobileLogoPreview");
