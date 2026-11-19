@@ -1,6 +1,15 @@
 
 const DEFAULT_PHONE = "56900000000";
 const money = n => "$" + Number(n || 0).toLocaleString("es-CL");
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
 const $ = selector => document.querySelector(selector);
 
 let products = [];
