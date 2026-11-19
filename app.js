@@ -307,7 +307,7 @@ function addStoreStyles() {
 
   style.textContent = `
     .product .inside { display:flex; flex-direction:column; gap:10px; }
-    <CodeBlock language="css" editable>
+    
 
 .product-add {
   position: relative;
@@ -342,7 +342,7 @@ function addStoreStyles() {
   box-shadow: 0 2px 6px #00000025;
 }
 
-</CodeBlock>
+
     .ichiban-cart-button {
       position:fixed; right:22px; bottom:22px; z-index:900;
       border:0; border-radius:50px; padding:15px 20px;
@@ -380,7 +380,7 @@ function addStoreStyles() {
       float:right; border:0; background:transparent;
       font-size:26px; color:#333;
     }
-    <CodeBlock language="css" editable>
+ 
 
 .ichiban-dialog .dialog-primary,.cart-checkout {
   border:1px solid #c9a45c;
@@ -412,8 +412,8 @@ function addStoreStyles() {
   transform:translateY(0);
 }
 
-</CodeBlock>
-    <CodeBlock language="css" editable>
+
+    
 
 .dialog-secondary {
   border:1px solid #b89b60;
@@ -438,7 +438,7 @@ function addStoreStyles() {
   transform:translateY(-2px);
 }
 
-</CodeBlock>
+
     .dialog-note {
       padding:12px; background:#e9e0d4; border-radius:8px;
       font-size:14px; margin:12px 0;
