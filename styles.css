@@ -159,6 +159,18 @@ body {
 .btn-red {
   background: var(--red);
   color: white;
+  border: 1px solid var(--red);
+  border-radius: 5px;
+  padding: 14px 24px;
+  box-shadow: 0 4px 14px #b9272e33;
+  transition: all .25s ease;
+}
+
+.btn-red:hover {
+  background: #d33138;
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px #b9272e55;
 }
 
 .btn-outline {
