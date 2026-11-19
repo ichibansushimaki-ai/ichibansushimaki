@@ -108,16 +108,43 @@ body {
 
 .top nav {
   display: flex;
-  gap: 28px;
+  align-items: center;
+  gap: 32px;
 }
 
 .top nav a {
-  color: #eee;
+  position: relative;
+  color: var(--cream);
   text-decoration: none;
   font-size: var(--texto-menu);
   font-weight: var(--peso-menu);
+  padding: 10px 0;
+  transition: color .25s ease;
 }
 
+.top nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 3px;
+  width: 0;
+  height: 2px;
+  background: var(--gold);
+  transition: width .25s ease;
+}
+
+.top nav a:hover {
+  color: var(--gold);
+}
+
+.top nav a:hover::after {
+  width: 100%;
+}
+
+.top nav a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 5px;
+}
 .btn {
   padding: 14px 21px;
   text-decoration: none;
