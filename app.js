@@ -1117,7 +1117,8 @@ function calculateChopsticks() {
 }
 
 
-function sendOrder(fulfillment = {}) {
+
+async function sendOrder(fulfillment = {}) {
   if (!cart.length) return;
 
   if (!fulfillment.method) {
@@ -1195,11 +1196,52 @@ function sendOrder(fulfillment = {}) {
 
   const phone = String(settings.whatsapp || DEFAULT_PHONE).replace(/\D/g, "");
 
-  window.open(
-    `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
-    "_blank",
-    "noopener"
-  );
+  // Abrir una ventana para WhatsApp antes de realizar la petición.
+  const whatsappWindow = window.open("about:blank", "_blank");
+
+  if (!whatsappWindow) {
+    alert("Permite las ventanas emergentes para continuar con WhatsApp.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        fulfillment_method: fulfillment.method,
+        address: fulfillment.address || null,
+        reference: fulfillment.reference || null,
+        subtotal,
+        items: cart.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          unit_price: item.price,
+          config: item.config || {}
+        }))
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || "No se pudo registrar el pedido.");
+    }
+
+    whatsappWindow.opener = null;
+    whatsappWindow.location.href =
+      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+  } catch (error) {
+    whatsappWindow.close();
+
+    alert(
+      "No se pudo registrar tu pedido. Inténtalo nuevamente. " +
+      (error.message || "")
+    );
+  }
 }
 
 
