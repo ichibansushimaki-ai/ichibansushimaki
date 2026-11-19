@@ -441,6 +441,35 @@ function closeDialog() {
   document.body.style.overflow = "";
   currentProduct = null;
 }
+function askPendingCart() {
+  if (!cart.length) return;
+
+  openDialog(`
+    <h2>Tienes un pedido pendiente</h2>
+    <p>
+      Encontramos un pedido anterior en tu carrito.
+      ¿Qué deseas hacer?
+    </p>
+
+    <button type="button" class="dialog-primary" id="continueSavedCart">
+      Continuar pedido
+    </button>
+
+    <button type="button" class="dialog-secondary" id="startNewCart">
+      Nuevo pedido
+    </button>
+  `);
+
+  $("#continueSavedCart").addEventListener("click", () => {
+    closeDialog();
+  });
+
+  $("#startNewCart").addEventListener("click", () => {
+    cart = [];
+    saveCart();
+    closeDialog();
+  });
+}
 
 function updateCartCount() {
   const count = cart.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
@@ -1167,6 +1196,7 @@ async function initialize() {
   await loadSettings();
   await loadProducts();
   updateCartCount();
+  askPendingCart();
 }
 
 initialize();
