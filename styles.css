@@ -379,21 +379,33 @@ h2 em {
   margin: 0 0 24px;
 }
 
+
 .chip {
   background: transparent;
   color: #e6d8c3;
   border: 1px solid var(--gold);
+  border-radius: 5px;
   padding: 9px 14px;
   cursor: pointer;
   font-family: var(--font-general);
   font-size: var(--texto-categorias);
   font-weight: var(--peso-general);
+  transition: all .25s ease;
 }
 
 .chip.active {
   background: var(--gold);
   color: var(--bg);
 }
+
+.chip:hover {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px #b9272e44;
+}
+
 
 .callout {
   background: var(--cream);
