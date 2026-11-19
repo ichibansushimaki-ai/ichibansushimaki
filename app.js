@@ -818,6 +818,118 @@ function openProduct(product, editingItem = null) {
 
 // CARRITO
 
+
+function openFulfillment() {
+  openDialog(`
+    <h2>¿Cómo deseas recibir tu pedido?</h2>
+
+    <p>Selecciona la modalidad de entrega de tu pedido.</p>
+
+    <label for="fulfillmentMethod">Modalidad de entrega</label>
+    <select id="fulfillmentMethod">
+      <option value="">Selecciona una opción</option>
+      <option value="delivery">Delivery</option>
+      <option value="pickup">Retiro en local</option>
+    </select>
+
+    <div id="deliveryFields" style="display:none">
+
+      <div class="dialog-note">
+        El delivery está disponible dentro de la zona urbana de Los Ángeles.
+        El costo dependerá de la distancia desde nuestro local y será confirmado por WhatsApp.
+      </div>
+
+      <label for="deliveryAddress">Dirección de entrega</label>
+      <input
+        id="deliveryAddress"
+        type="text"
+        placeholder="Ej.: Calle, número y población"
+      >
+
+      <label for="deliveryReference">Referencia (opcional)</label>
+      <input
+        id="deliveryReference"
+        type="text"
+        placeholder="Casa, departamento, pasaje, etc."
+      >
+
+      <label style="display:flex;gap:9px;align-items:flex-start;font-weight:400">
+        <input
+          id="confirmUrbanZone"
+          type="checkbox"
+          style="width:20px;min-height:20px;margin-top:2px"
+        >
+        Confirmo que mi dirección está dentro de la zona urbana de Los Ángeles.
+      </label>
+    </div>
+
+    <div id="pickupFields" style="display:none">
+      <div class="dialog-note">
+        Puedes retirar tu pedido en nuestro local.
+        Te avisaremos por WhatsApp cuando esté listo.
+        No se cobra delivery.
+      </div>
+    </div>
+
+    <div class="cart-total">
+      <span>Subtotal productos</span>
+      <span>${money(cartTotal())}</span>
+    </div>
+
+    <button type="button" class="dialog-primary" id="confirmFulfillment">
+      Continuar por WhatsApp
+    </button>
+
+    <button type="button" class="dialog-secondary" id="backToCart">
+      Volver al carrito
+    </button>
+  `);
+
+  const method = $("#fulfillmentMethod");
+  const deliveryFields = $("#deliveryFields");
+  const pickupFields = $("#pickupFields");
+
+  method.addEventListener("change", () => {
+    deliveryFields.style.display =
+      method.value === "delivery" ? "block" : "none";
+
+    pickupFields.style.display =
+      method.value === "pickup" ? "block" : "none";
+  });
+
+  $("#backToCart").addEventListener("click", openCart);
+
+  $("#confirmFulfillment").addEventListener("click", () => {
+    if (!method.value) {
+      alert("Selecciona Delivery o Retiro en local.");
+      return;
+    }
+
+    const fulfillment = {
+      method: method.value,
+      address: "",
+      reference: ""
+    };
+
+    if (method.value === "delivery") {
+      fulfillment.address = $("#deliveryAddress").value.trim();
+      fulfillment.reference = $("#deliveryReference").value.trim();
+
+      if (!fulfillment.address) {
+        alert("Ingresa la dirección donde deseas recibir tu pedido.");
+        return;
+      }
+
+      if (!$("#confirmUrbanZone").checked) {
+        alert("Debes confirmar que tu dirección está dentro de la zona urbana de Los Ángeles.");
+        return;
+      }
+    }
+
+    sendOrder(fulfillment);
+  });
+}
+
 function openCart() {
   if (!cart.length) {
     openDialog(`
@@ -843,13 +955,13 @@ function openCart() {
         </div>
         <small>${item.quantity} × ${money(item.price)}</small>
         ${description ? `<small>${escapeHTML(description)}</small>` : ""}
-     <div class="cart-line-actions">
-  <button type="button" data-cart-minus="${item.key}">−</button>
-  <strong>${item.quantity}</strong>
-  <button type="button" data-cart-plus="${item.key}">+</button>
-  <button type="button" data-cart-edit="${item.key}">Editar</button>
-  <button type="button" data-cart-remove="${item.key}">Eliminar</button>
-</div>
+        <div class="cart-line-actions">
+          <button type="button" data-cart-minus="${item.key}">−</button>
+          <strong>${item.quantity}</strong>
+          <button type="button" data-cart-plus="${item.key}">+</button>
+          <button type="button" data-cart-edit="${item.key}">Editar</button>
+          <button type="button" data-cart-remove="${item.key}">Eliminar</button>
+        </div>
       </div>
     `;
   }).join("");
@@ -857,21 +969,28 @@ function openCart() {
   openDialog(`
     <h2>Mi pedido</h2>
     ${lines}
+
     <div class="cart-total">
-      <span>Total</span>
+      <span>Subtotal</span>
       <span>${money(cartTotal())}</span>
     </div>
+
     <p class="dialog-note">
-      Los palitos se calculan automáticamente: un par por roll, con máximo 6 pares por pedido. Los handrolls y platos no llevan palitos.
+      El costo del delivery se calcula según la distancia desde nuestro local y será informado por nuestro equipo.
     </p>
+
     <button type="button" class="cart-checkout" id="sendWhatsApp">
-      Continuar pedido por WhatsApp
+      Continuar pedido
     </button>
-    <button type="button" class="dialog-secondary" data-close>Seguir comprando</button>
+
+    <button type="button" class="dialog-secondary" data-close>
+      Seguir comprando
+    </button>
   `);
 
-  $("#sendWhatsApp").addEventListener("click", sendOrder);
+  $("#sendWhatsApp").addEventListener("click", openFulfillment);
 }
+
 
 
 function updateCartQuantity(key, change) {
@@ -997,21 +1116,32 @@ function calculateChopsticks() {
   return Math.min(6, total);
 }
 
-function sendOrder() {
+
+function sendOrder(fulfillment = {}) {
   if (!cart.length) return;
+
+  if (!fulfillment.method) {
+    alert("Selecciona cómo deseas recibir tu pedido.");
+    return;
+  }
 
   const details = cart.map(item => {
     const config = item.config || {};
-    const lines = [`${item.quantity} × ${item.name} — ${money(item.price * item.quantity)}`];
+    const lines = [
+      `${item.quantity} × ${item.name} — ${money(item.price * item.quantity)}`
+    ];
 
     if (config.vegetables?.length) {
       lines.push("Vegetales por roll: " + config.vegetables.join(", "));
     }
 
     if (config.soy !== undefined || config.teriyaki !== undefined) {
-      lines.push(`Salsas de cortesía: ${config.soy || 0} soya y ${config.teriyaki || 0} teriyaki`);
+      lines.push(
+        `Salsas de cortesía: ${config.soy || 0} soya y ${config.teriyaki || 0} teriyaki`
+      );
     }
-        if (config.paidSauces?.length) {
+
+    if (config.paidSauces?.length) {
       config.paidSauces.forEach(sauce => {
         const product = products.find(
           p => String(p.id) === String(sauce.id)
@@ -1028,20 +1158,50 @@ function sendOrder() {
     return lines.join("\n");
   });
 
+  const subtotal = cartTotal();
+
+  const fulfillmentDetails = fulfillment.method === "delivery"
+    ? [
+        "MODALIDAD: DELIVERY",
+        `DIRECCIÓN: ${fulfillment.address}`,
+        `REFERENCIA: ${fulfillment.reference || "No indicada"}`,
+        "",
+        "DISPONIBILIDAD: POR CONFIRMAR",
+        "COSTO DELIVERY: PENDIENTE DE CONFIRMACIÓN",
+        `SUBTOTAL PRODUCTOS: ${money(subtotal)}`,
+        "TOTAL FINAL: PENDIENTE DE CONFIRMAR",
+        "",
+        "Confirmar internamente disponibilidad y costo del reparto antes de informar el total al cliente."
+      ]
+    : [
+        "MODALIDAD: RETIRO EN LOCAL",
+        "DELIVERY: SIN COSTO",
+        `TOTAL DEL PEDIDO: ${money(subtotal)}`,
+        "",
+        "Avisar al cliente por WhatsApp cuando el pedido esté listo para retirar."
+      ];
+
   const message = [
     `Hola ${settings.store_name || "Ichiban Sushi Maki"}, quiero realizar este pedido:`,
     "",
     ...details,
     "",
     `Palitos: ${calculateChopsticks()} pares`,
-    `TOTAL: ${money(cartTotal())}`,
     "",
-    "Quedo atento/a para confirmar mi pedido. ¡Gracias!"
+    ...fulfillmentDetails,
+    "",
+    "Quedo atento/a a la confirmación de mi pedido. ¡Gracias!"
   ].join("\n");
 
   const phone = String(settings.whatsapp || DEFAULT_PHONE).replace(/\D/g, "");
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+
+  window.open(
+    `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
+    "_blank",
+    "noopener"
+  );
 }
+
 
 // EVENTOS DEL CARRITO
 
