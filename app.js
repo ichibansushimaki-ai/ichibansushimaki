@@ -223,8 +223,7 @@ function applySettings(data) {
     hero.style.backgroundPosition = "center";
   }
 
-  const heroLabel = $(".hero-label");
-  if (heroLabel) heroLabel.textContent = settings.store_name;
+
 
   const phone = String(settings.whatsapp || DEFAULT_PHONE).replace(/\D/g, "");
   const message = encodeURIComponent(
