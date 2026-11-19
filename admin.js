@@ -59,6 +59,16 @@ const productTypes = [
 
 let currentTypography = JSON.parse(JSON.stringify(defaultTypography));
 let products = [];
+let orders = [];
+
+const orderStatuses = [
+  ["pendiente", "Pendiente"],
+  ["confirmado", "Confirmado"],
+  ["preparando", "Preparando"],
+  ["listo", "Listo"],
+  ["entregado", "Entregado"],
+  ["cancelado", "Cancelado"]
+];
 
 async function api(path, options = {}) {
   const headers = {
@@ -440,6 +450,7 @@ $("#loginBtn").onclick = async () => {
     ensureProductFields();
     await loadSettings();
     await load();
+    await loadOrders();
   } catch (error) {
     alert(error.message);
   }
@@ -726,8 +737,6 @@ function fillProductForm(product) {
     }
   });
 
-  // Mantener categorías antiguas para que no se pierdan
-  // al editar productos que ya estaban registrados.
   const categoryField = form.elements.category;
 
   if (
@@ -899,6 +908,496 @@ $("#productForm").onsubmit = async event => {
     button.disabled = false;
   }
 };
+
+// ======================================================
+// PANEL DE PEDIDOS Y VENTAS
+// ======================================================
+
+function orderStatusLabel(status) {
+  return orderStatuses.find(item => item[0] === status)?.[1] || status;
+}
+
+function orderDateValue(value) {
+  if (!value) return null;
+
+  let dateString = String(value);
+
+  // Las fechas de D1 suelen venir sin zona horaria.
+  if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(dateString)) {
+    dateString = dateString.replace(" ", "T") + "Z";
+  }
+
+  const date = new Date(dateString);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function orderDateKey(value) {
+  const date = orderDateValue(value);
+  if (!date) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function formatOrderDate(value) {
+  const date = orderDateValue(value);
+
+  if (!date) return "Fecha no disponible";
+
+  return date.toLocaleString("es-CL", {
+    dateStyle: "short",
+    timeStyle: "short"
+  });
+}
+
+function orderIsSale(order) {
+  return [
+    "confirmado",
+    "preparando",
+    "listo",
+    "entregado"
+  ].includes(order.status);
+}
+
+function getFilteredOrders() {
+  const from = $("#ordersDateFrom")?.value || "";
+  const to = $("#ordersDateTo")?.value || "";
+  const fulfillment = $("#ordersFulfillment")?.value || "";
+  const status = $("#ordersStatus")?.value || "";
+
+  return orders.filter(order => {
+    const date = orderDateKey(order.created_at);
+
+    if (from && (!date || date < from)) return false;
+    if (to && (!date || date > to)) return false;
+    if (fulfillment && order.fulfillment_method !== fulfillment) return false;
+    if (status && order.status !== status) return false;
+
+    return true;
+  });
+}
+
+function renderOrderStats(filteredOrders) {
+  const pending = filteredOrders.filter(
+    order => order.status === "pendiente"
+  ).length;
+
+  const delivery = filteredOrders.filter(
+    order => order.fulfillment_method === "delivery"
+  ).length;
+
+  const pickup = filteredOrders.filter(
+    order => order.fulfillment_method === "pickup"
+  ).length;
+
+  const sales = filteredOrders.reduce((sum, order) => {
+    if (!orderIsSale(order) || order.total === null) return sum;
+    return sum + Number(order.total || 0);
+  }, 0);
+
+  $("#statOrders").textContent = filteredOrders.length;
+  $("#statPending").textContent = pending;
+  $("#statSales").textContent = money(sales);
+  $("#statDelivery").textContent = delivery;
+  $("#statPickup").textContent = pickup;
+}
+
+function describeOrderConfig(config) {
+  if (!config || typeof config !== "object") return "";
+
+  const details = [];
+
+  const vegetables = config.vegetables || config.vegetableChoices;
+
+  if (Array.isArray(vegetables) && vegetables.length) {
+    details.push(
+      "Vegetales: " + vegetables.map(item =>
+        typeof item === "string"
+          ? item
+          : item?.vegetable || item?.choice || item?.name || ""
+      ).filter(Boolean).join(", ")
+    );
+  }
+
+  if (config.sauceDistribution && typeof config.sauceDistribution === "object") {
+    const distribution = Object.entries(config.sauceDistribution)
+      .map(([name, quantity]) => `${name}: ${quantity}`)
+      .join(", ");
+
+    if (distribution) details.push("Salsas de cortesía: " + distribution);
+  }
+
+  if (config.sauces && typeof config.sauces === "object") {
+    const sauces = Object.entries(config.sauces)
+      .map(([name, quantity]) => `${name}: ${quantity}`)
+      .join(", ");
+
+    if (sauces) details.push("Salsas: " + sauces);
+  }
+
+  if (config.chopsticks !== undefined) {
+    details.push(
+      "Palitos: " +
+      (config.chopsticks ? "Sí" : "No")
+    );
+  }
+
+  if (config.note) {
+    details.push("Nota: " + config.note);
+  }
+
+  return details.map(item => escapeHTML(item)).join("<br>");
+}
+
+function renderOrderItem(item) {
+  const name = escapeHTML(item.name || "Producto");
+  const quantity = Number(item.quantity || 0);
+  const unitPrice = Number(item.unit_price || 0);
+  const lineTotal = Number(item.line_total || unitPrice * quantity);
+
+  const configDetails = describeOrderConfig(item.config);
+
+  const paidSauces = Array.isArray(item.paid_sauces)
+    ? item.paid_sauces
+    : [];
+
+  const paidSaucesHTML = paidSauces.map(sauce => `
+    <small>
+      Salsa adicional: ${escapeHTML(sauce.name)}
+      × ${Number(sauce.quantity || 0)}
+      — ${money(sauce.total)}
+    </small>
+  `).join("");
+
+  return `
+    <div class="order-item">
+      <strong>
+        ${quantity} × ${name}
+      </strong>
+
+      <small>
+        Precio unitario: ${money(unitPrice)}
+        — Total: ${money(lineTotal)}
+      </small>
+
+      ${configDetails ? `<small>${configDetails}</small>` : ""}
+      ${paidSaucesHTML}
+    </div>
+  `;
+}
+
+function renderOrderCard(order) {
+  const id = escapeHTML(order.id || "");
+  const shortId = id.slice(0, 8);
+  const method = order.fulfillment_method === "delivery"
+    ? "Delivery"
+    : "Retiro en local";
+
+  const address = order.fulfillment_method === "delivery"
+    ? `<div class="order-meta">Dirección: ${escapeHTML(order.address || "No registrada")}</div>`
+    : "";
+
+  const reference = order.reference
+    ? `<div class="order-meta">Referencia: ${escapeHTML(order.reference)}</div>`
+    : "";
+
+  const items = Array.isArray(order.items) ? order.items : [];
+
+  const itemsHTML = items.length
+    ? items.map(renderOrderItem).join("")
+    : '<p>No hay detalle de productos disponible.</p>';
+
+  const deliveryFee = order.delivery_fee === null ||
+    order.delivery_fee === undefined
+      ? "Por definir"
+      : money(order.delivery_fee);
+
+  const total = order.total === null ||
+    order.total === undefined
+      ? "Por definir"
+      : money(order.total);
+
+  const statusOptions = orderStatuses.map(([value, label]) => `
+    <option value="${value}" ${order.status === value ? "selected" : ""}>
+      ${label}
+    </option>
+  `).join("");
+
+  const feeValue = order.delivery_fee === null ||
+    order.delivery_fee === undefined
+      ? ""
+      : Number(order.delivery_fee);
+
+  const feeField = order.fulfillment_method === "delivery"
+    ? `
+      <label>
+        Costo delivery ($)
+        <input
+          type="number"
+          min="0"
+          step="1"
+          data-order-fee="${id}"
+          value="${feeValue}"
+          placeholder="Ej. 1500"
+        >
+      </label>
+    `
+    : `
+      <label>
+        Costo delivery
+        <input type="text" value="$0 (retiro)" disabled>
+      </label>
+    `;
+
+  return `
+    <article class="order-card">
+
+      <div class="order-header">
+        <div>
+          <h3>Pedido #${shortId}</h3>
+          <div class="order-meta">${formatOrderDate(order.created_at)}</div>
+          <div class="order-meta">${method}</div>
+          ${address}
+          ${reference}
+        </div>
+
+        <span class="order-badge">
+          ${escapeHTML(orderStatusLabel(order.status))}
+        </span>
+      </div>
+
+      <div class="order-items">
+        ${itemsHTML}
+      </div>
+
+      <div class="order-totals">
+        <div class="order-total-line">
+          <span>Subtotal</span>
+          <strong>${money(order.subtotal)}</strong>
+        </div>
+
+        <div class="order-total-line">
+          <span>Delivery</span>
+          <strong>${deliveryFee}</strong>
+        </div>
+
+        <div class="order-total-line final">
+          <span>Total</span>
+          <strong>${total}</strong>
+        </div>
+      </div>
+
+      <div class="order-actions">
+        <label>
+          Estado del pedido
+          <select data-order-status="${id}">
+            ${statusOptions}
+          </select>
+        </label>
+
+        ${feeField}
+
+        <button
+          type="button"
+          class="btn btn-red"
+          data-save-order="${id}"
+        >
+          Guardar cambios
+        </button>
+      </div>
+
+    </article>
+  `;
+}
+
+function renderOrders() {
+  const container = $("#ordersList");
+  if (!container) return;
+
+  const filteredOrders = getFilteredOrders();
+
+  renderOrderStats(filteredOrders);
+
+  if (!filteredOrders.length) {
+    container.innerHTML = `
+      <div class="order-empty">
+        No hay pedidos que coincidan con los filtros seleccionados.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filteredOrders
+    .map(renderOrderCard)
+    .join("");
+}
+
+async function loadOrders() {
+  const message = $("#ordersMessage");
+
+  if (message) {
+    message.textContent = "Cargando pedidos...";
+  }
+
+  try {
+    const response = await api("/api/orders");
+
+    if (!response.ok) {
+      throw new Error(
+        `Error ${response.status}: ${await response.text()}`
+      );
+    }
+
+    orders = await response.json();
+
+    renderOrders();
+
+    if (message) {
+      message.textContent =
+        `${orders.length} pedido(s) registrados.`;
+    }
+
+  } catch (error) {
+    if (message) {
+      message.textContent = "No se pudieron cargar los pedidos.";
+    }
+
+    throw error;
+  }
+}
+
+async function saveOrder(orderId) {
+  const order = orders.find(item => String(item.id) === orderId);
+
+  if (!order) {
+    alert("No se encontró el pedido.");
+    return;
+  }
+
+  const statusField = document.querySelector(
+    `[data-order-status="${CSS.escape(orderId)}"]`
+  );
+
+  const feeField = document.querySelector(
+    `[data-order-fee="${CSS.escape(orderId)}"]`
+  );
+
+  if (!statusField) return;
+
+  const status = statusField.value;
+
+  let deliveryFee = null;
+
+  if (order.fulfillment_method === "pickup") {
+    deliveryFee = 0;
+  } else if (feeField && feeField.value.trim() !== "") {
+    deliveryFee = Number(feeField.value);
+  } else if (
+    status !== "pendiente" &&
+    status !== "cancelado"
+  ) {
+    const answer = prompt(
+      "Ingresa el costo de delivery en pesos chilenos:"
+    );
+
+    if (answer === null) return;
+
+    deliveryFee = Number(answer);
+  }
+
+  if (
+    deliveryFee !== null &&
+    (!Number.isSafeInteger(deliveryFee) || deliveryFee < 0)
+  ) {
+    alert("El costo de delivery debe ser un número válido igual o mayor a cero.");
+    return;
+  }
+
+  if (
+    order.fulfillment_method === "delivery" &&
+    status !== "pendiente" &&
+    status !== "cancelado" &&
+    deliveryFee === null
+  ) {
+    alert("Debes ingresar el costo de delivery antes de confirmar el pedido.");
+    return;
+  }
+
+  const button = document.querySelector(
+    `[data-save-order="${CSS.escape(orderId)}"]`
+  );
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Guardando...";
+  }
+
+  try {
+    const response = await api("/api/orders", {
+      method: "PATCH",
+      body: JSON.stringify({
+        id: orderId,
+        status,
+        delivery_fee: deliveryFee
+      })
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || "No se pudo actualizar el pedido."
+      );
+    }
+
+    await loadOrders();
+
+    alert("Pedido actualizado correctamente.");
+
+  } catch (error) {
+    alert(error.message);
+
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Guardar cambios";
+    }
+  }
+}
+
+// FILTROS Y ACTUALIZACIÓN DE PEDIDOS
+
+["ordersDateFrom", "ordersDateTo", "ordersFulfillment", "ordersStatus"]
+  .forEach(id => {
+    const field = $("#" + id);
+    if (field) {
+      field.addEventListener("change", renderOrders);
+    }
+  });
+
+$("#refreshOrders")?.addEventListener("click", async () => {
+  const button = $("#refreshOrders");
+  button.disabled = true;
+  button.textContent = "Actualizando...";
+
+  try {
+    await loadOrders();
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = "Actualizar pedidos";
+  }
+});
+
+$("#ordersList")?.addEventListener("click", event => {
+  const button = event.target.closest("[data-save-order]");
+  if (!button) return;
+
+  saveOrder(button.dataset.saveOrder);
+});
 
 // PREVISUALIZACIÓN DE IMÁGENES
 
