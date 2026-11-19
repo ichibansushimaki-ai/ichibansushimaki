@@ -997,16 +997,7 @@ document.addEventListener("click", event => {
   }
 });
 
-  if (plus) updateCartQuantity(plus.dataset.cartPlus, 1);
-  if (minus) updateCartQuantity(minus.dataset.cartMinus, -1);
-
-  if (remove) {
-    cart = cart.filter(item => item.key !== remove.dataset.cartRemove);
-    saveCart();
-    openCart();
-  }
-});
-
+  
 // CATÁLOGO Y TARJETAS
 
 function card(product) {
