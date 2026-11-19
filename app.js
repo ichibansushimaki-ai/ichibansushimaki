@@ -844,48 +844,87 @@ function openCart() {
   $("#sendWhatsApp").addEventListener("click", sendOrder);
 }
 
+
 function updateCartQuantity(key, change) {
   const item = cart.find(entry => entry.key === key);
   if (!item) return;
 
-  const next = item.quantity + change;
+  const previousQuantity = item.quantity;
+  const next = previousQuantity + change;
 
   if (next <= 0) {
     cart = cart.filter(entry => entry.key !== key);
   } else {
+    const hasFreeSauces =
+      item.config &&
+      (item.config.soy !== undefined ||
+       item.config.teriyaki !== undefined);
+
+    let editSauces = false;
+
+    if (change > 0 && hasFreeSauces) {
+      editSauces = window.confirm(
+        "Has aumentado la cantidad de productos.\n\n" +
+        "¿Deseas redistribuir las salsas de cortesía?\n\n" +
+        "Aceptar: Editar las salsas.\n" +
+        "Cancelar: Continuar con la distribución anterior."
+      );
+    }
+
     item.quantity = Math.min(20, next);
 
     if (item.config?.vegetables && item.product_type === "promotion") {
-      const product = products.find(p => String(p.id) === String(item.id));
-      const rollsPerPromo = Number(parseOptions(product?.options).rolls_count || 1);
+      const product = products.find(
+        p => String(p.id) === String(item.id)
+      );
+
+      const rollsPerPromo = Number(
+        parseOptions(product?.options).rolls_count || 1
+      );
+
       const totalRolls = rollsPerPromo * item.quantity;
 
       while (item.config.vegetables.length < totalRolls) {
         item.config.vegetables.push("Cebollín");
       }
 
-      item.config.vegetables = item.config.vegetables.slice(0, totalRolls);
+      item.config.vegetables =
+        item.config.vegetables.slice(0, totalRolls);
     }
 
-if (item.config && (item.config.soy !== undefined || item.config.teriyaki !== undefined)) {
-  const totalSauces = getFreeSaucesPerUnit(item) * item.quantity;
+    if (hasFreeSauces && !editSauces) {
+      const totalSauces =
+        getFreeSaucesPerUnit(item) * item.quantity;
 
-  const oldSoy = Number(item.config.soy || 0);
-  const oldTeriyaki = Number(item.config.teriyaki || 0);
-  const oldTotal = oldSoy + oldTeriyaki;
+      const oldSoy = Number(item.config.soy || 0);
+      const oldTeriyaki = Number(item.config.teriyaki || 0);
+      const oldTotal = oldSoy + oldTeriyaki;
 
-  if (oldTotal > 0) {
-    item.config.soy = Math.round(
-      totalSauces * oldSoy / oldTotal
-    );
+      if (oldTotal > 0) {
+        item.config.soy = Math.round(
+          totalSauces * oldSoy / oldTotal
+        );
 
-    item.config.teriyaki =
-      totalSauces - item.config.soy;
-  } else {
-    item.config.soy = totalSauces;
-    item.config.teriyaki = 0;
-  }
-}
+        item.config.teriyaki =
+          totalSauces - item.config.soy;
+      } else {
+        item.config.soy = totalSauces;
+        item.config.teriyaki = 0;
+      }
+    }
+
+    saveCart();
+
+    if (editSauces) {
+      const product = products.find(
+        p => String(p.id) === String(item.id)
+      );
+
+      if (product) {
+        openProduct(product, item);
+        return;
+      }
+    }
   }
 
   saveCart();
