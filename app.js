@@ -1215,12 +1215,13 @@ async function sendOrder(fulfillment = {}) {
         address: fulfillment.address || null,
         reference: fulfillment.reference || null,
         subtotal,
-        items: cart.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          unit_price: item.price,
-          config: item.config || {}
-        }))
+       items: cart.map(item => ({
+  id: item.id,
+  name: item.name,
+  quantity: item.quantity,
+  unit_price: item.price,
+  config: item.config || {}
+}))
       })
     });
 
