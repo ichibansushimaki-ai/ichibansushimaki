@@ -308,26 +308,40 @@ function addStoreStyles() {
   style.textContent = `
     .product .inside { display:flex; flex-direction:column; gap:10px; }
     <CodeBlock language="css" editable>
-.product-add {
-  border:1px solid var(--red,#b51f2b);
-  border-radius:8px;
-  padding:13px 16px;
-  background:var(--red,#b51f2b);
-  color:white;
-  font-weight:700;
-  cursor:pointer;
-  width:100%;
-  box-shadow:0 4px 14px #b9272e33;
-  transition:all .25s ease;
-}
 
+.product-add {
+  position: relative;
+  border: 1px solid #c9a45c;
+  border-radius: 6px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #b51f2b, #861923);
+  color: #fffaf2;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  box-shadow:
+    inset 0 1px 0 #ffffff25,
+    0 4px 12px #00000025;
+  transition: all .25s ease;
+}
 
 .product-add:hover {
-background:#d33138;
-border-color:var(--gold);
-transform:translateY(-2px);
-box-shadow:0 7px 20px #b9272e55;
+  background: linear-gradient(135deg, #d33138, #a51d27);
+  border-color: #e4c47d;
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 #ffffff30,
+    0 7px 18px #00000035;
 }
+
+.product-add:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px #00000025;
+}
+
 </CodeBlock>
     .ichiban-cart-button {
       position:fixed; right:22px; bottom:22px; z-index:900;
@@ -367,49 +381,63 @@ box-shadow:0 7px 20px #b9272e55;
       font-size:26px; color:#333;
     }
     <CodeBlock language="css" editable>
+
 .ichiban-dialog .dialog-primary,.cart-checkout {
-  border:1px solid var(--red,#b51f2b);
-  border-radius:8px;
-  padding:13px 18px;
-  background:var(--red,#b51f2b);
-  color:white;
-  font-weight:700;
+  border:1px solid #c9a45c;
+  border-radius:6px;
+  padding:15px 18px;
+  background:linear-gradient(135deg,#b51f2b,#861923);
+  color:#fffaf2;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:1px;
+  text-transform:uppercase;
   width:100%;
   margin-top:16px;
   cursor:pointer;
-  box-shadow:0 4px 14px #b9272e33;
+  box-shadow:inset 0 1px 0 #ffffff25,0 4px 12px #00000025;
   transition:all .25s ease;
 }
 
-
 .ichiban-dialog .dialog-primary:hover,
 .cart-checkout:hover {
-background:#d33138;
-border-color:var(--gold);
-transform:translateY(-2px);
-box-shadow:0 7px 20px #b9272e55;
+  background:linear-gradient(135deg,#d33138,#a51d27);
+  border-color:#e4c47d;
+  transform:translateY(-2px);
+  box-shadow:inset 0 1px 0 #ffffff30,0 7px 18px #00000035;
 }
+
+.ichiban-dialog .dialog-primary:active,
+.cart-checkout:active {
+  transform:translateY(0);
+}
+
 </CodeBlock>
     <CodeBlock language="css" editable>
+
 .dialog-secondary {
-  border:1px solid #a99a86;
-  border-radius:8px;
-  padding:11px 16px;
-  background:transparent;
-  color:#333;
+  border:1px solid #b89b60;
+  border-radius:6px;
+  padding:13px 16px;
+  background:#211e1a;
+  color:#eadcc5;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.7px;
+  text-transform:uppercase;
   width:100%;
-  margin-top:8px;
+  margin-top:9px;
   cursor:pointer;
   transition:all .25s ease;
 }
 
-
 .dialog-secondary:hover {
-background:var(--red,#b51f2b);
-border-color:var(--red,#b51f2b);
-color:white;
-transform:translateY(-2px);
+  background:#302923;
+  border-color:#e4c47d;
+  color:#fffaf2;
+  transform:translateY(-2px);
 }
+
 </CodeBlock>
     .dialog-note {
       padding:12px; background:#e9e0d4; border-radius:8px;
