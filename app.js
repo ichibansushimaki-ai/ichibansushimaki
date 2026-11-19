@@ -506,11 +506,13 @@ function cartItemDescription(item) {
 
 // PERSONALIZACIÓN DE PRODUCTOS
 
-function openProduct(product) {
+
+function openProduct(product, editingItem = null) {
   currentProduct = product;
 
   const type = getType(product);
   const options = parseOptions(product.options);
+  const initialConfig = editingItem?.config || {};
 
   const isPromo = type === "promotion";
   const isRoll = type === "roll";
@@ -529,8 +531,7 @@ function openProduct(product) {
         ? 2
         : 0;
 
-  const chopsticksPerUnit = isPromo || isRoll ? (isPromo ? rollCount : 1) : 0;
-    const paidSauceProducts = (isRoll || isPromo || isHandroll || isDish)
+  const paidSauceProducts = (isRoll || isPromo || isHandroll || isDish)
     ? products.filter(p =>
         isEnabled(p.available) &&
         getType(p) === "sauce"
@@ -538,12 +539,13 @@ function openProduct(product) {
     : [];
 
   let configuration = "";
-    const chopsticksChoice = (isRoll || isPromo) ? `
+
+  const chopsticksChoice = (isRoll || isPromo) ? `
     <h3>¿Deseas palitos chinos?</h3>
     <p>Puedes elegir si deseas recibir palitos con tu pedido.</p>
     <select id="wantsChopsticks">
-      <option value="yes">Sí, deseo palitos</option>
-      <option value="no" selected>No, gracias</option>
+      <option value="yes" ${initialConfig.wantsChopsticks === true ? "selected" : ""}>Sí, deseo palitos</option>
+      <option value="no" ${initialConfig.wantsChopsticks !== true ? "selected" : ""}>No, gracias</option>
     </select>
     <div class="dialog-note">
       Si los deseas, calcularemos 1 par por cada roll, con un máximo de 6 pares por pedido.
@@ -558,17 +560,20 @@ function openProduct(product) {
         Incluye una salsa por roll y palitos según las reglas de la tienda.
       </div>
       <div id="vegetableChoices">
-        ${Array.from({length:rollCount},(_,i)=>`
-          <div class="veg-row">
-            <label for="veg${i}">Roll ${i+1}</label>
-            <select id="veg${i}" class="veg-choice">
-              <option>Cebollín</option>
-              <option>Pimentón</option>
-              <option>Palta</option>
-              <option>Sin vegetal</option>
-            </select>
-          </div>
-        `).join("")}
+        ${Array.from({length: rollCount * Number(editingItem?.quantity || 1)}, (_, i) => {
+          const vegetable = initialConfig.vegetables?.[i] || "Cebollín";
+
+          return `
+            <div class="veg-row">
+              <label for="veg${i}">Roll ${i + 1}</label>
+              <select id="veg${i}" class="veg-choice">
+                ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
+                  `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
+                ).join("")}
+              </select>
+            </div>
+          `;
+        }).join("")}
       </div>
     `;
   } else if (isRoll) {
@@ -579,43 +584,57 @@ function openProduct(product) {
     configuration = `<div class="dialog-note">Incluye hasta 2 salsas de cortesía por unidad. No incluye palitos.</div>`;
   }
 
+  const initialQuantity = editingItem?.quantity || 1;
+
+  const initialSoy = editingItem
+    ? Number(initialConfig.soy || 0)
+    : freePerUnit;
+
+  const initialTeriyaki = Number(initialConfig.teriyaki || 0);
+
   const sauceFields = freePerUnit > 0 ? `
     <h3>Salsas de cortesía</h3>
     <p>Elige cómo distribuir las ${freePerUnit} salsas incluidas por unidad.</p>
     <div class="dialog-grid">
       <div>
         <label for="soyCount">Soya</label>
-        <input id="soyCount" type="number" min="0" max="${freePerUnit}" value="${freePerUnit}">
+        <input id="soyCount" type="number" min="0" value="${initialSoy}">
       </div>
       <div>
         <label for="teriyakiCount">Teriyaki</label>
-        <input id="teriyakiCount" type="number" min="0" max="${freePerUnit}" value="0">
+        <input id="teriyakiCount" type="number" min="0" value="${initialTeriyaki}">
       </div>
     </div>
     <p id="sauceValidation" class="dialog-note">
       Total de cortesía: ${freePerUnit}. No se pueden superar las unidades incluidas.
     </p>
   ` : `<div class="dialog-note">Este producto no incluye salsas de cortesía.</div>`;
-    const paidSauceFields = paidSauceProducts.length ? `
-    <h3>Salsas adicionales (con costo)</h3>
-    <p>Selecciona las cantidades que deseas agregar a tu pedido.</p>
 
+  const paidSauceFields = paidSauceProducts.length ? `
+    <h3>Salsas adicionales (con costo)</h3>
+    <p>Selecciona las cantidades adicionales que deseas para este producto.</p>
     <div class="dialog-note">
       Estas salsas tienen un costo adicional y no reemplazan las de cortesía.
     </div>
 
-    ${paidSauceProducts.map(sauce => `
-      <div class="veg-row">
-        <label>${escapeHTML(sauce.name)} · ${money(sauce.price)}</label>
-        <input
-          type="number"
-          class="paid-sauce-quantity"
-          data-sauce-id="${escapeHTML(sauce.id)}"
-          min="0"
-          value="0"
-        >
-      </div>
-    `).join("")}
+    ${paidSauceProducts.map(sauce => {
+      const savedSauce = (initialConfig.paidSauces || []).find(
+        item => String(item.id) === String(sauce.id)
+      );
+
+      return `
+        <div class="veg-row">
+          <label>${escapeHTML(sauce.name)} · ${money(sauce.price)}</label>
+          <input
+            type="number"
+            class="paid-sauce-quantity"
+            data-sauce-id="${escapeHTML(sauce.id)}"
+            min="0"
+            value="${Number(savedSauce?.quantity || 0)}"
+          >
+        </div>
+      `;
+    }).join("")}
   ` : `
     <div class="dialog-note">
       No hay salsas adicionales disponibles.
@@ -623,22 +642,63 @@ function openProduct(product) {
   `;
 
   openDialog(`
-    <h2>${escapeHTML(product.name)}</h2>
+    <h2>${editingItem ? "Editar producto" : escapeHTML(product.name)}</h2>
     <p>${escapeHTML(product.description || "")}</p>
     <h3>${money(product.price)}</h3>
-        ${configuration}
+    ${configuration}
     ${chopsticksChoice}
+
     <label for="productQuantity">Cantidad de productos</label>
-    <input id="productQuantity" type="number" min="1" max="20" value="1">
+    <small class="quantity-help">
+      Indica cuántas unidades deseas llevar de este producto. Puedes agregar promociones, rolls, gohan, bowls y otros productos. La cantidad seleccionada se sumará a tu carrito.
+    </small>
+    <input id="productQuantity" type="number" min="1" max="20" value="${initialQuantity}">
+
     ${sauceFields}
     ${paidSauceFields}
-    <button type="button" class="dialog-primary" id="confirmAdd">Agregar al carrito</button>
+
+    <button type="button" class="dialog-primary" id="confirmAdd">
+      ${editingItem ? "Guardar cambios" : "Agregar al carrito"}
+    </button>
     <button type="button" class="dialog-secondary" data-close>Seguir mirando la carta</button>
   `);
 
   const soy = $("#soyCount");
   const teriyaki = $("#teriyakiCount");
   const quantity = $("#productQuantity");
+    if (isPromo) {
+    quantity.addEventListener("input", () => {
+      const container = $("#vegetableChoices");
+      if (!container) return;
+
+      const totalRolls = rollCount * Math.max(
+        1,
+        Math.min(20, Number(quantity.value) || 1)
+      );
+
+      const previousVegetables = Array.from(
+        container.querySelectorAll(".veg-choice")
+      ).map(select => select.value);
+
+      const vegetables = Array.from(
+        { length: totalRolls },
+        (_, i) => previousVegetables[i] ||
+          initialConfig.vegetables?.[i] ||
+          "Cebollín"
+      );
+
+      container.innerHTML = vegetables.map((vegetable, i) => `
+        <div class="veg-row">
+          <label for="veg${i}">Roll ${i + 1}</label>
+          <select id="veg${i}" class="veg-choice">
+            ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
+              `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
+            ).join("")}
+          </select>
+        </div>
+      `).join("");
+    });
+  }
 
   function validateSauces() {
     if (!soy || !teriyaki) return true;
@@ -658,6 +718,8 @@ function openProduct(product) {
     field.addEventListener("input", validateSauces);
   });
 
+  validateSauces();
+
   $("#confirmAdd").addEventListener("click", () => {
     const qty = Math.max(1, Math.min(20, Number(quantity.value) || 1));
     const config = {};
@@ -675,7 +737,7 @@ function openProduct(product) {
       config.teriyaki = teriyakiValue;
     }
 
-        if (isPromo) {
+    if (isPromo) {
       config.vegetables = Array.from(
         document.querySelectorAll(".veg-choice")
       ).map(select => select.value);
@@ -685,7 +747,8 @@ function openProduct(product) {
       config.wantsChopsticks =
         $("#wantsChopsticks").value === "yes";
     }
-        config.paidSauces = Array.from(
+
+    config.paidSauces = Array.from(
       document.querySelectorAll(".paid-sauce-quantity")
     )
       .map(input => ({
@@ -695,7 +758,8 @@ function openProduct(product) {
       .filter(sauce => sauce.quantity > 0);
 
     const item = {
-      key: Date.now().toString() + Math.random().toString(16).slice(2),
+      key: editingItem?.key ||
+        Date.now().toString() + Math.random().toString(16).slice(2),
       id: product.id,
       name: product.name,
       price: Number(product.price),
@@ -704,12 +768,24 @@ function openProduct(product) {
       config
     };
 
-    cart.push(item);
+    if (editingItem) {
+      const index = cart.findIndex(entry => entry.key === editingItem.key);
+
+      if (index !== -1) {
+        cart[index] = item;
+      } else {
+        cart.push(item);
+      }
+    } else {
+      cart.push(item);
+    }
+
     saveCart();
     closeDialog();
     openCart();
   });
 }
+
 
 // CARRITO
 
@@ -738,12 +814,13 @@ function openCart() {
         </div>
         <small>${item.quantity} × ${money(item.price)}</small>
         ${description ? `<small>${escapeHTML(description)}</small>` : ""}
-        <div class="cart-line-actions">
-          <button type="button" data-cart-minus="${item.key}">−</button>
-          <strong>${item.quantity}</strong>
-          <button type="button" data-cart-plus="${item.key}">+</button>
-          <button type="button" data-cart-remove="${item.key}">Eliminar</button>
-        </div>
+     <div class="cart-line-actions">
+  <button type="button" data-cart-minus="${item.key}">−</button>
+  <strong>${item.quantity}</strong>
+  <button type="button" data-cart-plus="${item.key}">+</button>
+  <button type="button" data-cart-edit="${item.key}">Editar</button>
+  <button type="button" data-cart-remove="${item.key}">Eliminar</button>
+</div>
       </div>
     `;
   }).join("");
@@ -891,6 +968,34 @@ document.addEventListener("click", event => {
   const plus = event.target.closest("[data-cart-plus]");
   const minus = event.target.closest("[data-cart-minus]");
   const remove = event.target.closest("[data-cart-remove]");
+  const edit = event.target.closest("[data-cart-edit]");
+
+  if (plus) updateCartQuantity(plus.dataset.cartPlus, 1);
+  if (minus) updateCartQuantity(minus.dataset.cartMinus, -1);
+
+  if (edit) {
+    const item = cart.find(entry => entry.key === edit.dataset.cartEdit);
+
+    if (!item) return;
+
+    const product = products.find(
+      p => String(p.id) === String(item.id)
+    );
+
+    if (!product) {
+      alert("No se encontró este producto en la carta.");
+      return;
+    }
+
+    openProduct(product, item);
+  }
+
+  if (remove) {
+    cart = cart.filter(item => item.key !== remove.dataset.cartRemove);
+    saveCart();
+    openCart();
+  }
+});
 
   if (plus) updateCartQuantity(plus.dataset.cartPlus, 1);
   if (minus) updateCartQuantity(minus.dataset.cartMinus, -1);
