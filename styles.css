@@ -174,8 +174,19 @@ body {
 }
 
 .btn-outline {
-  border-color: var(--gold);
+  border: 1px solid var(--gold);
   color: white;
+  background: transparent;
+  border-radius: 5px;
+  transition: all .25s ease;
+}
+
+.btn-outline:hover {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px #b9272e55;
 }
 
 .hero {
