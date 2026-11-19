@@ -980,7 +980,42 @@ function getFilteredOrders() {
   });
 }
 
+
+function getLocalDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getMonday(date) {
+  const monday = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+
+  const day = monday.getDay();
+  const difference = day === 0 ? -6 : 1 - day;
+
+  monday.setDate(monday.getDate() + difference);
+  monday.setHours(0, 0, 0, 0);
+
+  return monday;
+}
+
 function renderOrderStats(filteredOrders) {
+  const now = new Date();
+  const today = getLocalDateKey(now);
+
+  const monday = getMonday(now);
+  const weekStart = getLocalDateKey(monday);
+
+  const monthStart = `${now.getFullYear()}-${String(
+    now.getMonth() + 1
+  ).padStart(2, "0")}-01`;
+
   const pending = filteredOrders.filter(
     order => order.status === "pendiente"
   ).length;
@@ -993,17 +1028,63 @@ function renderOrderStats(filteredOrders) {
     order => order.fulfillment_method === "pickup"
   ).length;
 
-  const sales = filteredOrders.reduce((sum, order) => {
-    if (!orderIsSale(order) || order.total === null) return sum;
-    return sum + Number(order.total || 0);
-  }, 0);
+  const cancelled = filteredOrders.filter(
+    order => order.status === "cancelado"
+  ).length;
+
+  const salesOrders = filteredOrders.filter(order =>
+    orderIsSale(order) &&
+    order.total !== null &&
+    order.total !== undefined
+  );
+
+  const totalSales = list =>
+    list.reduce(
+      (sum, order) => sum + Number(order.total || 0),
+      0
+    );
+
+  const salesToday = salesOrders.filter(
+    order => orderDateKey(order.created_at) === today
+  );
+
+  const salesWeek = salesOrders.filter(order => {
+    const date = orderDateKey(order.created_at);
+    return date && date >= weekStart && date <= today;
+  });
+
+  const salesMonth = salesOrders.filter(order => {
+    const date = orderDateKey(order.created_at);
+    return date && date >= monthStart && date <= today;
+  });
+
+  const deliverySales = salesOrders.filter(
+    order => order.fulfillment_method === "delivery"
+  );
+
+  const pickupSales = salesOrders.filter(
+    order => order.fulfillment_method === "pickup"
+  );
 
   $("#statOrders").textContent = filteredOrders.length;
   $("#statPending").textContent = pending;
-  $("#statSales").textContent = money(sales);
+  $("#statSales").textContent = money(totalSales(salesOrders));
   $("#statDelivery").textContent = delivery;
   $("#statPickup").textContent = pickup;
+
+  $("#statToday").textContent = money(totalSales(salesToday));
+  $("#statWeek").textContent = money(totalSales(salesWeek));
+  $("#statMonth").textContent = money(totalSales(salesMonth));
+
+  $("#statDeliverySales").textContent =
+    money(totalSales(deliverySales));
+
+  $("#statPickupSales").textContent =
+    money(totalSales(pickupSales));
+
+  $("#statCancelled").textContent = cancelled;
 }
+
 
 function describeOrderConfig(config) {
   if (!config || typeof config !== "object") return "";
