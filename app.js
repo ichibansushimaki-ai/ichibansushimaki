@@ -452,12 +452,27 @@ function saveCart() {
   localStorage.setItem("ichiban-cart", JSON.stringify(cart));
   updateCartCount();
 }
+function getPaidSaucesTotal(item) {
+  return (item.config?.paidSauces || []).reduce((total, sauce) => {
+    const product = products.find(
+      p => String(p.id) === String(sauce.id)
+    );
+
+    if (!product) return total;
+
+    return total + Number(product.price || 0) * Number(sauce.quantity || 0);
+  }, 0);
+}
 
 function cartTotal() {
-  return cart.reduce((sum, item) =>
-    sum + Number(item.price || 0) * Number(item.quantity || 1), 0
-  );
+  return cart.reduce((sum, item) => {
+    const productsTotal =
+      Number(item.price || 0) * Number(item.quantity || 1);
+
+    return sum + productsTotal + getPaidSaucesTotal(item);
+  }, 0);
 }
+
 
 function cartItemDescription(item) {
   const parts = [];
@@ -472,6 +487,19 @@ function cartItemDescription(item) {
   }
 
   if (config.note) parts.push(config.note);
+    if (config.paidSauces?.length) {
+    config.paidSauces.forEach(sauce => {
+      const product = products.find(
+        p => String(p.id) === String(sauce.id)
+      );
+
+      if (product) {
+        parts.push(
+          `${product.name}: ${sauce.quantity} × ${money(product.price)} = ${money(product.price * sauce.quantity)}`
+        );
+      }
+    });
+  }
 
   return parts.join(" · ");
 }
@@ -502,6 +530,12 @@ function openProduct(product) {
         : 0;
 
   const chopsticksPerUnit = isPromo || isRoll ? (isPromo ? rollCount : 1) : 0;
+    const paidSauceProducts = (isRoll || isPromo || isHandroll || isDish)
+    ? products.filter(p =>
+        isEnabled(p.available) &&
+        getType(p) === "sauce"
+      )
+    : [];
 
   let configuration = "";
     const chopsticksChoice = (isRoll || isPromo) ? `
@@ -562,6 +596,31 @@ function openProduct(product) {
       Total de cortesía: ${freePerUnit}. No se pueden superar las unidades incluidas.
     </p>
   ` : `<div class="dialog-note">Este producto no incluye salsas de cortesía.</div>`;
+    const paidSauceFields = paidSauceProducts.length ? `
+    <h3>Salsas adicionales (con costo)</h3>
+    <p>Selecciona las cantidades que deseas agregar a tu pedido.</p>
+
+    <div class="dialog-note">
+      Estas salsas tienen un costo adicional y no reemplazan las de cortesía.
+    </div>
+
+    ${paidSauceProducts.map(sauce => `
+      <div class="veg-row">
+        <label>${escapeHTML(sauce.name)} · ${money(sauce.price)}</label>
+        <input
+          type="number"
+          class="paid-sauce-quantity"
+          data-sauce-id="${escapeHTML(sauce.id)}"
+          min="0"
+          value="0"
+        >
+      </div>
+    `).join("")}
+  ` : `
+    <div class="dialog-note">
+      No hay salsas adicionales disponibles.
+    </div>
+  `;
 
   openDialog(`
     <h2>${escapeHTML(product.name)}</h2>
@@ -572,6 +631,7 @@ function openProduct(product) {
     <label for="productQuantity">Cantidad de productos</label>
     <input id="productQuantity" type="number" min="1" max="20" value="1">
     ${sauceFields}
+    ${paidSauceFields}
     <button type="button" class="dialog-primary" id="confirmAdd">Agregar al carrito</button>
     <button type="button" class="dialog-secondary" data-close>Seguir mirando la carta</button>
   `);
@@ -625,6 +685,14 @@ function openProduct(product) {
       config.wantsChopsticks =
         $("#wantsChopsticks").value === "yes";
     }
+        config.paidSauces = Array.from(
+      document.querySelectorAll(".paid-sauce-quantity")
+    )
+      .map(input => ({
+        id: input.dataset.sauceId,
+        quantity: Math.max(0, Number(input.value) || 0)
+      }))
+      .filter(sauce => sauce.quantity > 0);
 
     const item = {
       key: Date.now().toString() + Math.random().toString(16).slice(2),
@@ -784,6 +852,19 @@ function sendOrder() {
 
     if (config.soy !== undefined || config.teriyaki !== undefined) {
       lines.push(`Salsas de cortesía: ${config.soy || 0} soya y ${config.teriyaki || 0} teriyaki`);
+    }
+        if (config.paidSauces?.length) {
+      config.paidSauces.forEach(sauce => {
+        const product = products.find(
+          p => String(p.id) === String(sauce.id)
+        );
+
+        if (product) {
+          lines.push(
+            `Salsa adicional: ${product.name} × ${sauce.quantity} = ${money(product.price * sauce.quantity)}`
+          );
+        }
+      });
     }
 
     return lines.join("\n");
