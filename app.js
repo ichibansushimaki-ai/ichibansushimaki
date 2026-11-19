@@ -504,6 +504,17 @@ function openProduct(product) {
   const chopsticksPerUnit = isPromo || isRoll ? (isPromo ? rollCount : 1) : 0;
 
   let configuration = "";
+    const chopsticksChoice = (isRoll || isPromo) ? `
+    <h3>¿Deseas palitos chinos?</h3>
+    <p>Puedes elegir si deseas recibir palitos con tu pedido.</p>
+    <select id="wantsChopsticks">
+      <option value="yes">Sí, deseo palitos</option>
+      <option value="no" selected>No, gracias</option>
+    </select>
+    <div class="dialog-note">
+      Si los deseas, calcularemos 1 par por cada roll, con un máximo de 6 pares por pedido.
+    </div>
+  ` : "";
 
   if (isPromo) {
     configuration = `
@@ -556,7 +567,8 @@ function openProduct(product) {
     <h2>${escapeHTML(product.name)}</h2>
     <p>${escapeHTML(product.description || "")}</p>
     <h3>${money(product.price)}</h3>
-    ${configuration}
+        ${configuration}
+    ${chopsticksChoice}
     <label for="productQuantity">Cantidad de productos</label>
     <input id="productQuantity" type="number" min="1" max="20" value="1">
     ${sauceFields}
@@ -603,10 +615,15 @@ function openProduct(product) {
       config.teriyaki = teriyakiValue;
     }
 
-    if (isPromo) {
+        if (isPromo) {
       config.vegetables = Array.from(
         document.querySelectorAll(".veg-choice")
       ).map(select => select.value);
+    }
+
+    if (isRoll || isPromo) {
+      config.wantsChopsticks =
+        $("#wantsChopsticks").value === "yes";
     }
 
     const item = {
@@ -732,13 +749,21 @@ function calculateChopsticks() {
   let total = 0;
 
   cart.forEach(item => {
+    if (item.config?.wantsChopsticks !== true) return;
+
     if (item.product_type === "roll") {
       total += item.quantity;
     }
 
     if (item.product_type === "promotion") {
-      const product = products.find(p => String(p.id) === String(item.id));
-      const rolls = Number(parseOptions(product?.options).rolls_count || 1);
+      const product = products.find(
+        p => String(p.id) === String(item.id)
+      );
+
+      const rolls = Number(
+        parseOptions(product?.options).rolls_count || 1
+      );
+
       total += rolls * item.quantity;
     }
   });
