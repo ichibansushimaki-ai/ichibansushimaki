@@ -343,13 +343,35 @@ function addStoreStyles() {
 }
 
 
-    .ichiban-cart-button {
-      position:fixed; right:22px; bottom:22px; z-index:900;
-      border:0; border-radius:50px; padding:15px 20px;
-      background:var(--red,#b51f2b); color:white;
-      font-weight:700; font-size:15px; cursor:pointer;
-      box-shadow:0 5px 24px #0005;
-    }
+    
+.ichiban-cart-button {
+  position:fixed;
+  right:22px;
+  bottom:22px;
+  z-index:900;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:1px solid #d4b56f;
+  border-radius:7px;
+  padding:15px 23px;
+  background:linear-gradient(135deg,#b51f2b,#801722);
+  color:#fffaf2;
+  font-size:14px;
+  font-weight:800;
+  letter-spacing:.6px;
+  cursor:pointer;
+  box-shadow:0 5px 20px #0005;
+  transition:all .25s ease;
+}
+
+.ichiban-cart-button:hover {
+  background:linear-gradient(135deg,#d33138,#a51d27);
+  border-color:#f0d18b;
+  transform:translateY(-3px);
+  box-shadow:0 9px 25px #0006;
+}
+
     .ichiban-cart-count {
       display:inline-flex; align-items:center; justify-content:center;
       min-width:23px; height:23px; margin-left:7px;
@@ -446,9 +468,140 @@ function addStoreStyles() {
     .dialog-grid {
       display:grid; grid-template-columns:1fr 1fr; gap:12px;
     }
-    .cart-line {
-      padding:13px 0; border-bottom:1px solid #d1c7bb;
-    }
+   
+.cart-heading {
+  padding:4px 0 18px;
+  border-bottom:1px solid #c9a45c;
+  margin-bottom:12px;
+}
+
+.cart-heading h2 {
+  margin:4px 0 6px;
+  font-family:var(--font-display);
+  font-size:27px;
+  color:#211d19;
+}
+
+.cart-heading > p:last-child {
+  margin:0;
+  color:#766b60;
+  font-size:14px;
+}
+
+.cart-eyebrow {
+  margin:0;
+  color:#a51f29;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:2px;
+}
+
+.cart-items {
+  margin-top:8px;
+}
+
+.cart-line {
+  padding:17px 0;
+  border-bottom:1px solid #d8cbbb;
+}
+
+.cart-line-top {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.cart-line-info h3 {
+  margin:0 0 5px;
+  color:#28231f;
+  font-size:16px;
+  font-weight:800;
+}
+
+.cart-line-info small {
+  color:#81766b;
+  font-size:12px;
+}
+
+.cart-line-price {
+  color:#9d2029;
+  font-size:16px;
+  white-space:nowrap;
+}
+
+.cart-line-description {
+  margin-top:10px;
+  padding:9px 11px;
+  background:#eee6da;
+  border-left:3px solid #c9a45c;
+  border-radius:3px;
+  color:#62584e;
+  font-size:12px;
+  line-height:1.6;
+}
+
+.cart-line-actions {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:13px;
+}
+
+.cart-line-actions button {
+  border:1px solid #c9b99f;
+  border-radius:5px;
+  padding:8px 11px;
+  background:#fffaf2;
+  color:#302820;
+  font-size:12px;
+  font-weight:700;
+  transition:all .2s ease;
+}
+
+.cart-line-actions button:hover {
+  background:#a51f29;
+  border-color:#a51f29;
+  color:white;
+}
+
+.cart-line-actions strong {
+  min-width:18px;
+  text-align:center;
+  color:#28231f;
+}
+
+.cart-summary {
+  margin-top:15px;
+  padding:15px;
+  background:#eee6da;
+  border:1px solid #d8cbbb;
+  border-radius:7px;
+}
+
+.cart-total {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:19px;
+  font-weight:800;
+  color:#28231f;
+}
+
+.cart-total strong {
+  color:#9d2029;
+}
+
+.cart-empty {
+  text-align:center;
+  padding:28px 8px;
+}
+
+.cart-empty h2 {
+  color:#28231f;
+}
+
     .cart-line-head {
       display:flex; justify-content:space-between; gap:12px;
       font-weight:700;
@@ -1009,35 +1162,49 @@ function openFulfillment() {
   });
 }
 
+
 function openCart() {
   if (!cart.length) {
     openDialog(`
-      <h2>Mi pedido</h2>
       <div class="cart-empty">
-        <div style="font-size:42px">🛒</div>
-        <h3>Tu carrito está vacío</h3>
-        <p>Agrega tus preparaciones favoritas para comenzar tu pedido.</p>
+        <div style="font-size:48px">🛒</div>
+        <p class="cart-eyebrow">ICHIBAN SUSHI MAKI</p>
+        <h2>Tu pedido está vacío</h2>
+        <p>Descubre nuestras preparaciones y agrega tus favoritas.</p>
+        <button type="button" class="dialog-primary" data-close>
+          Volver a la carta
+        </button>
       </div>
-      <button type="button" class="dialog-primary" data-close>Volver a la carta</button>
     `);
     return;
   }
 
   const lines = cart.map(item => {
     const description = cartItemDescription(item);
+    const itemTotal =
+      Number(item.price || 0) * Number(item.quantity || 1) +
+      getPaidSaucesTotal(item);
 
     return `
       <div class="cart-line">
-        <div class="cart-line-head">
-          <span>${escapeHTML(item.name)}</span>
-          <span>${money(item.price * item.quantity)}</span>
+        <div class="cart-line-top">
+          <div class="cart-line-info">
+            <h3>${escapeHTML(item.name)}</h3>
+            <small>${item.quantity} × ${money(item.price)}</small>
+          </div>
+          <strong class="cart-line-price">${money(itemTotal)}</strong>
         </div>
-        <small>${item.quantity} × ${money(item.price)}</small>
-        ${description ? `<small>${escapeHTML(description)}</small>` : ""}
+
+        ${description ? `
+          <div class="cart-line-description">
+            ${escapeHTML(description)}
+          </div>
+        ` : ""}
+
         <div class="cart-line-actions">
-          <button type="button" data-cart-minus="${item.key}">−</button>
+          <button type="button" data-cart-minus="${item.key}" aria-label="Disminuir cantidad">−</button>
           <strong>${item.quantity}</strong>
-          <button type="button" data-cart-plus="${item.key}">+</button>
+          <button type="button" data-cart-plus="${item.key}" aria-label="Aumentar cantidad">+</button>
           <button type="button" data-cart-edit="${item.key}">Editar</button>
           <button type="button" data-cart-remove="${item.key}">Eliminar</button>
         </div>
@@ -1046,17 +1213,26 @@ function openCart() {
   }).join("");
 
   openDialog(`
-    <h2>Mi pedido</h2>
-    ${lines}
-
-    <div class="cart-total">
-      <span>Subtotal</span>
-      <span>${money(cartTotal())}</span>
+    <div class="cart-heading">
+      <p class="cart-eyebrow">ICHIBAN SUSHI MAKI</p>
+      <h2>Mi pedido</h2>
+      <p>Revisa tus preparaciones antes de continuar.</p>
     </div>
 
-    <p class="dialog-note">
-      El costo del delivery se calcula según la distancia desde nuestro local y será informado por nuestro equipo.
-    </p>
+    <div class="cart-items">
+      ${lines}
+    </div>
+
+    <div class="cart-summary">
+      <div class="cart-total">
+        <span>Subtotal</span>
+        <strong>${money(cartTotal())}</strong>
+      </div>
+
+      <p class="dialog-note">
+        El costo del delivery se calcula según la distancia desde nuestro local y será informado por nuestro equipo.
+      </p>
+    </div>
 
     <button type="button" class="cart-checkout" id="sendWhatsApp">
       Continuar pedido
