@@ -393,6 +393,237 @@ button:disabled{
     padding:5px 8px;
   }
 }
+/* PANEL DE PEDIDOS Y VENTAS */
+
+.orders-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.order-stat {
+  background: #f5f1ec;
+  border: 1px solid #e5ddd3;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-stat small {
+  color: #71675e;
+  font-size: 13px;
+}
+
+.order-stat strong {
+  color: #292521;
+  font-size: 24px;
+  overflow-wrap: anywhere;
+}
+
+.orders-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.orders-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.orders-filters input,
+.orders-filters select {
+  width: 100%;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #d8cec3;
+  border-radius: 8px;
+  background: #fff;
+  color: #292521;
+}
+
+.orders-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+#ordersMessage {
+  color: #71675e;
+  font-size: 13px;
+}
+
+.order-card {
+  background: #fff;
+  border: 1px solid #e5ddd3;
+  border-radius: 12px;
+  padding: 18px;
+  margin: 14px 0;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee7df;
+}
+
+.order-header h3 {
+  margin: 0 0 5px;
+  font-size: 17px;
+}
+
+.order-meta {
+  color: #71675e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.order-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #eee8df;
+  color: #51483f;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.order-items {
+  padding: 14px 0;
+}
+
+.order-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0ebe5;
+}
+
+.order-item:last-child {
+  border-bottom: 0;
+}
+
+.order-item strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.order-item small {
+  display: block;
+  color: #71675e;
+  line-height: 1.5;
+}
+
+.order-totals {
+  display: grid;
+  gap: 6px;
+  max-width: 320px;
+  margin: 12px 0 16px auto;
+}
+
+.order-total-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  font-size: 14px;
+}
+
+.order-total-line.final {
+  padding-top: 8px;
+  border-top: 1px solid #e5ddd3;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.order-actions {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #eee7df;
+}
+
+.order-actions label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.order-actions select,
+.order-actions input {
+  min-width: 160px;
+  padding: 10px;
+  border: 1px solid #d8cec3;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.order-empty {
+  padding: 24px;
+  text-align: center;
+  color: #71675e;
+  background: #f5f1ec;
+  border-radius: 10px;
+}
+
+@media (max-width: 850px) {
+  .orders-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .orders-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .orders-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .order-stat {
+    padding: 12px;
+  }
+
+  .order-stat strong {
+    font-size: 20px;
+  }
+
+  .orders-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .order-card {
+    padding: 13px;
+  }
+
+  .order-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .order-actions label,
+  .order-actions select,
+  .order-actions input {
+    width: 100%;
+  }
+}  
 </style>
 </head>
 
@@ -420,6 +651,83 @@ button:disabled{
 </section>
 
 <div id="editor" hidden>
+
+<section class="box" id="ordersDashboard">
+  <h2>📋 Pedidos y ventas</h2>
+  <p>Administra los pedidos recibidos desde tu página web y controla tus ventas.</p>
+
+  <div class="orders-stats">
+    <div class="order-stat">
+      <small>Pedidos recibidos</small>
+      <strong id="statOrders">0</strong>
+    </div>
+
+    <div class="order-stat">
+      <small>Pendientes</small>
+      <strong id="statPending">0</strong>
+    </div>
+
+    <div class="order-stat">
+      <small>Ventas confirmadas</small>
+      <strong id="statSales">$0</strong>
+    </div>
+
+    <div class="order-stat">
+      <small>Pedidos delivery</small>
+      <strong id="statDelivery">0</strong>
+    </div>
+
+    <div class="order-stat">
+      <small>Pedidos retiro</small>
+      <strong id="statPickup">0</strong>
+    </div>
+  </div>
+
+  <div class="orders-filters">
+    <label>
+      Desde
+      <input type="date" id="ordersDateFrom">
+    </label>
+
+    <label>
+      Hasta
+      <input type="date" id="ordersDateTo">
+    </label>
+
+    <label>
+      Modalidad
+      <select id="ordersFulfillment">
+        <option value="">Todas</option>
+        <option value="delivery">Delivery</option>
+        <option value="pickup">Retiro</option>
+      </select>
+    </label>
+
+    <label>
+      Estado
+      <select id="ordersStatus">
+        <option value="">Todos</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="confirmado">Confirmado</option>
+        <option value="preparando">Preparando</option>
+        <option value="listo">Listo</option>
+        <option value="entregado">Entregado</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="orders-toolbar">
+    <button type="button" class="btn btn-red" id="refreshOrders">
+      Actualizar pedidos
+    </button>
+    <span id="ordersMessage"></span>
+  </div>
+
+  <div id="ordersList">
+    <p>Los pedidos aparecerán aquí.</p>
+  </div>
+</section>
 
 <section class="box">
 <h2>Identidad de la tienda</h2>
