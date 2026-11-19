@@ -1318,20 +1318,42 @@ function card(product) {
   return article;
 }
 
+
 function render() {
   const visible = products.filter(product => isEnabled(product.available));
 
+  // PRODUCTOS DESTACADOS
+  const featuredGrid = $("#featuredGrid");
+
+  if (featuredGrid) {
+    featuredGrid.replaceChildren();
+
+    const featured = visible
+      .filter(product => isEnabled(product.featured))
+      .slice(0, 3);
+
+    if (featured.length) {
+      featured.forEach(product => featuredGrid.appendChild(card(product)));
+    } else {
+      featuredGrid.textContent = "Pronto anunciaremos nuestros productos destacados.";
+    }
+  }
+
+  // PROMOCIONES REALES
   const promoGrid = $("#promoGrid");
-  if (!promoGrid) return;
 
-  promoGrid.replaceChildren();
+  if (promoGrid) {
+    promoGrid.replaceChildren();
 
-  const featured = visible.filter(product => isEnabled(product.featured)).slice(0, 3);
+    const promotions = visible.filter(
+      product => getType(product) === "promotion"
+    );
 
-  if (featured.length) {
-    featured.forEach(product => promoGrid.appendChild(card(product)));
-  } else {
-    promoGrid.textContent = "Pronto anunciaremos promociones.";
+    if (promotions.length) {
+      promotions.forEach(product => promoGrid.appendChild(card(product)));
+    } else {
+      promoGrid.textContent = "Pronto anunciaremos promociones.";
+    }
   }
 
   const standardCategories = [
@@ -1391,6 +1413,7 @@ function render() {
   const year = $("#year");
   if (year) year.textContent = new Date().getFullYear();
 }
+
 
 async function initialize() {
   addStoreStyles();
