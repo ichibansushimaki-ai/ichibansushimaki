@@ -736,7 +736,9 @@ function fillProductForm(product) {
       field.value = value ?? "";
     }
   });
-
+// Recuperar selección de promociones semanales
+form.elements.weekly_promotion.checked =
+  isTrue(product.options?.weekly_promotion);
   const categoryField = form.elements.category;
 
   if (
@@ -859,10 +861,14 @@ $("#productForm").onsubmit = async event => {
       Math.min(100, Number($("#rollsCount").value) || 1)
     );
 
-    data.options = buildProductOptions(
-      data.product_type,
-      rollsCount
-    );
+   data.options = buildProductOptions(
+  data.product_type,
+  rollsCount
+);
+
+// Guardar selección de promociones semanales
+data.options.weekly_promotion =
+  form.elements.weekly_promotion.checked;
 
     const file = $("#imageFile").files[0];
 
