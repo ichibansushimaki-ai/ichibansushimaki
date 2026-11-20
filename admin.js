@@ -41,10 +41,11 @@ const commercialCategories = [
   "Street Food",
   "Promociones Ichiban",
   "Entradas & para compartir",
+  "Gohan",
+  "Tortas Ichiban",
   "Bebidas",
   "Salsas y extras"
 ];
-
 const productTypes = [
   ["roll", "Roll"],
   ["promotion", "Promoción"],
