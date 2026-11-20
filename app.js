@@ -622,11 +622,80 @@ function addStoreStyles() {
     .veg-row { display:grid; grid-template-columns:1fr 1.2fr; gap:8px; align-items:center; margin:8px 0; }
     .veg-row label { margin:0; }
     .cart-checkout:disabled { opacity:.5; cursor:not-allowed; }
-    @media(max-width:600px) {
-      .ichiban-cart-button { right:14px; bottom:14px; }
-      .ichiban-dialog { padding:18px; }
-      .dialog-grid { grid-template-columns:1fr; }
-    }
+   
+
+@media(max-width:600px) {
+  .ichiban-cart-button {
+    right:14px;
+    bottom:14px;
+  }
+
+  .ichiban-dialog {
+    padding:16px;
+  }
+
+  .dialog-grid {
+    grid-template-columns:1fr;
+  }
+
+  .cart-line {
+    padding:16px 0;
+  }
+
+  .cart-line-top {
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  .cart-line-info {
+    min-width:0;
+    flex:1;
+  }
+
+  .cart-line-info h3 {
+    font-size:15px;
+  }
+
+  .cart-line-price {
+    font-size:15px;
+  }
+
+  .cart-line-actions {
+    gap:8px;
+  }
+
+  .cart-line-actions button {
+    min-height:42px;
+    padding:10px 14px;
+    font-size:13px;
+  }
+
+  .cart-line-description {
+    font-size:12px;
+  }
+
+  .cart-summary {
+    padding:13px;
+  }
+
+  .cart-total {
+    font-size:18px;
+  }
+
+    .cart-total strong {
+    font-size:20px;
+  }
+
+  .ichiban-dialog .dialog-primary,
+  .cart-checkout {
+    min-height: 50px;
+    padding: 16px;
+    font-size: 13px;
+    letter-spacing: .7px;
+  }
+}
+
+
   `;
 
   document.head.appendChild(style);
