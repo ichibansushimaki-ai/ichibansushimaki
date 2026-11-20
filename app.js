@@ -1673,8 +1673,35 @@ function render() {
 }
 
 
+
+function setupMobileMenu() {
+  const menuToggle = document.querySelector("#menuToggle");
+  const siteNav = document.querySelector("#siteNav");
+
+  if (!menuToggle || !siteNav) return;
+
+  menuToggle.addEventListener("click", () => {
+    const isOpen = siteNav.classList.toggle("open");
+
+    menuToggle.setAttribute("aria-expanded", String(isOpen));
+    menuToggle.setAttribute(
+      "aria-label",
+      isOpen ? "Cerrar menú" : "Abrir menú"
+    );
+  });
+
+  siteNav.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", () => {
+      siteNav.classList.remove("open");
+      menuToggle.setAttribute("aria-expanded", "false");
+      menuToggle.setAttribute("aria-label", "Abrir menú");
+    });
+  });
+}
+
 async function initialize() {
   addStoreStyles();
+  setupMobileMenu();
   ensureCartUI();
   await loadSettings();
   await loadProducts();
