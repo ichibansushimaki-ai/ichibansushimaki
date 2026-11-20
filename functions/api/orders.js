@@ -24,6 +24,22 @@ function cleanConfig(config) {
   return JSON.parse(serialized);
 }
 
+function parseObject(value) {
+  try {
+    const parsed = typeof value === "string"
+      ? JSON.parse(value || "{}")
+      : value;
+
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {};
+    }
+
+    return parsed;
+  } catch {
+    return {};
+  }
+}
+
 export async function onRequestGet({ request, env }) {
   if (!await authorized(request, env)) {
     return new Response("No autorizado", { status: 401 });
@@ -81,6 +97,25 @@ export async function onRequestPost({ request, env }) {
       ? String(body.reference).trim().slice(0, 500)
       : null;
 
+    const settingsRow = await env.DB.prepare(`
+      SELECT gohan_config
+      FROM store_settings
+      WHERE id = 1
+    `).first();
+
+    const gohanSettings = parseObject(settingsRow?.gohan_config);
+
+    const activeVegetables = (gohanSettings.vegetables || [])
+      .filter(item => item && item.active && item.name)
+      .map(item => String(item.name));
+
+    const activeProteins = (gohanSettings.proteins || [])
+      .filter(item => item && item.active && item.name)
+      .map(item => ({
+        name: String(item.name),
+        surcharge: Number(item.surcharge) || 0
+      }));
+
     let subtotal = 0;
     const validatedItems = [];
 
@@ -96,7 +131,7 @@ export async function onRequestPost({ request, env }) {
       }
 
       const product = await env.DB.prepare(`
-        SELECT id, name, price, available, product_type
+        SELECT id, name, price, available, product_type, options
         FROM products
         WHERE id = ?
       `).bind(String(item.id)).first();
@@ -115,7 +150,92 @@ export async function onRequestPost({ request, env }) {
         return jsonError("Precio de producto no válido.", 500);
       }
 
+      const productOptions = parseObject(product.options);
+      const isGohan = product.product_type === "dish" &&
+        productOptions.gohan_customizable === true;
+
       const config = cleanConfig(item.config);
+
+      let gohanSurcharge = 0;
+
+      if (isGohan) {
+        if (
+          !config.gohan ||
+          typeof config.gohan !== "object" ||
+          Array.isArray(config.gohan)
+        ) {
+          return jsonError("Debes completar la personalización del Gohan.");
+        }
+
+        const gohan = config.gohan;
+
+        if (typeof gohan.creamCheese !== "boolean") {
+          return jsonError("La selección de queso crema no es válida.");
+        }
+
+        if (typeof gohan.noVegetables !== "boolean") {
+          return jsonError("La selección de vegetales no es válida.");
+        }
+
+        if (!Array.isArray(gohan.vegetables)) {
+          return jsonError("La selección de vegetales no es válida.");
+        }
+
+        if (gohan.vegetables.length > 3) {
+          return jsonError("Puedes elegir un máximo de 3 vegetales.");
+        }
+
+        const selectedVegetables = gohan.vegetables.map(String);
+
+        if (new Set(selectedVegetables).size !== selectedVegetables.length) {
+          return jsonError("No puedes repetir vegetales.");
+        }
+
+        if (
+          gohan.noVegetables &&
+          selectedVegetables.length > 0
+        ) {
+          return jsonError("No puedes combinar Sin vegetal con otros vegetales.");
+        }
+
+        for (const vegetable of selectedVegetables) {
+          if (!activeVegetables.includes(vegetable)) {
+            return jsonError(`El vegetal ${vegetable} ya no está disponible.`);
+          }
+        }
+
+        const proteinName = String(gohan.protein || "");
+
+        if (proteinName) {
+          const selectedProtein = activeProteins.find(
+            protein => protein.name === proteinName
+          );
+
+          if (!selectedProtein) {
+            return jsonError("La proteína seleccionada ya no está disponible.");
+          }
+
+          if (
+            !Number.isSafeInteger(selectedProtein.surcharge) ||
+            selectedProtein.surcharge < 0
+          ) {
+            return jsonError("El recargo de la proteína no es válido.", 500);
+          }
+
+          gohanSurcharge = selectedProtein.surcharge;
+        }
+
+        config.gohan = {
+          creamCheese: gohan.creamCheese,
+          vegetables: selectedVegetables,
+          noVegetables: gohan.noVegetables,
+          protein: proteinName,
+          proteinSurcharge: gohanSurcharge
+        };
+
+      } else if (config.gohan !== undefined) {
+        return jsonError("La personalización Gohan no corresponde a este producto.");
+      }
 
       let paidSaucesTotal = 0;
       const validatedPaidSauces = [];
@@ -171,7 +291,16 @@ export async function onRequestPost({ request, env }) {
       }
 
       const productTotal = price * quantity;
-      const lineTotal = productTotal + paidSaucesTotal;
+      const proteinTotal = gohanSurcharge * quantity;
+      const lineTotal = productTotal + proteinTotal + paidSaucesTotal;
+
+      if (
+        !Number.isSafeInteger(productTotal) ||
+        !Number.isSafeInteger(proteinTotal) ||
+        !Number.isSafeInteger(lineTotal)
+      ) {
+        return jsonError("El total del producto no es válido.");
+      }
 
       subtotal += lineTotal;
 
