@@ -534,3 +534,150 @@ button:disabled {
     height: 190px;
   }
 }
+
+/* =====================================
+   FOOTER ICHIBAN SUSHI MAKI
+===================================== */
+
+.footer-ichiban {
+  display: block;
+  padding: 55px 7% 22px;
+  background: #11100f;
+  color: #eee4d5;
+  border-top: 2px solid #b51f2b;
+}
+
+.footer-main {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 55px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+.footer-brand .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fffaf2;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.footer-brand .mark {
+  color: #d4b56f;
+  font-size: 35px;
+}
+
+.footer-brand .brand small {
+  display: block;
+  color: #d4b56f;
+  font-size: 11px;
+  letter-spacing: 3px;
+}
+
+.footer-brand > p {
+  color: #c8bba9;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.footer-column h3 {
+  margin: 0 0 20px;
+  color: #d4b56f;
+  font-family: var(--font-display);
+  font-size: 19px;
+}
+
+.footer-hours {
+  display: grid;
+  gap: 15px;
+}
+
+.footer-hours div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.footer-hours span,
+.footer-column p {
+  color: #c8bba9;
+  font-size: 13px;
+}
+
+.footer-hours strong {
+  color: #fffaf2;
+  font-size: 14px;
+}
+
+.footer-column p {
+  line-height: 1.6;
+  margin: 7px 0;
+}
+
+.footer-map {
+  display: inline-block;
+  margin-top: 12px;
+  color: #d4b56f;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color .2s ease;
+}
+
+.footer-map:hover {
+  color: #e34a50;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 20px;
+  border-top: 1px solid #39332c;
+  color: #968b7e;
+  font-size: 12px;
+}
+
+/* FOOTER RESPONSIVE */
+
+@media (max-width: 768px) {
+  .footer-ichiban {
+    padding: 40px 22px 20px;
+  }
+
+  .footer-main {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px 22px;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-main {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .footer-brand {
+    grid-column: auto;
+  }
+
+  .footer-column h3 {
+    margin-bottom: 13px;
+  }
+}
