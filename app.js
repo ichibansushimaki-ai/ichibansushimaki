@@ -1929,15 +1929,17 @@ function render() {
     }
   }
 
-  const standardCategories = [
-    "Rolls Signature",
-    "Rolls clásicos",
-    "Street Food",
-    "Promociones Ichiban",
-    "Entradas & para compartir",
-    "Bebidas",
-    "Salsas y extras"
-  ];
+const standardCategories = [
+  "Rolls Signature",
+  "Rolls clásicos",
+  "Street Food",
+  "Promociones Ichiban",
+  "Entradas & para compartir",
+  "Gohan",
+  "Tortas Ichiban",
+  "Bebidas",
+  "Salsas y extras"
+];
 
   const usedCategories = standardCategories.filter(item =>
     visible.some(product => product.category === item)
