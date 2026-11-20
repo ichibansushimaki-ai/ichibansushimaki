@@ -804,3 +804,59 @@ button:disabled {
     font-weight: 800;
   }
 }
+
+/* =====================================
+   EFECTOS TÁCTILES PARA CELULARES
+===================================== */
+
+@media (hover: none) and (pointer: coarse) {
+
+  /* PRODUCTOS */
+  .product:active {
+    transform: scale(.98);
+    border-color: var(--gold);
+    box-shadow: 0 8px 22px #00000040;
+  }
+
+  /* CATEGORÍAS */
+  .chip:active {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+    transform: scale(.96);
+  }
+
+  /* BOTONES GENERALES */
+  .btn:active {
+    transform: scale(.96);
+    filter: brightness(1.2);
+  }
+
+  /* MENÚ DE NAVEGACIÓN */
+  .top nav a:active {
+    color: var(--gold);
+    background: #b51f2b33;
+  }
+
+  /* BOTÓN FLOTANTE DEL CARRITO */
+  .ichiban-cart-button:active {
+    transform: scale(.95);
+    filter: brightness(1.2);
+  }
+
+  /* BOTONES DEL CARRITO */
+  .cart-line-actions button:active,
+  .ichiban-dialog .dialog-primary:active,
+  .cart-checkout:active {
+    background: #d33138;
+    border-color: var(--gold);
+    color: white;
+    transform: scale(.97);
+  }
+
+  /* INSTAGRAM */
+  .footer-instagram:active {
+    transform: scale(.96);
+    filter: brightness(1.2);
+  }
+}
