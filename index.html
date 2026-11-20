@@ -10,13 +10,27 @@
 </head>
 <body>
 
+
 <header class="top">
   <a class="brand" href="#">
     <span class="mark">一</span>
     <span>ICHIBAN <small>SUSHI MAKI</small></span>
   </a>
 
-  <nav>
+  <button
+    class="menu-toggle"
+    id="menuToggle"
+    type="button"
+    aria-label="Abrir menú"
+    aria-expanded="false"
+    aria-controls="siteNav"
+  >
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <nav id="siteNav">
     <a href="#carta">Carta</a>
     <a href="#promos">Promociones</a>
     <a href="#contacto">Contacto</a>
@@ -24,6 +38,7 @@
 
   <a class="btn btn-red" id="whatsTop" href="#">Pedir por WhatsApp</a>
 </header>
+
 
 <main>
   <section class="hero">
