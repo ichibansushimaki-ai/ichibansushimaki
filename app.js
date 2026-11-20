@@ -166,6 +166,7 @@ function applyTypography(value) {
   `;
 }
 
+
 function updateBrand(data) {
   document.querySelectorAll(".brand").forEach(brand => {
     const mark = brand.querySelector(".mark");
@@ -183,12 +184,10 @@ function updateBrand(data) {
 
     if (text) {
       text.textContent = name;
-      const small = document.createElement("small");
-      small.textContent = "SUSHI MAKI";
-      text.appendChild(small);
     }
   });
 }
+
 
 function applySettings(data) {
   settings = { ...defaultSettings, ...data };
