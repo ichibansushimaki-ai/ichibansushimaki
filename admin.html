@@ -628,7 +628,8 @@ button:disabled{
 [hidden] {
   display: none !important;
 }
-/* Botones pequeños de configuración Gohan */
+
+/* Botones de configuración Gohan: tamaño y color */
 #gohanConfigBox #addGohanVegetable,
 #gohanConfigBox #addGohanProtein {
   width: auto !important;
@@ -640,7 +641,20 @@ button:disabled{
   justify-content: center;
   align-self: flex-start;
   margin: 8px 0;
-}  
+
+  background: #b51f2b !important;
+  color: #ffffff !important;
+  border: 1px solid #b51f2b !important;
+}
+
+/* Color al pasar el cursor */
+#gohanConfigBox #addGohanVegetable:hover,
+#gohanConfigBox #addGohanProtein:hover {
+  background: #a71924 !important;
+  color: #ffffff !important;
+  border-color: #a71924 !important;
+}
+
 </style>
 </head>
 
