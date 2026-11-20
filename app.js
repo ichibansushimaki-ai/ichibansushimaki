@@ -1602,8 +1602,10 @@ function render() {
     promoGrid.replaceChildren();
 
     const promotions = visible.filter(
-      product => getType(product) === "promotion"
-    );
+  product =>
+    getType(product) === "promotion" &&
+    product.options?.weekly_promotion === true
+);
 
     if (promotions.length) {
       promotions.forEach(product => promoGrid.appendChild(card(product)));
