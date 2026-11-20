@@ -793,45 +793,24 @@ function getPaidSaucesTotal(item) {
   }, 0);
 }
 
+
 function cartTotal() {
   return cart.reduce((sum, item) => {
-    const productsTotal =
-      Number(item.price || 0) * Number(item.quantity || 1);
+    const quantity = Number(item.quantity || 1);
 
-    return sum + productsTotal + getPaidSaucesTotal(item);
+    const productsTotal =
+      Number(item.price || 0) * quantity;
+
+    const gohanSurcharge =
+      Number(item.config?.gohan?.proteinSurcharge || 0) * quantity;
+
+    return sum +
+      productsTotal +
+      gohanSurcharge +
+      getPaidSaucesTotal(item);
   }, 0);
 }
 
-
-function cartItemDescription(item) {
-  const parts = [];
-  const config = item.config || {};
-
-  if (config.vegetables?.length) {
-    parts.push("Vegetales: " + config.vegetables.join(", "));
-  }
-
-  if (config.soy || config.teriyaki) {
-    parts.push(`Salsas de cortesía: ${config.soy || 0} soya, ${config.teriyaki || 0} teriyaki`);
-  }
-
-  if (config.note) parts.push(config.note);
-    if (config.paidSauces?.length) {
-    config.paidSauces.forEach(sauce => {
-      const product = products.find(
-        p => String(p.id) === String(sauce.id)
-      );
-
-      if (product) {
-        parts.push(
-          `${product.name}: ${sauce.quantity} × ${money(product.price)} = ${money(product.price * sauce.quantity)}`
-        );
-      }
-    });
-  }
-
-  return parts.join(" · ");
-}
 
 // PERSONALIZACIÓN DE PRODUCTOS
 
@@ -847,7 +826,7 @@ function openProduct(product, editingItem = null) {
   const isRoll = type === "roll";
   const isHandroll = type === "handroll";
   const isDish = type === "dish";
-
+const isGohan = isDish && options.gohan_customizable === true;
   const rollCount = isPromo
     ? Math.max(1, Number(options.rolls_count || 1))
     : 1;
@@ -909,9 +888,82 @@ function openProduct(product, editingItem = null) {
     configuration = `<div class="dialog-note">Incluye una salsa de cortesía y un par de palitos por roll. Máximo 6 pares de palitos por pedido.</div>`;
   } else if (isHandroll) {
     configuration = `<div class="dialog-note">Incluye una salsa de cortesía por handroll. No incluye palitos.</div>`;
-  } else if (isDish) {
-    configuration = `<div class="dialog-note">Incluye hasta 2 salsas de cortesía por unidad. No incluye palitos.</div>`;
-  }
+  
+} else if (isGohan) {
+  const gohanSettings = parseOptions(settings.gohan_config);
+
+  const vegetables = (gohanSettings.vegetables || [])
+    .filter(item => item.active && item.name);
+
+  const proteins = (gohanSettings.proteins || [])
+    .filter(item => item.active && item.name);
+
+  const savedGohan = initialConfig.gohan || {};
+  const savedVegetables = savedGohan.vegetables || [];
+
+  configuration = `
+    <div class="dialog-note">
+      <strong>Personaliza tu Gohan</strong><br>
+      Incluye arroz sushi. Elige tus ingredientes a tu gusto.
+    </div>
+
+    <h3>Queso crema</h3>
+    <select id="gohanCreamCheese">
+      <option value="yes" ${savedGohan.creamCheese !== false ? "selected" : ""}>Con queso crema</option>
+      <option value="no" ${savedGohan.creamCheese === false ? "selected" : ""}>Sin queso crema</option>
+    </select>
+
+    <h3>Elige tus vegetales (máximo 3)</h3>
+    <div id="gohanVegetableChoices">
+      ${vegetables.map((item, index) => `
+        <label class="veg-row">
+          <input
+            type="checkbox"
+            class="gohan-vegetable"
+            value="${escapeHTML(item.name)}"
+            ${savedVegetables.includes(item.name) ? "checked" : ""}
+          >
+          ${escapeHTML(item.name)}
+        </label>
+      `).join("")}
+
+      <label class="veg-row">
+        <input
+          type="checkbox"
+          id="gohanNoVegetables"
+          ${savedGohan.noVegetables ? "checked" : ""}
+        >
+        Sin vegetal
+      </label>
+    </div>
+
+    <p class="dialog-note" id="gohanVegetableValidation">
+      Puedes elegir hasta 3 vegetales o seleccionar Sin vegetal.
+    </p>
+
+    <h3>Elige tu proteína (opcional)</h3>
+    <select id="gohanProtein">
+      <option value="">Sin proteína</option>
+      ${proteins.map(item => `
+        <option
+          value="${escapeHTML(item.name)}"
+          data-surcharge="${Number(item.surcharge) || 0}"
+          ${savedGohan.protein === item.name ? "selected" : ""}
+        >
+          ${escapeHTML(item.name)}
+          ${Number(item.surcharge) > 0 ? ` (+${money(item.surcharge)})` : ""}
+        </option>
+      `).join("")}
+    </select>
+
+    <p class="dialog-note" id="gohanPriceNote">
+      El precio base no cambia según los ingredientes, salvo los recargos de proteína.
+    </p>
+  `;
+} else if (isDish) {
+  configuration = `<div class="dialog-note">Incluye hasta 2 salsas de cortesía por unidad. No incluye palitos.</div>`;
+}
+
 
   const initialQuantity = editingItem?.quantity || 1;
 
@@ -992,9 +1044,74 @@ function openProduct(product, editingItem = null) {
     <button type="button" class="dialog-secondary" data-close>Seguir mirando la carta</button>
   `);
 
+  if (isGohan) {
+    const vegetableChecks = Array.from(
+      document.querySelectorAll(".gohan-vegetable")
+    );
+    const noVegetables = $("#gohanNoVegetables");
+    const vegetableValidation = $("#gohanVegetableValidation");
+
+    function validateGohanVegetables() {
+      const selected = vegetableChecks.filter(input => input.checked);
+
+      if (selected.length > 3) {
+        const lastSelected = selected[selected.length - 1];
+        lastSelected.checked = false;
+      }
+
+      const hasNoVegetables = noVegetables.checked;
+
+      vegetableChecks.forEach(input => {
+        input.disabled = hasNoVegetables;
+      });
+
+      noVegetables.disabled = vegetableChecks.some(
+        input => input.checked
+      );
+
+      vegetableValidation.textContent = hasNoVegetables
+        ? "Has elegido Sin vegetal."
+        : `${vegetableChecks.filter(input => input.checked).length} de 3 vegetales seleccionados.`;
+    }
+
+    vegetableChecks.forEach(input => {
+      input.addEventListener("change", validateGohanVegetables);
+    });
+
+    noVegetables.addEventListener("change", validateGohanVegetables);
+
+    validateGohanVegetables();
+  }
+
   const soy = $("#soyCount");
   const teriyaki = $("#teriyakiCount");
   const quantity = $("#productQuantity");
+  
+  if (isGohan) {
+    const proteinSelect = $("#gohanProtein");
+    const priceNote = $("#gohanPriceNote");
+
+    function updateGohanProteinPrice() {
+      const selectedOption =
+        proteinSelect.options[proteinSelect.selectedIndex];
+
+      const surcharge = Number(
+        selectedOption.dataset.surcharge || 0
+      );
+
+      priceNote.textContent = surcharge > 0
+        ? `Recargo por proteína: ${money(surcharge)} por Gohan.`
+        : "Sin recargo adicional por proteína.";
+    }
+
+    proteinSelect.addEventListener(
+      "change",
+      updateGohanProteinPrice
+    );
+
+    updateGohanProteinPrice();
+  }
+
     if (isPromo) {
     quantity.addEventListener("input", () => {
       const container = $("#vegetableChoices");
@@ -1070,6 +1187,28 @@ function openProduct(product, editingItem = null) {
       config.vegetables = Array.from(
         document.querySelectorAll(".veg-choice")
       ).map(select => select.value);
+    }
+
+    if (isGohan) {
+      const selectedVegetables = Array.from(
+        document.querySelectorAll(".gohan-vegetable:checked")
+      ).map(input => input.value);
+
+      const noVegetables = $("#gohanNoVegetables").checked;
+
+      const proteinSelect = $("#gohanProtein");
+      const selectedProtein =
+        proteinSelect.options[proteinSelect.selectedIndex];
+
+      config.gohan = {
+        creamCheese: $("#gohanCreamCheese").value === "yes",
+        vegetables: noVegetables ? [] : selectedVegetables,
+        noVegetables,
+        protein: proteinSelect.value,
+        proteinSurcharge: Number(
+          selectedProtein.dataset.surcharge || 0
+        )
+      };
     }
 
     if (isRoll || isPromo) {
@@ -1247,38 +1386,48 @@ function openCart() {
     return;
   }
 
-  const lines = cart.map(item => {
-    const description = cartItemDescription(item);
-    const itemTotal =
-      Number(item.price || 0) * Number(item.quantity || 1) +
-      getPaidSaucesTotal(item);
+const lines = cart.map(item => {
+  const description = cartItemDescription(item);
+  const quantity = Number(item.quantity || 1);
 
-    return `
-      <div class="cart-line">
-        <div class="cart-line-top">
-          <div class="cart-line-info">
-            <h3>${escapeHTML(item.name)}</h3>
-            <small>${item.quantity} × ${money(item.price)}</small>
-          </div>
-          <strong class="cart-line-price">${money(itemTotal)}</strong>
+  const gohanSurcharge =
+    Number(item.config?.gohan?.proteinSurcharge || 0) * quantity;
+
+  const itemTotal =
+    Number(item.price || 0) * quantity +
+    gohanSurcharge +
+    getPaidSaucesTotal(item);
+
+  const unitPrice =
+    Number(item.price || 0) +
+    Number(item.config?.gohan?.proteinSurcharge || 0);
+
+  return `
+    <div class="cart-line">
+      <div class="cart-line-top">
+        <div class="cart-line-info">
+          <h3>${escapeHTML(item.name)}</h3>
+          <small>${quantity} × ${money(unitPrice)}</small>
         </div>
-
-        ${description ? `
-          <div class="cart-line-description">
-            ${escapeHTML(description)}
-          </div>
-        ` : ""}
-
-        <div class="cart-line-actions">
-          <button type="button" data-cart-minus="${item.key}" aria-label="Disminuir cantidad">−</button>
-          <strong>${item.quantity}</strong>
-          <button type="button" data-cart-plus="${item.key}" aria-label="Aumentar cantidad">+</button>
-          <button type="button" data-cart-edit="${item.key}">Editar</button>
-          <button type="button" data-cart-remove="${item.key}">Eliminar</button>
-        </div>
+        <strong class="cart-line-price">${money(itemTotal)}</strong>
       </div>
-    `;
-  }).join("");
+
+      ${description ? `
+        <div class="cart-line-description">
+          ${escapeHTML(description)}
+        </div>
+      ` : ""}
+
+      <div class="cart-line-actions">
+        <button type="button" data-cart-minus="${item.key}" aria-label="Disminuir cantidad">−</button>
+        <strong>${item.quantity}</strong>
+        <button type="button" data-cart-plus="${item.key}" aria-label="Aumentar cantidad">+</button>
+        <button type="button" data-cart-edit="${item.key}">Editar</button>
+        <button type="button" data-cart-remove="${item.key}">Eliminar</button>
+      </div>
+    </div>
+  `;
+}).join("");
 
   openDialog(`
     <div class="cart-heading">
