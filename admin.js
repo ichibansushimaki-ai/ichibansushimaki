@@ -740,6 +740,9 @@ function fillProductForm(product) {
 // Recuperar selección de promociones semanales
 form.elements.weekly_promotion.checked =
   isTrue(product.options?.weekly_promotion);
+  // Recuperar identificación de Gohan configurable
+form.elements.gohan_customizable.checked =
+  isTrue(product.options?.gohan_customizable);
   const categoryField = form.elements.category;
 
   if (
@@ -870,7 +873,9 @@ $("#productForm").onsubmit = async event => {
 // Guardar selección de promociones semanales
 data.options.weekly_promotion =
   form.elements.weekly_promotion.checked;
-
+// Identificar Gohan configurable
+data.options.gohan_customizable =
+  form.elements.gohan_customizable.checked;
     const file = $("#imageFile").files[0];
 
     if (file) {
