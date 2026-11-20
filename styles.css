@@ -710,3 +710,67 @@ button:disabled {
     margin-bottom: 13px;
   }
 }
+
+/* =====================================
+   MENÚ HAMBURGUESA ICHIBAN
+===================================== */
+
+.menu-toggle {
+  display: none;
+  width: 42px;
+  height: 42px;
+  padding: 9px;
+  border: 1px solid #d4b56f;
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  margin: 5px 0;
+  background: #d4b56f;
+  transition: all .25s ease;
+}
+
+.menu-toggle:hover {
+  background: #b51f2b;
+}
+
+@media (max-width: 768px) {
+  .top {
+    position: relative;
+    flex-wrap: wrap;
+  }
+
+  .menu-toggle {
+    display: block;
+    margin-left: auto;
+  }
+
+  .top nav {
+    display: none;
+    order: 4;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+    padding: 10px 0;
+    border-top: 1px solid #39332c;
+  }
+
+  .top nav.open {
+    display: flex;
+  }
+
+  .top nav a {
+    padding: 13px 10px;
+    border-bottom: 1px solid #39332c;
+  }
+
+  .top > .btn {
+    display: none;
+  }
+}
