@@ -706,19 +706,41 @@ button:disabled {
 @media (max-width: 480px) {
   .footer-main {
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 32px;
   }
 
   .footer-brand {
+    text-align: center;
     grid-column: auto;
   }
 
+  .footer-brand .brand {
+    justify-content: center;
+  }
+
+  .footer-column {
+    text-align: center;
+    padding-top: 8px;
+    border-top: 1px solid #39332c;
+  }
+
   .footer-column h3 {
+    margin-top: 15px;
     margin-bottom: 13px;
+    font-size: 18px;
+  }
+
+  .footer-hours {
+    gap: 17px;
+  }
+
+  .footer-map,
+  .footer-instagram {
+    justify-content: center;
   }
 }
 
-/* =====================================
+ /* =====================================
    MENÚ HAMBURGUESA ICHIBAN
 ===================================== */
 
