@@ -385,7 +385,8 @@ function readTypography() {
 
 function fillSettings(data) {
   settings = { ...defaults, ...data };
-
+gohanConfig = normalizeGohanConfig(settings.gohan_config);
+renderGohanConfig();
   const form = $("#settingsForm");
 
   Object.entries(settings).forEach(([key, value]) => {
@@ -478,7 +479,7 @@ $("#settingsForm").onsubmit = async event => {
     data.mobile_logo = settings.mobile_logo || "";
     data.hero_image = settings.hero_image || "";
     data.typography = JSON.stringify(currentTypography);
-
+data.gohan_config = settings.gohan_config || "{}";
     const images = [
       ["logoFile", "logo"],
       ["mobileLogoFile", "mobile_logo"],
@@ -1494,3 +1495,237 @@ previewFile("logoFile", "logoPreview");
 previewFile("mobileLogoFile", "mobileLogoPreview");
 previewFile("heroFile", "heroPreview");
 previewFile("imageFile", "preview");
+
+// ======================================
+// CONFIGURACIÓN ADMINISTRABLE DEL GOHAN
+// ======================================
+
+let gohanConfig = {
+  vegetables: [
+    { name: "Palta", active: true },
+    { name: "Cebollín", active: true },
+    { name: "Maíz", active: true },
+    { name: "Lechuga", active: true },
+    { name: "Pimentón", active: true },
+    { name: "Cebolla morada", active: true }
+  ],
+  proteins: [
+    { name: "POLLO", surcharge: 0, active: true },
+    { name: "POLLO FURAY", surcharge: 0, active: true },
+    { name: "POLLO TERIYAKI", surcharge: 0, active: true },
+    { name: "CAMARÓN", surcharge: 0, active: true },
+    { name: "CAMARÓN FURAY", surcharge: 0, active: true },
+    { name: "SALMÓN", surcharge: 1000, active: true }
+  ],
+  max_vegetables: 3,
+  max_proteins: 1
+};
+
+function normalizeGohanConfig(value) {
+  try {
+    const saved = typeof value === "string"
+      ? JSON.parse(value || "{}")
+      : (value || {});
+
+    return {
+      vegetables: Array.isArray(saved.vegetables)
+        ? saved.vegetables
+        : gohanConfig.vegetables,
+
+      proteins: Array.isArray(saved.proteins)
+        ? saved.proteins
+        : gohanConfig.proteins,
+
+      max_vegetables: 3,
+      max_proteins: 1
+    };
+  } catch {
+    return {
+      vegetables: [...gohanConfig.vegetables],
+      proteins: [...gohanConfig.proteins],
+      max_vegetables: 3,
+      max_proteins: 1
+    };
+  }
+}
+
+function renderGohanConfig() {
+  const vegetablesContainer = $("#gohanVegetables");
+  const proteinsContainer = $("#gohanProteins");
+
+  if (!vegetablesContainer || !proteinsContainer) return;
+
+  vegetablesContainer.innerHTML = gohanConfig.vegetables.map((item, index) => `
+    <div class="gohan-admin-row">
+      <input
+        type="text"
+        class="gohan-vegetable-name"
+        data-index="${index}"
+        value="${String(item.name || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;")}"
+        placeholder="Nombre del vegetal"
+      >
+      <label>
+        <input
+          type="checkbox"
+          class="gohan-vegetable-active"
+          data-index="${index}"
+          ${item.active !== false ? "checked" : ""}
+        >
+        Activo
+      </label>
+      <button type="button" class="gohan-remove-vegetable" data-index="${index}">
+        Eliminar
+      </button>
+    </div>
+  `).join("");
+
+  proteinsContainer.innerHTML = gohanConfig.proteins.map((item, index) => `
+    <div class="gohan-admin-row">
+      <input
+        type="text"
+        class="gohan-protein-name"
+        data-index="${index}"
+        value="${String(item.name || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;")}"
+        placeholder="Nombre de la proteína"
+      >
+      <input
+        type="number"
+        class="gohan-protein-price"
+        data-index="${index}"
+        min="0"
+        step="100"
+        value="${Number(item.surcharge || 0)}"
+        placeholder="Recargo"
+        title="Recargo adicional en pesos"
+      >
+      <label>
+        <input
+          type="checkbox"
+          class="gohan-protein-active"
+          data-index="${index}"
+          ${item.active !== false ? "checked" : ""}
+        >
+        Activo
+      </label>
+      <button type="button" class="gohan-remove-protein" data-index="${index}">
+        Eliminar
+      </button>
+    </div>
+  `).join("");
+}
+
+function readGohanConfig() {
+  const vegetables = Array.from(
+    document.querySelectorAll(".gohan-vegetable-name")
+  ).map((input, index) => ({
+    name: input.value.trim(),
+    active: document.querySelector(
+      `.gohan-vegetable-active[data-index="${index}"]`
+    )?.checked === true
+  })).filter(item => item.name);
+
+  const proteins = Array.from(
+    document.querySelectorAll(".gohan-protein-name")
+  ).map((input, index) => ({
+    name: input.value.trim(),
+    surcharge: Math.max(0, Number(
+      document.querySelector(
+        `.gohan-protein-price[data-index="${index}"]`
+      )?.value || 0
+    )),
+    active: document.querySelector(
+      `.gohan-protein-active[data-index="${index}"]`
+    )?.checked === true
+  })).filter(item => item.name);
+
+  return {
+    vegetables,
+    proteins,
+    max_vegetables: 3,
+    max_proteins: 1
+  };
+}
+
+// Agregar vegetal
+$("#addGohanVegetable")?.addEventListener("click", () => {
+  gohanConfig = readGohanConfig();
+  gohanConfig.vegetables.push({
+    name: "",
+    active: true
+  });
+  renderGohanConfig();
+});
+
+// Agregar proteína
+$("#addGohanProtein")?.addEventListener("click", () => {
+  gohanConfig = readGohanConfig();
+  gohanConfig.proteins.push({
+    name: "",
+    surcharge: 0,
+    active: true
+  });
+  renderGohanConfig();
+});
+
+// Eliminar ingredientes
+document.addEventListener("click", event => {
+  const removeVegetable = event.target.closest(".gohan-remove-vegetable");
+  const removeProtein = event.target.closest(".gohan-remove-protein");
+
+  if (removeVegetable) {
+    gohanConfig = readGohanConfig();
+    gohanConfig.vegetables.splice(
+      Number(removeVegetable.dataset.index), 1
+    );
+    renderGohanConfig();
+  }
+
+  if (removeProtein) {
+    gohanConfig = readGohanConfig();
+    gohanConfig.proteins.splice(
+      Number(removeProtein.dataset.index), 1
+    );
+    renderGohanConfig();
+  }
+});
+
+// Guardar configuración
+$("#saveGohanConfig")?.addEventListener("click", async () => {
+  const config = readGohanConfig();
+
+  if (!config.vegetables.length || !config.proteins.length) {
+    alert("Debes mantener al menos un vegetal y una proteína.");
+    return;
+  }
+
+  const data = {
+    ...settings,
+    gohan_config: JSON.stringify(config)
+  };
+
+  try {
+    const response = await fetch("/api/settings", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+
+    gohanConfig = config;
+    settings = {
+      ...settings,
+      gohan_config: JSON.stringify(config)
+    };
+
+    alert("Configuración del Gohan guardada correctamente.");
+
+  } catch (error) {
+    alert("No se pudo guardar la configuración: " + error.message);
+  }
+});
