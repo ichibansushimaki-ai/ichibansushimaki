@@ -1655,11 +1655,50 @@ async function sendOrder(fulfillment = {}) {
     return;
   }
 
+
   const details = cart.map(item => {
     const config = item.config || {};
+    const quantity = Number(item.quantity || 1);
+
+    const gohanSurcharge =
+      Number(config.gohan?.proteinSurcharge || 0) * quantity;
+
+    const itemPrice =
+      Number(item.price || 0) * quantity + gohanSurcharge;
+
     const lines = [
-      `${item.quantity} × ${item.name} — ${money(item.price * item.quantity)}`
+      `${quantity} × ${item.name} — ${money(itemPrice)}`
     ];
+
+    // Personalización del Gohan
+    if (config.gohan) {
+      const gohan = config.gohan;
+
+      lines.push("PERSONALIZACIÓN GOHAN:");
+
+      lines.push(
+        gohan.creamCheese ? "Queso crema: Sí" : "Queso crema: No"
+      );
+
+      lines.push(
+        gohan.noVegetables
+          ? "Vegetales: Sin vegetal"
+          : "Vegetales: " + (
+              gohan.vegetables?.length
+                ? gohan.vegetables.join(", ")
+                : "Ninguno"
+            )
+      );
+
+      lines.push(
+        gohan.protein
+          ? `Proteína: ${gohan.protein}` +
+            (gohan.proteinSurcharge > 0
+              ? ` (+${money(gohan.proteinSurcharge)})`
+              : "")
+          : "Proteína: Sin proteína"
+      );
+    }
 
     if (config.vegetables?.length) {
       lines.push("Vegetales por roll: " + config.vegetables.join(", "));
@@ -1687,6 +1726,8 @@ async function sendOrder(fulfillment = {}) {
 
     return lines.join("\n");
   });
+
+
 
   const subtotal = cartTotal();
 
