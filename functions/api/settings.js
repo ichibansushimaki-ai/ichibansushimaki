@@ -81,6 +81,31 @@ export async function onRequestPut({ request, env }) {
       }
     }
 
+    let gohanConfig = "{}";
+
+    if (data.gohan_config !== undefined) {
+      try {
+        const parsed = typeof data.gohan_config === "string"
+          ? JSON.parse(data.gohan_config)
+          : data.gohan_config;
+
+        if (
+          !parsed ||
+          typeof parsed !== "object" ||
+          Array.isArray(parsed)
+        ) {
+          throw new Error("Formato de configuración Gohan inválido");
+        }
+
+        gohanConfig = JSON.stringify(parsed);
+      } catch {
+        return Response.json(
+          { error: "La configuración del Gohan no es válida" },
+          { status: 400 }
+        );
+      }
+    }
+
     const values = fields.map(field => data[field] ?? "");
 
     await env.DB.prepare(`
@@ -96,9 +121,10 @@ export async function onRequestPut({ request, env }) {
         color_background = ?,
         color_cream = ?,
         color_gold = ?,
-        typography = ?
+        typography = ?,
+        gohan_config = ?
       WHERE id = 1
-    `).bind(...values, typography).run();
+    `).bind(...values, typography, gohanConfig).run();
 
     return Response.json({ ok: true });
 
