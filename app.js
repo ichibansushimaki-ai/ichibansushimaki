@@ -811,7 +811,64 @@ function cartTotal() {
   }, 0);
 }
 
+function cartItemDescription(item) {
+  const parts = [];
+  const config = item.config || {};
 
+  if (config.gohan) {
+    const gohan = config.gohan;
+
+    parts.push("Arroz sushi incluido");
+    parts.push(
+      gohan.creamCheese ? "Con queso crema" : "Sin queso crema"
+    );
+
+    if (gohan.noVegetables) {
+      parts.push("Sin vegetal");
+    } else if (gohan.vegetables?.length) {
+      parts.push("Vegetales: " + gohan.vegetables.join(", "));
+    }
+
+    if (gohan.protein) {
+      parts.push(
+        `Proteína: ${gohan.protein}` +
+        (gohan.proteinSurcharge > 0
+          ? ` (+${money(gohan.proteinSurcharge)})`
+          : "")
+      );
+    } else {
+      parts.push("Sin proteína");
+    }
+  }
+
+  if (config.vegetables?.length) {
+    parts.push("Vegetales: " + config.vegetables.join(", "));
+  }
+
+  if (config.soy || config.teriyaki) {
+    parts.push(
+      `Salsas de cortesía: ${config.soy || 0} soya, ${config.teriyaki || 0} teriyaki`
+    );
+  }
+
+  if (config.note) parts.push(config.note);
+
+  if (config.paidSauces?.length) {
+    config.paidSauces.forEach(sauce => {
+      const product = products.find(
+        p => String(p.id) === String(sauce.id)
+      );
+
+      if (product) {
+        parts.push(
+          `${product.name}: ${sauce.quantity} × ${money(product.price)} = ${money(product.price * sauce.quantity)}`
+        );
+      }
+    });
+  }
+
+  return parts.join(" · ");
+}
 // PERSONALIZACIÓN DE PRODUCTOS
 
 
