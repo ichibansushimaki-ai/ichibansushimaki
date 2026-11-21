@@ -13,7 +13,7 @@ function escapeHTML(value) {
 const $ = selector => document.querySelector(selector);
 
 let products = [];
-let category = "Todos";
+let category = "";
 let settings = {};
 let cart = JSON.parse(localStorage.getItem("ichiban-cart") || "[]");
 let currentProduct = null;
@@ -2118,14 +2118,20 @@ const standardCategories = [
   if (productGrid) {
     productGrid.replaceChildren();
 
-    const filtered = visible.filter(product =>
-      category === "Todos" || product.category === category
-    );
-
-    if (filtered.length) {
-      filtered.forEach(product => productGrid.appendChild(card(product)));
+    if (!category) {
+      productGrid.textContent =
+        "Selecciona una categoría para descubrir nuestros productos.";
     } else {
-      productGrid.textContent = "No hay productos disponibles en esta categoría.";
+      const filtered = visible.filter(product =>
+        category === "Todos" || product.category === category
+      );
+
+      if (filtered.length) {
+        filtered.forEach(product => productGrid.appendChild(card(product)));
+      } else {
+        productGrid.textContent =
+          "No hay productos disponibles en esta categoría.";
+      }
     }
   }
 
