@@ -432,9 +432,7 @@ function addStoreStyles() {
 .cart-checkout:active {
   transform:translateY(0);
 }
-
-
-    
+  
 
 .dialog-secondary {
   border:1px solid #b89b60;
@@ -458,8 +456,6 @@ function addStoreStyles() {
   color:#fffaf2;
   transform:translateY(-2px);
 }
-
-
     .dialog-note {
       padding:12px; background:#e9e0d4; border-radius:8px;
       font-size:14px; margin:12px 0;
@@ -683,6 +679,30 @@ function addStoreStyles() {
       font-size:20px; font-weight:800; padding-top:17px;
     }
     .cart-empty { text-align:center; padding:28px 8px; }
+    .ichiban-dialog .veg-row {
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:12px !important;
+  width:100%;
+  margin:8px 0 !important;
+  padding:8px 10px;
+  box-sizing:border-box;
+  text-align:left;
+  cursor:pointer;
+}
+
+.ichiban-dialog .veg-row input[type="checkbox"] {
+  display:inline-block !important;
+  width:22px !important;
+  min-width:22px !important;
+  height:22px !important;
+  min-height:22px !important;
+  flex:0 0 22px !important;
+  margin:0 !important;
+  padding:0 !important;
+}
     .veg-row { display:grid; grid-template-columns:1fr 1.2fr; gap:8px; align-items:center; margin:8px 0; }
     .veg-row label { margin:0; }
     .cart-checkout:disabled { opacity:.5; cursor:not-allowed; }
