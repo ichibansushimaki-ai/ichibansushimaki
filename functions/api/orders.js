@@ -40,17 +40,40 @@ function parseObject(value) {
   }
 }
 
+
 export async function onRequestGet({ request, env }) {
   if (!await authorized(request, env)) {
     return new Response("No autorizado", { status: 401 });
   }
 
   try {
-    const { results } = await env.DB.prepare(`
+    const url = new URL(request.url);
+    const start = url.searchParams.get("start");
+    const end = url.searchParams.get("end");
+
+    let query = `
       SELECT *
       FROM orders
-      ORDER BY created_at DESC
-    `).all();
+    `;
+
+    let statement;
+
+    if (start && end) {
+      query += `
+        WHERE datetime(created_at) >= datetime(?)
+          AND datetime(created_at) < datetime(?)
+      `;
+
+      query += " ORDER BY created_at DESC";
+
+      statement = env.DB.prepare(query).bind(start, end);
+
+    } else {
+      query += " ORDER BY created_at DESC";
+      statement = env.DB.prepare(query);
+    }
+
+    const { results } = await statement.all();
 
     return Response.json(results.map(order => ({
       ...order,
@@ -61,6 +84,7 @@ export async function onRequestGet({ request, env }) {
     return jsonError("No se pudieron consultar los pedidos.", 500);
   }
 }
+
 
 export async function onRequestPost({ request, env }) {
   try {
