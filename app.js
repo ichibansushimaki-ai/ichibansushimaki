@@ -1459,6 +1459,7 @@ const isGohan = isDish && options.gohan_customizable === true;
 // CARRITO
 
 
+
 function openFulfillment() {
   openDialog(`
     <h2>¿Cómo deseas recibir tu pedido?</h2>
@@ -1511,6 +1512,30 @@ function openFulfillment() {
       </div>
     </div>
 
+    <hr>
+
+    <h3>¿Cómo deseas pagar?</h3>
+
+    <label for="paymentMethod">Método de pago</label>
+    <select id="paymentMethod">
+      <option value="">Selecciona una opción</option>
+      <option value="debit_credit">Tarjeta de débito / crédito</option>
+      <option value="cash">Efectivo</option>
+      <option value="transfer">Transferencia bancaria</option>
+    </select>
+
+    <div id="transferFields" style="display:none">
+      <div class="dialog-note">
+        <strong>Datos para transferencia bancaria</strong><br><br>
+        Titular: ICHIBAN SUSHI<br>
+        RUT: 77.883.241-0<br>
+        Banco: Banco Estado<br>
+        Tipo de cuenta: Cuenta Vista<br>
+        Número de cuenta: 90276039953<br><br>
+        Después de realizar la transferencia, envía el comprobante por WhatsApp para confirmar tu pedido.
+      </div>
+    </div>
+
     <div class="cart-total">
       <span>Subtotal productos</span>
       <span>${money(cartTotal())}</span>
@@ -1528,6 +1553,8 @@ function openFulfillment() {
   const method = $("#fulfillmentMethod");
   const deliveryFields = $("#deliveryFields");
   const pickupFields = $("#pickupFields");
+  const paymentMethod = $("#paymentMethod");
+  const transferFields = $("#transferFields");
 
   method.addEventListener("change", () => {
     deliveryFields.style.display =
@@ -1535,6 +1562,11 @@ function openFulfillment() {
 
     pickupFields.style.display =
       method.value === "pickup" ? "block" : "none";
+  });
+
+  paymentMethod.addEventListener("change", () => {
+    transferFields.style.display =
+      paymentMethod.value === "transfer" ? "block" : "none";
   });
 
   $("#backToCart").addEventListener("click", openCart);
@@ -1545,8 +1577,14 @@ function openFulfillment() {
       return;
     }
 
+    if (!paymentMethod.value) {
+      alert("Selecciona un método de pago.");
+      return;
+    }
+
     const fulfillment = {
       method: method.value,
+      payment_method: paymentMethod.value,
       address: "",
       reference: ""
     };
@@ -1569,7 +1607,6 @@ function openFulfillment() {
     sendOrder(fulfillment);
   });
 }
-
 
 function openCart() {
   if (!cart.length) {
@@ -1791,6 +1828,7 @@ function calculateChopsticks() {
 
 
 
+
 async function sendOrder(fulfillment = {}) {
   if (!cart.length) return;
 
@@ -1799,6 +1837,18 @@ async function sendOrder(fulfillment = {}) {
     return;
   }
 
+  if (!["debit_credit", "cash", "transfer"].includes(fulfillment.payment_method)) {
+    alert("Selecciona un método de pago válido.");
+    return;
+  }
+
+  const paymentLabels = {
+    debit_credit: "Tarjeta de débito / crédito",
+    cash: "Efectivo",
+    transfer: "Transferencia bancaria"
+  };
+
+  const paymentLabel = paymentLabels[fulfillment.payment_method];
 
   const details = cart.map(item => {
     const config = item.config || {};
@@ -1814,7 +1864,6 @@ async function sendOrder(fulfillment = {}) {
       `${quantity} × ${item.name} — ${money(itemPrice)}`
     ];
 
-    // Personalización del Gohan
     if (config.gohan) {
       const gohan = config.gohan;
 
@@ -1871,8 +1920,6 @@ async function sendOrder(fulfillment = {}) {
     return lines.join("\n");
   });
 
-
-
   const subtotal = cartTotal();
 
   const fulfillmentDetails = fulfillment.method === "delivery"
@@ -1896,6 +1943,24 @@ async function sendOrder(fulfillment = {}) {
         "Avisar al cliente por WhatsApp cuando el pedido esté listo para retirar."
       ];
 
+  const paymentDetails = [
+    `MÉTODO DE PAGO: ${paymentLabel}`
+  ];
+
+  if (fulfillment.payment_method === "transfer") {
+    paymentDetails.push(
+      "",
+      "DATOS PARA TRANSFERENCIA:",
+      "Titular: ICHIBAN SUSHI",
+      "RUT: 77.883.241-0",
+      "Banco: Banco Estado",
+      "Tipo de cuenta: Cuenta Vista",
+      "Número de cuenta: 90276039953",
+      "",
+      "Después de realizar la transferencia, envía el comprobante por WhatsApp para confirmar tu pedido."
+    );
+  }
+
   const message = [
     `Hola ${settings.store_name || "Ichiban Sushi Maki"}, quiero realizar este pedido:`,
     "",
@@ -1905,12 +1970,13 @@ async function sendOrder(fulfillment = {}) {
     "",
     ...fulfillmentDetails,
     "",
+    ...paymentDetails,
+    "",
     "Quedo atento/a a la confirmación de mi pedido. ¡Gracias!"
   ].join("\n");
 
   const phone = String(settings.whatsapp || DEFAULT_PHONE).replace(/\D/g, "");
 
-  // Abrir una ventana para WhatsApp antes de realizar la petición.
   const whatsappWindow = window.open("about:blank", "_blank");
 
   if (!whatsappWindow) {
@@ -1926,16 +1992,17 @@ async function sendOrder(fulfillment = {}) {
       },
       body: JSON.stringify({
         fulfillment_method: fulfillment.method,
+        payment_method: fulfillment.payment_method,
         address: fulfillment.address || null,
         reference: fulfillment.reference || null,
         subtotal,
-       items: cart.map(item => ({
-  id: item.id,
-  name: item.name,
-  quantity: item.quantity,
-  unit_price: item.price,
-  config: item.config || {}
-}))
+        items: cart.map(item => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          unit_price: item.price,
+          config: item.config || {}
+        }))
       })
     });
 
@@ -1958,7 +2025,6 @@ async function sendOrder(fulfillment = {}) {
     );
   }
 }
-
 
 // EVENTOS DEL CARRITO
 
