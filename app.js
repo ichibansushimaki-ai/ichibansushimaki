@@ -811,64 +811,98 @@ function cartTotal() {
   }, 0);
 }
 
+
 function cartItemDescription(item) {
-  const parts = [];
   const config = item.config || {};
+  const sections = [];
 
   if (config.gohan) {
     const gohan = config.gohan;
 
-    parts.push("Arroz sushi incluido");
-    parts.push(
-      gohan.creamCheese ? "Con queso crema" : "Sin queso crema"
-    );
+    const vegetables = gohan.noVegetables
+      ? `<span class="cart-option cart-option-muted">Sin vegetal</span>`
+      : (gohan.vegetables || []).map(vegetable =>
+          `<span class="cart-option">${escapeHTML(vegetable)}</span>`
+        ).join("");
 
-    if (gohan.noVegetables) {
-      parts.push("Sin vegetal");
-    } else if (gohan.vegetables?.length) {
-      parts.push("Vegetales: " + gohan.vegetables.join(", "));
-    }
+    const protein = gohan.protein
+      ? `<span class="cart-option">${escapeHTML(gohan.protein)}${gohan.proteinSurcharge > 0 ? ` (+${money(gohan.proteinSurcharge)})` : ""}</span>`
+      : `<span class="cart-option cart-option-muted">Sin proteína</span>`;
 
-    if (gohan.protein) {
-      parts.push(
-        `Proteína: ${gohan.protein}` +
-        (gohan.proteinSurcharge > 0
-          ? ` (+${money(gohan.proteinSurcharge)})`
-          : "")
-      );
-    } else {
-      parts.push("Sin proteína");
-    }
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Personalización Gohan</strong>
+        <div class="cart-config-row">
+          <span class="cart-config-label">Arroz</span>
+          <span class="cart-option">Incluido</span>
+        </div>
+        <div class="cart-config-row">
+          <span class="cart-config-label">Queso crema</span>
+          <span class="cart-option">${gohan.creamCheese ? "Con queso crema" : "Sin queso crema"}</span>
+        </div>
+        <div class="cart-config-row">
+          <span class="cart-config-label">Vegetales</span>
+          <div class="cart-options">${vegetables || `<span class="cart-option cart-option-muted">Sin selección</span>`}</div>
+        </div>
+        <div class="cart-config-row">
+          <span class="cart-config-label">Proteína</span>
+          <div class="cart-options">${protein}</div>
+        </div>
+      </div>
+    `);
   }
 
   if (config.vegetables?.length) {
-    parts.push("Vegetales: " + config.vegetables.join(", "));
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Vegetales por roll</strong>
+        <div class="cart-options">
+          ${config.vegetables.map((vegetable, index) =>
+            `<span class="cart-option">Roll ${index + 1}: ${escapeHTML(vegetable)}</span>`
+          ).join("")}
+        </div>
+      </div>
+    `);
   }
 
   if (config.soy || config.teriyaki) {
-    parts.push(
-      `Salsas de cortesía: ${config.soy || 0} soya, ${config.teriyaki || 0} teriyaki`
-    );
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Salsas de cortesía</strong>
+        <div class="cart-options">
+          <span class="cart-option">${config.soy || 0} soya</span>
+          <span class="cart-option">${config.teriyaki || 0} teriyaki</span>
+        </div>
+      </div>
+    `);
   }
 
-  if (config.note) parts.push(config.note);
+  if (config.note) {
+    sections.push(`<div class="cart-config-section">${escapeHTML(config.note)}</div>`);
+  }
 
   if (config.paidSauces?.length) {
-    config.paidSauces.forEach(sauce => {
+    const sauces = config.paidSauces.map(sauce => {
       const product = products.find(
         p => String(p.id) === String(sauce.id)
       );
 
-      if (product) {
-        parts.push(
-          `${product.name}: ${sauce.quantity} × ${money(product.price)} = ${money(product.price * sauce.quantity)}`
-        );
-      }
-    });
+      if (!product) return "";
+
+      return `<span class="cart-option">${escapeHTML(product.name)}: ${sauce.quantity} × ${money(product.price)} = ${money(product.price * sauce.quantity)}</span>`;
+    }).join("");
+
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Salsas adicionales</strong>
+        <div class="cart-options">${sauces}</div>
+      </div>
+    `);
   }
 
-  return parts.join(" · ");
+  return sections.join("");
 }
+
 // PERSONALIZACIÓN DE PRODUCTOS
 
 
