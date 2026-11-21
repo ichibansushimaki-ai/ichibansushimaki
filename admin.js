@@ -1184,6 +1184,7 @@ function renderOrderItem(item) {
 }
 
 
+
 function renderOrderCard(order) {
   const id = escapeHTML(order.id || "");
   const shortId = id.slice(0, 8);
@@ -1258,14 +1259,36 @@ function renderOrderCard(order) {
     `;
 
   return `
-    <article class="order-card">
+    <details class="order-card">
+
+      <summary>
+        <div>
+          <h3>Pedido #${shortId}</h3>
+          <div class="order-meta">${formatOrderDate(order.created_at)}</div>
+          <div class="order-meta">${method}</div>
+          <div class="order-meta">
+            Método de pago: ${paymentMethod}
+          </div>
+        </div>
+
+        <span class="order-badge">
+          ${escapeHTML(orderStatusLabel(order.status))}
+        </span>
+
+        <div>
+          <strong>Total: ${total}</strong>
+          <div class="order-meta">Ver detalle del pedido</div>
+        </div>
+      </summary>
 
       <div class="order-header">
         <div>
           <h3>Pedido #${shortId}</h3>
           <div class="order-meta">${formatOrderDate(order.created_at)}</div>
           <div class="order-meta">${method}</div>
-          <div class="order-meta"><strong>Método de pago:</strong> ${paymentMethod}</div>
+          <div class="order-meta">
+            <strong>Método de pago:</strong> ${paymentMethod}
+          </div>
           ${address}
           ${reference}
         </div>
@@ -1315,7 +1338,7 @@ function renderOrderCard(order) {
         </button>
       </div>
 
-    </article>
+    </details>
   `;
 }
 
