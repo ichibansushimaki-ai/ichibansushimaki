@@ -1505,8 +1505,8 @@ const lines = cart.map(item => {
 
       ${description ? `
         <div class="cart-line-description">
-          ${escapeHTML(description)}
-        </div>
+  ${description}
+</div>
       ` : ""}
 
       <div class="cart-line-actions">
