@@ -462,13 +462,80 @@ button:disabled{
   font-size: 13px;
 }
 
+
 .order-card {
   background: #fff;
   border: 1px solid #e5ddd3;
   border-radius: 12px;
-  padding: 18px;
-  margin: 14px 0;
+  padding: 0;
+  margin: 12px 0;
+  overflow: hidden;
 }
+
+/* Resumen del pedido cerrado */
+.order-card > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto 20px;
+  align-items: center;
+  gap: 16px;
+  padding: 17px 20px;
+  cursor: pointer;
+  list-style: none;
+  transition: background .2s ease;
+}
+
+.order-card > summary::-webkit-details-marker {
+  display: none;
+}
+
+.order-card > summary:hover {
+  background: #faf7f3;
+}
+
+.order-card > summary h3 {
+  margin: 0 0 5px;
+  font-size: 16px;
+}
+
+.order-card > summary > div:nth-child(3) {
+  text-align: right;
+}
+
+.order-card > summary > div:nth-child(3) strong {
+  font-size: 16px;
+  color: #292521;
+}
+
+.order-card > summary::after {
+  content: "+";
+  font-size: 24px;
+  font-weight: 400;
+  color: #b51f2b;
+  text-align: center;
+}
+
+.order-card[open] > summary {
+  background: #f8f5f0;
+  border-bottom: 1px solid #e5ddd3;
+}
+
+.order-card[open] > summary::after {
+  content: "−";
+}
+
+/* Contenido interior del pedido */
+.order-card > .order-header,
+.order-card > .order-items,
+.order-card > .order-totals,
+.order-card > .order-actions {
+  margin-left: 18px;
+  margin-right: 18px;
+}
+
+.order-card > .order-header {
+  margin-top: 16px;
+}
+
 
 .order-header {
   display: flex;
