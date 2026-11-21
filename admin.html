@@ -860,7 +860,74 @@ button:disabled{
   color: #ffffff !important;
   border-color: #a71924 !important;
 }
+/* Paneles desplegables de administración */
+.admin-panel {
+  padding: 0;
+  overflow: hidden;
+}
 
+.admin-panel > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.admin-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-panel-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 20px;
+  background: #fff;
+}
+
+.admin-panel-summary strong {
+  display: block;
+  color: #292521;
+  font-size: 19px;
+}
+
+.admin-panel-summary small {
+  display: block;
+  margin-top: 5px;
+  color: #777;
+}
+
+.admin-panel-toggle {
+  flex-shrink: 0;
+  color: #b51f2b;
+  font-weight: bold;
+}
+
+.admin-panel-toggle::after {
+  content: " +";
+}
+
+.admin-panel[open] .admin-panel-toggle::after {
+  content: " −";
+}
+
+.admin-panel[open] > .admin-panel-summary {
+  background: #f8f5f0;
+  border-bottom: 1px solid #e5ddd3;
+}
+
+.admin-panel-content {
+  padding: 20px;
+}
+
+@media (max-width: 520px) {
+  .admin-panel-summary {
+    padding: 15px;
+  }
+
+  .admin-panel-content {
+    padding: 14px;
+  }
+}
 </style>
 </head>
 
@@ -1005,63 +1072,81 @@ button:disabled{
 
 </details>
 
-<section class="box">
-<h2>Identidad de la tienda</h2>
-<p>Personaliza la imagen y los datos de Ichiban Sushi Maki.</p>
 
-<form id="settingsForm" class="form">
+<details class="box admin-panel" id="identityPanel">
 
-<input name="store_name" placeholder="Nombre del negocio" required>
-<input name="slogan" placeholder="Eslogan">
-<textarea name="description" placeholder="Descripción de la tienda"></textarea>
-<input name="whatsapp" placeholder="WhatsApp (569XXXXXXXX)">
+  <summary class="admin-panel-summary">
+    <span>
+      <strong>Identidad de la tienda</strong>
+      <small>Personaliza la imagen y los datos de Ichiban Sushi Maki.</small>
+    </span>
+    <span class="admin-panel-toggle">Abrir sección</span>
+  </summary>
 
-<div class="photo-upload">
-<strong>Logo principal</strong>
-<input type="file" id="logoFile" accept="image/jpeg,image/png,image/webp">
-<img id="logoPreview" alt="Vista previa del logo">
-</div>
+  <div class="admin-panel-content">
 
-<div class="photo-upload">
-<strong>Logo para móviles (opcional)</strong>
-<input type="file" id="mobileLogoFile" accept="image/jpeg,image/png,image/webp">
-<img id="mobileLogoPreview" alt="Vista previa del logo móvil">
-</div>
+    <form id="settingsForm" class="form">
 
-<div class="photo-upload">
-<strong>Imagen de portada</strong>
-<input type="file" id="heroFile" accept="image/jpeg,image/png,image/webp">
-<img id="heroPreview" alt="Vista previa de portada">
-</div>
+      <input name="store_name" placeholder="Nombre del negocio" required>
+      <input name="slogan" placeholder="Eslogan">
+      <textarea name="description" placeholder="Descripción de la tienda"></textarea>
+      <input name="whatsapp" placeholder="WhatsApp (569XXXXXXXX)">
 
-<label>Color principal
-<input type="color" name="color_primary">
-</label>
+      <div class="photo-upload">
+        <strong>Logo principal</strong>
+        <input type="file" id="logoFile" accept="image/jpeg,image/png,image/webp">
+        <img id="logoPreview" alt="Vista previa del logo">
+      </div>
 
-<label>Fondo
-<input type="color" name="color_background">
-</label>
+      <div class="photo-upload">
+        <strong>Logo para móviles (opcional)</strong>
+        <input type="file" id="mobileLogoFile" accept="image/jpeg,image/png,image/webp">
+        <img id="mobileLogoPreview" alt="Vista previa del logo móvil">
+      </div>
 
-<label>Color crema
-<input type="color" name="color_cream">
-</label>
+      <div class="photo-upload">
+        <strong>Imagen de portada</strong>
+        <input type="file" id="heroFile" accept="image/jpeg,image/png,image/webp">
+        <img id="heroPreview" alt="Vista previa de portada">
+      </div>
 
-<label>Dorado
-<input type="color" name="color_gold">
-</label>
+      <label>Color principal
+        <input type="color" name="color_primary">
+      </label>
 
-<button class="btn btn-red" type="submit">Guardar identidad de la tienda</button>
-<p id="settingsMsg"></p>
+      <label>Fondo
+        <input type="color" name="color_background">
+      </label>
 
-</form>
-</section>
+      <label>Color crema
+        <input type="color" name="color_cream">
+      </label>
 
-<section class="box" id="typographyBox">
+      <label>Dorado
+        <input type="color" name="color_gold">
+      </label>
 
-<h2>Diseño y tipografía</h2>
-<p>Ajusta la apariencia de los textos de tu página. Puedes configurar computador y celular por separado.</p>
+      <button class="btn btn-red" type="submit">Guardar identidad de la tienda</button>
+      <p id="settingsMsg"></p>
+
+    </form>
+
+  </div>
+
+</details>
 
 
+<details class="box admin-panel" id="typographyBox">
+
+  <summary class="admin-panel-summary">
+    <span>
+      <strong>Diseño y tipografía</strong>
+      <small>Personaliza los textos de tu tienda para computador y celular.</small>
+    </span>
+    <span class="admin-panel-toggle">Abrir sección</span>
+  </summary>
+
+  <div class="admin-panel-content">
 
 <form id="typographyForm">
 
@@ -1219,8 +1304,19 @@ Configura los estilos de texto para computador y celular. Los cambios se guardan
 <p id="typographyMsg"></p>
 
 </form>
-</section>
-<section class="box" id="gohanConfigBox">
+
+  </div>
+</details>
+
+<details class="box admin-panel" id="gohanConfigBox">
+  <summary class="admin-panel-summary">
+    <span>
+      <strong>Configuración del Gohan</strong>
+      <small>Administra los ingredientes y proteínas disponibles para tus Gohan.</small>
+    </span>
+    <span class="admin-panel-toggle">Abrir sección</span>
+  </summary>
+  <div class="admin-panel-content">
   <h2>Configuración del Gohan</h2>
   <p>
     Administra los ingredientes que podrán elegir los clientes al pedir un Gohan.
@@ -1255,11 +1351,19 @@ Configura los estilos de texto para computador y celular. Los cambios se guardan
     <button type="button" class="btn btn-red" id="saveGohanConfig">
   Guardar configuración del Gohan
 </button>
+   </div>
   </div>
-</section>
-<section class="box">
-<h2>Agregar o editar producto</h2>
-<p>Administra los productos de tu carta, sus fotografías, precios y disponibilidad.</p>
+</details>
+
+<details class="box admin-panel" id="productEditorPanel">
+  <summary class="admin-panel-summary">
+    <span>
+      <strong>Agregar o editar producto</strong>
+      <small>Administra productos, fotografías, precios y disponibilidad.</small>
+    </span>
+    <span class="admin-panel-toggle">Abrir sección</span>
+  </summary>
+  <div class="admin-panel-content">
 
 <form id="productForm" class="form">
 
@@ -1301,13 +1405,21 @@ Configura los estilos de texto para computador y celular. Los cambios se guardan
 <button class="btn" type="reset">Limpiar</button>
 
 </form>
-</section>
+  </div>
+</details>
 
-<section class="box" id="list">
-<h2>Catálogo de productos</h2>
-<p>Desde aquí podrás revisar y administrar los productos de tu tienda.</p>
-<div id="items"></div>
-</section>
+<details class="box admin-panel" id="list">
+  <summary class="admin-panel-summary">
+    <span>
+      <strong>Catálogo de productos</strong>
+      <small>Revisa y administra los productos de tu tienda.</small>
+    </span>
+    <span class="admin-panel-toggle">Abrir sección</span>
+  </summary>
+  <div class="admin-panel-content">
+    <div id="items"></div>
+  </div>
+</details>
 
 </div>
 
