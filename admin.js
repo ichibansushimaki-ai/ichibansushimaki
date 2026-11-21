@@ -976,23 +976,8 @@ function orderIsSale(order) {
 }
 
 function getFilteredOrders() {
-  const from = $("#ordersDateFrom")?.value || "";
-  const to = $("#ordersDateTo")?.value || "";
-  const fulfillment = $("#ordersFulfillment")?.value || "";
-  const status = $("#ordersStatus")?.value || "";
-
-  return orders.filter(order => {
-    const date = orderDateKey(order.created_at);
-
-    if (from && (!date || date < from)) return false;
-    if (to && (!date || date > to)) return false;
-    if (fulfillment && order.fulfillment_method !== fulfillment) return false;
-    if (status && order.status !== status) return false;
-
-    return true;
-  });
+  return orders;
 }
-
 
 function getLocalDateKey(date) {
   const year = date.getFullYear();
@@ -1002,33 +987,7 @@ function getLocalDateKey(date) {
   return `${year}-${month}-${day}`;
 }
 
-function getMonday(date) {
-  const monday = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate()
-  );
-
-  const day = monday.getDay();
-  const difference = day === 0 ? -6 : 1 - day;
-
-  monday.setDate(monday.getDate() + difference);
-  monday.setHours(0, 0, 0, 0);
-
-  return monday;
-}
-
 function renderOrderStats(filteredOrders) {
-  const now = new Date();
-  const today = getLocalDateKey(now);
-
-  const monday = getMonday(now);
-  const weekStart = getLocalDateKey(monday);
-
-  const monthStart = `${now.getFullYear()}-${String(
-    now.getMonth() + 1
-  ).padStart(2, "0")}-01`;
-
   const pending = filteredOrders.filter(
     order => order.status === "pendiente"
   ).length;
@@ -1057,20 +1016,6 @@ function renderOrderStats(filteredOrders) {
       0
     );
 
-  const salesToday = salesOrders.filter(
-    order => orderDateKey(order.created_at) === today
-  );
-
-  const salesWeek = salesOrders.filter(order => {
-    const date = orderDateKey(order.created_at);
-    return date && date >= weekStart && date <= today;
-  });
-
-  const salesMonth = salesOrders.filter(order => {
-    const date = orderDateKey(order.created_at);
-    return date && date >= monthStart && date <= today;
-  });
-
   const deliverySales = salesOrders.filter(
     order => order.fulfillment_method === "delivery"
   );
@@ -1084,10 +1029,6 @@ function renderOrderStats(filteredOrders) {
   $("#statSales").textContent = money(totalSales(salesOrders));
   $("#statDelivery").textContent = delivery;
   $("#statPickup").textContent = pickup;
-
-  $("#statToday").textContent = money(totalSales(salesToday));
-  $("#statWeek").textContent = money(totalSales(salesWeek));
-  $("#statMonth").textContent = money(totalSales(salesMonth));
 
   $("#statDeliverySales").textContent =
     money(totalSales(deliverySales));
@@ -1354,7 +1295,7 @@ function renderOrders() {
   if (!filteredOrders.length) {
     container.innerHTML = `
       <div class="order-empty">
-        No hay pedidos que coincidan con los filtros seleccionados.
+        No hay pedidos registrados para el día seleccionado.
       </div>
     `;
     return;
@@ -1367,13 +1308,39 @@ function renderOrders() {
 
 async function loadOrders() {
   const message = $("#ordersMessage");
+  const dateField = $("#ordersDate");
 
   if (message) {
     message.textContent = "Cargando pedidos...";
   }
 
   try {
-    const response = await api("/api/orders");
+    // Si no hay fecha seleccionada, utilizar el día actual.
+    if (dateField && !dateField.value) {
+      dateField.value = getLocalDateKey(new Date());
+    }
+
+    const selectedDate = dateField?.value;
+
+    if (!selectedDate) {
+      throw new Error("Debes seleccionar una fecha.");
+    }
+
+    // Crear el inicio y término del día según la hora local de Chile.
+    const [year, month, day] = selectedDate.split("-").map(Number);
+
+    const startDate = new Date(year, month - 1, day);
+    const endDate = new Date(year, month - 1, day + 1);
+
+    const start = startDate.toISOString().slice(0, 19).replace("T", " ");
+    const end = endDate.toISOString().slice(0, 19).replace("T", " ");
+
+    const params = new URLSearchParams({
+      start,
+      end
+    });
+
+    const response = await api("/api/orders?" + params.toString());
 
     if (!response.ok) {
       throw new Error(
@@ -1387,7 +1354,7 @@ async function loadOrders() {
 
     if (message) {
       message.textContent =
-        `${orders.length} pedido(s) registrados.`;
+        `${orders.length} pedido(s) para el ${startDate.toLocaleDateString("es-CL")}.`;
     }
 
   } catch (error) {
@@ -1499,13 +1466,13 @@ async function saveOrder(orderId) {
 
 // FILTROS Y ACTUALIZACIÓN DE PEDIDOS
 
-["ordersDateFrom", "ordersDateTo", "ordersFulfillment", "ordersStatus"]
-  .forEach(id => {
-    const field = $("#" + id);
-    if (field) {
-      field.addEventListener("change", renderOrders);
-    }
-  });
+$("#ordersDate")?.addEventListener("change", async () => {
+  try {
+    await loadOrders();
+  } catch (error) {
+    alert(error.message);
+  }
+});
 
 $("#refreshOrders")?.addEventListener("click", async () => {
   const button = $("#refreshOrders");
