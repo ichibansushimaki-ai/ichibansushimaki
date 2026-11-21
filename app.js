@@ -737,7 +737,32 @@ function addStoreStyles() {
   .cart-line-description {
     font-size:12px;
   }
+.cart-line-description {
+  padding:10px;
+  gap:8px;
+}
 
+.cart-config-section {
+  padding:8px;
+}
+
+.cart-config-row {
+  grid-template-columns:1fr;
+  gap:4px;
+}
+
+.cart-config-label {
+  padding-top:0;
+}
+
+.cart-options {
+  gap:5px;
+}
+
+.cart-option {
+  padding:5px 8px;
+  font-size:11px;
+}
   .cart-summary {
     padding:13px;
   }
