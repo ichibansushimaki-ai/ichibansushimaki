@@ -81,7 +81,9 @@ export async function onRequestPost({ request, env }) {
     if (!["delivery", "pickup"].includes(body.fulfillment_method)) {
       return jsonError("Modalidad de entrega no válida.");
     }
-
+if (!["debit_credit", "cash", "transfer"].includes(body.payment_method)) {
+  return jsonError("Selecciona un método de pago válido.");
+}
     if (
       body.fulfillment_method === "delivery" &&
       (!body.address || !String(body.address).trim())
@@ -323,25 +325,26 @@ export async function onRequestPost({ request, env }) {
     const id = crypto.randomUUID();
 
     await env.DB.prepare(`
-      INSERT INTO orders (
-        id,
-        fulfillment_method,
-        address,
-        reference,
-        items_json,
-        subtotal,
-        status
-      )
-      VALUES (?, ?, ?, ?, ?, ?, 'pendiente')
+     INSERT INTO orders (
+  id,
+  fulfillment_method,
+  payment_method,
+  address,
+  reference,
+  items_json,
+  subtotal,
+  status
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')
     `).bind(
       id,
       body.fulfillment_method,
+      body.payment_method,
       address,
       reference,
       JSON.stringify(validatedItems),
       subtotal
     ).run();
-
     return Response.json({
       success: true,
       id,
