@@ -647,7 +647,58 @@ button:disabled{
   background: #f5f1ec;
   border-radius: 10px;
 }
+/* Panel desplegable de Pedidos y ventas */
+.orders-dashboard {
+  padding: 0;
+  overflow: hidden;
+}
 
+.orders-dashboard > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+}
+
+.orders-dashboard > summary::-webkit-details-marker {
+  display: none;
+}
+
+.orders-dashboard-summary strong {
+  display: block;
+  font-size: 19px;
+  color: #292521;
+}
+
+.orders-dashboard-summary small {
+  display: block;
+  margin-top: 5px;
+  color: #777;
+}
+
+.orders-dashboard-toggle {
+  flex-shrink: 0;
+  color: #b51f2b;
+  font-weight: bold;
+}
+
+.orders-dashboard-toggle::after {
+  content: " +";
+}
+
+.orders-dashboard[open] .orders-dashboard-toggle::after {
+  content: " −";
+}
+
+.orders-dashboard-content {
+  padding: 20px;
+  border-top: 1px solid #e5ddd3;
+}
 @media (max-width: 850px) {
   .orders-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
