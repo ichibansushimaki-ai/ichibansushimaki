@@ -699,6 +699,63 @@ button:disabled{
   padding: 20px;
   border-top: 1px solid #e5ddd3;
 }
+  /* Selector de fechas y períodos */
+.orders-date-mode {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 15px;
+  align-items: end;
+  width: 100%;
+}
+
+.orders-date-mode label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-weight: 600;
+}
+
+.orders-date-mode input,
+.orders-date-mode select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px;
+  border: 1px solid #d8cec3;
+  border-radius: 8px;
+  background: #fff;
+}
+
+#ordersDateRange {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: end;
+}
+
+#ordersDateRange[hidden] {
+  display: none;
+}
+
+.orders-period-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  grid-column: 1 / -1;
+}
+
+.orders-period-buttons button {
+  min-height: 38px;
+}
+
+@media (max-width: 520px) {
+  .orders-date-mode {
+    grid-template-columns: 1fr;
+  }
+
+  #ordersDateRange {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 850px) {
   .orders-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -847,10 +904,46 @@ button:disabled{
     <p>Selecciona un día para consultar sus pedidos y estadísticas.</p>
 
     <div class="orders-filters">
-      <label>
-        Fecha de consulta
-        <input type="date" id="ordersDate">
-      </label>
+     <div class="orders-date-mode">
+
+  <label>
+    Tipo de consulta
+    <select id="ordersDateMode">
+      <option value="day">Consultar un día</option>
+      <option value="range">Consultar un período</option>
+    </select>
+  </label>
+
+  <label id="ordersSingleDate">
+    Fecha de consulta
+    <input type="date" id="ordersDate">
+  </label>
+
+  <div id="ordersDateRange" hidden>
+
+    <label>
+      Desde
+      <input type="date" id="ordersDateFrom">
+    </label>
+
+    <label>
+      Hasta
+      <input type="date" id="ordersDateTo">
+    </label>
+
+    <div class="orders-period-buttons">
+      <button type="button" class="btn btn-red" data-period="3">
+        Últimos 3 meses
+      </button>
+
+      <button type="button" class="btn btn-red" data-period="6">
+        Últimos 6 meses
+      </button>
+    </div>
+
+  </div>
+
+</div>
     </div>
 
     <div class="orders-stats">
