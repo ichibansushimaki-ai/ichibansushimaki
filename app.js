@@ -1943,21 +1943,13 @@ async function sendOrder(fulfillment = {}) {
         "Avisar al cliente por WhatsApp cuando el pedido esté listo para retirar."
       ];
 
-  const paymentDetails = [
+   const paymentDetails = [
     `MÉTODO DE PAGO: ${paymentLabel}`
   ];
 
   if (fulfillment.payment_method === "transfer") {
     paymentDetails.push(
-      "",
-      "DATOS PARA TRANSFERENCIA:",
-      "Titular: ICHIBAN SUSHI",
-      "RUT: 77.883.241-0",
-      "Banco: Banco Estado",
-      "Tipo de cuenta: Cuenta Vista",
-      "Número de cuenta: 90276039953",
-      "",
-      "Después de realizar la transferencia, envía el comprobante por WhatsApp para confirmar tu pedido."
+      "RECUERDA ENVIAR VOUCHER PARA CONFIRMACIÓN."
     );
   }
 
