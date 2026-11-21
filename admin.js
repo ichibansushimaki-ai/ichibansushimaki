@@ -1183,12 +1183,23 @@ function renderOrderItem(item) {
   `;
 }
 
+
 function renderOrderCard(order) {
   const id = escapeHTML(order.id || "");
   const shortId = id.slice(0, 8);
+
   const method = order.fulfillment_method === "delivery"
     ? "Delivery"
     : "Retiro en local";
+
+  const paymentLabels = {
+    debit_credit: "Tarjeta de débito / crédito",
+    cash: "Efectivo",
+    transfer: "Transferencia bancaria"
+  };
+
+  const paymentMethod = paymentLabels[order.payment_method]
+    || "No informado";
 
   const address = order.fulfillment_method === "delivery"
     ? `<div class="order-meta">Dirección: ${escapeHTML(order.address || "No registrada")}</div>`
@@ -1254,6 +1265,7 @@ function renderOrderCard(order) {
           <h3>Pedido #${shortId}</h3>
           <div class="order-meta">${formatOrderDate(order.created_at)}</div>
           <div class="order-meta">${method}</div>
+          <div class="order-meta"><strong>Método de pago:</strong> ${paymentMethod}</div>
           ${address}
           ${reference}
         </div>
@@ -1306,6 +1318,7 @@ function renderOrderCard(order) {
     </article>
   `;
 }
+
 
 function renderOrders() {
   const container = $("#ordersList");
