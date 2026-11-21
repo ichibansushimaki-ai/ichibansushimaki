@@ -1309,28 +1309,52 @@ function renderOrders() {
 async function loadOrders() {
   const message = $("#ordersMessage");
   const dateField = $("#ordersDate");
+  const dateMode = $("#ordersDateMode")?.value || "day";
 
   if (message) {
     message.textContent = "Cargando pedidos...";
   }
 
   try {
-    // Si no hay fecha seleccionada, utilizar el día actual.
-    if (dateField && !dateField.value) {
-      dateField.value = getLocalDateKey(new Date());
+    let startDate;
+    let endDate;
+
+    if (dateMode === "day") {
+
+      if (dateField && !dateField.value) {
+        dateField.value = getLocalDateKey(new Date());
+      }
+
+      const selectedDate = dateField?.value;
+
+      if (!selectedDate) {
+        throw new Error("Debes seleccionar una fecha.");
+      }
+
+      const [year, month, day] = selectedDate.split("-").map(Number);
+
+      startDate = new Date(year, month - 1, day);
+      endDate = new Date(year, month - 1, day + 1);
+
+    } else {
+
+      const from = $("#ordersDateFrom")?.value || "";
+      const to = $("#ordersDateTo")?.value || "";
+
+      if (!from || !to) {
+        throw new Error("Debes seleccionar las dos fechas del período.");
+      }
+
+      if (from > to) {
+        throw new Error("La fecha inicial no puede ser posterior a la fecha final.");
+      }
+
+      const [yearFrom, monthFrom, dayFrom] = from.split("-").map(Number);
+      const [yearTo, monthTo, dayTo] = to.split("-").map(Number);
+
+      startDate = new Date(yearFrom, monthFrom - 1, dayFrom);
+      endDate = new Date(yearTo, monthTo - 1, dayTo + 1);
     }
-
-    const selectedDate = dateField?.value;
-
-    if (!selectedDate) {
-      throw new Error("Debes seleccionar una fecha.");
-    }
-
-    // Crear el inicio y término del día según la hora local de Chile.
-    const [year, month, day] = selectedDate.split("-").map(Number);
-
-    const startDate = new Date(year, month - 1, day);
-    const endDate = new Date(year, month - 1, day + 1);
 
     const start = startDate.toISOString().slice(0, 19).replace("T", " ");
     const end = endDate.toISOString().slice(0, 19).replace("T", " ");
@@ -1353,13 +1377,24 @@ async function loadOrders() {
     renderOrders();
 
     if (message) {
-      message.textContent =
-        `${orders.length} pedido(s) para el ${startDate.toLocaleDateString("es-CL")}.`;
+      if (dateMode === "day") {
+        message.textContent =
+          `${orders.length} pedido(s) para el ${startDate.toLocaleDateString("es-CL")}.`;
+      } else {
+        const lastDate = new Date(
+          endDate.getFullYear(),
+          endDate.getMonth(),
+          endDate.getDate() - 1
+        );
+
+        message.textContent =
+          `${orders.length} pedido(s) entre el ${startDate.toLocaleDateString("es-CL")} y el ${lastDate.toLocaleDateString("es-CL")}.`;
+      }
     }
 
   } catch (error) {
     if (message) {
-      message.textContent = "No se pudieron cargar los pedidos.";
+      message.textContent = error.message;
     }
 
     throw error;
@@ -1466,6 +1501,34 @@ async function saveOrder(orderId) {
 
 // FILTROS Y ACTUALIZACIÓN DE PEDIDOS
 
+// Cambiar entre consulta diaria y consulta por período.
+function updateOrdersDateMode() {
+  const mode = $("#ordersDateMode")?.value || "day";
+
+  const singleDate = $("#ordersSingleDate");
+  const dateRange = $("#ordersDateRange");
+
+  if (singleDate) {
+    singleDate.hidden = mode !== "day";
+  }
+
+  if (dateRange) {
+    dateRange.hidden = mode !== "range";
+  }
+}
+
+// Cambio de modalidad.
+$("#ordersDateMode")?.addEventListener("change", async () => {
+  updateOrdersDateMode();
+
+  try {
+    await loadOrders();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+// Cambio de fecha individual.
 $("#ordersDate")?.addEventListener("change", async () => {
   try {
     await loadOrders();
@@ -1473,6 +1536,59 @@ $("#ordersDate")?.addEventListener("change", async () => {
     alert(error.message);
   }
 });
+
+// Cambio de fechas del período.
+["ordersDateFrom", "ordersDateTo"].forEach(id => {
+  $("#" + id)?.addEventListener("change", async () => {
+    if (
+      $("#ordersDateFrom")?.value &&
+      $("#ordersDateTo")?.value
+    ) {
+      try {
+        await loadOrders();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+  });
+});
+
+// Botones para consultar los últimos 3 o 6 meses.
+document.querySelectorAll("[data-period]").forEach(button => {
+  button.addEventListener("click", async () => {
+    const months = Number(button.dataset.period);
+    const today = new Date();
+
+    const from = new Date(
+      today.getFullYear(),
+      today.getMonth() - months,
+      1
+    );
+
+    const lastDay = new Date(
+      from.getFullYear(),
+      from.getMonth() + 1,
+      0
+    ).getDate();
+
+    from.setDate(Math.min(today.getDate(), lastDay));
+
+    $("#ordersDateMode").value = "range";
+    $("#ordersDateFrom").value = getLocalDateKey(from);
+    $("#ordersDateTo").value = getLocalDateKey(today);
+
+    updateOrdersDateMode();
+
+    try {
+      await loadOrders();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+});
+
+// Mostrar la modalidad inicial.
+updateOrdersDateMode();
 
 $("#refreshOrders")?.addEventListener("click", async () => {
   const button = $("#refreshOrders");
