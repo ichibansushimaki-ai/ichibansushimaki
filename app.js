@@ -1058,52 +1058,7 @@ function cartItemDescription(item) {
       </div>
     `);
   }
-    if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple") {
-      const weekly = config.weeklyPromo;
-
-      lines.push("PERSONALIZACIÓN PROMOCIÓN SEMANAL:");
-
-      if (weekly.protein) {
-        lines.push(`Proteína: ${weekly.protein}`);
-      }
-
-      lines.push(
-        weekly.vegetables?.length
-          ? `Vegetales: ${weekly.vegetables.join(", ")}`
-          : "Vegetales: Sin vegetales"
-      );
-
-      if (weekly.cheese) {
-        lines.push(`Queso crema: ${weekly.cheese}`);
-      }
-
-      if (weekly.shrimpExtra > 0) {
-        lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
-      }
-    }
-      if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple") {
-      const weekly = config.weeklyPromo;
-
-      lines.push("PERSONALIZACIÓN PROMOCIÓN SEMANAL:");
-
-      if (weekly.protein) {
-        lines.push(`Proteína: ${weekly.protein}`);
-      }
-
-      lines.push(
-        weekly.vegetables?.length
-          ? `Vegetales: ${weekly.vegetables.join(", ")}`
-          : "Vegetales: Sin vegetales"
-      );
-
-      if (weekly.cheese) {
-        lines.push(`Queso crema: ${weekly.cheese}`);
-      }
-
-      if (weekly.shrimpExtra > 0) {
-        lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
-      }
-    }
+   
   if (config.vegetables?.length) {
     sections.push(`
       <div class="cart-config-section">
