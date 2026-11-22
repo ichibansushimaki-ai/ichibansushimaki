@@ -5,7 +5,10 @@ export async function onRequestGet({ env }) {
       .prepare("SELECT * FROM store_settings WHERE id = 1")
       .first();
 
-    return Response.json(result || {});
+   return Response.json({
+  ...(result || {}),
+  weekly_promos: result?.weekly_promos || "[]"
+});
   } catch (error) {
     return Response.json(
       { error: error.message },
@@ -28,19 +31,38 @@ export async function onRequestPut({ request, env }) {
 
     const data = await request.json();
 
-    const fields = [
-      "store_name",
-      "slogan",
-      "description",
-      "logo",
-      "mobile_logo",
-      "hero_image",
-      "whatsapp",
-      "color_primary",
-      "color_background",
-      "color_cream",
-      "color_gold"
-    ];
+   const fields = [
+  "store_name",
+  "slogan",
+  "description",
+  "logo",
+  "mobile_logo",
+  "hero_image",
+  "whatsapp",
+  "color_primary",
+  "color_background",
+  "color_cream",
+  "color_gold"
+];
+
+let weeklyPromos = null;
+
+if (data.weekly_promos !== undefined) {
+  try {
+    weeklyPromos = typeof data.weekly_promos === "string"
+      ? JSON.parse(data.weekly_promos)
+      : data.weekly_promos;
+
+    if (!Array.isArray(weeklyPromos)) {
+      throw new Error("Formato inválido");
+    }
+  } catch {
+    return Response.json(
+      { error: "La configuración de promociones semanales no es válida" },
+      { status: 400 }
+    );
+  }
+}
 
     if (!String(data.store_name || "").trim()) {
       return Response.json(
@@ -146,13 +168,15 @@ export async function onRequestPut({ request, env }) {
         color_gold = ?,
         typography = ?,
         gohan_config = ?,
-        custom_roll_config = ?
+        custom_roll_config = ?,
+        weekly_promos = COALESCE(?, weekly_promos)
       WHERE id = 1
-    `).bind(
+        ).bind(
       ...values,
       typography,
       gohanConfig,
-      customRollConfig
+      customRollConfig,
+      weeklyPromos === null ? null : JSON.stringify(weeklyPromos)
     ).run();
 
     return Response.json({ ok: true });
