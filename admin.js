@@ -498,6 +498,7 @@ $("#settingsForm").onsubmit = async event => {
     data.hero_image = settings.hero_image || "";
     data.typography = JSON.stringify(currentTypography);
 data.gohan_config = settings.gohan_config || "{}";
+    data.custom_roll_config = settings.custom_roll_config || JSON.stringify(defaultCustomRollConfig);
     const images = [
       ["logoFile", "logo"],
       ["mobileLogoFile", "mobile_logo"],
