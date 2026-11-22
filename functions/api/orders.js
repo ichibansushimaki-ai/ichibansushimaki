@@ -124,8 +124,25 @@ if (!["debit_credit", "cash", "transfer"].includes(body.payment_method)) {
       : null;
 
 const settingsRow = await env.DB.prepare(`
-  SELECT gohan_config FROM store_settings WHERE id = 1
+  SELECT gohan_config, weekly_promos
+  FROM store_settings
+  WHERE id = 1
 `).first();
+
+const gohanSettings = parseObject(settingsRow?.gohan_config);
+let weeklyPromos = [];
+
+try {
+  const parsedPromos = typeof settingsRow?.weekly_promos === "string"
+    ? JSON.parse(settingsRow.weekly_promos || "[]")
+    : settingsRow?.weekly_promos;
+
+  weeklyPromos = Array.isArray(parsedPromos)
+    ? parsedPromos
+    : [];
+} catch {
+  weeklyPromos = [];
+}
 
 const gohanSettings = parseObject(settingsRow?.gohan_config);
 
