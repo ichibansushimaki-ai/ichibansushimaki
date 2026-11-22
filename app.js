@@ -913,11 +913,16 @@ function cartTotal() {
 
     const gohanSurcharge =
       Number(item.config?.gohan?.proteinSurcharge || 0) * quantity;
-
-    return sum +
-      productsTotal +
-      gohanSurcharge +
-      getPaidSaucesTotal(item);
+const customRollSurcharge =
+  (
+    Number(item.config?.customRoll?.coveringSurcharge || 0) +
+    Number(item.config?.customRoll?.proteinSurcharge || 0)
+  ) * quantity;
+return sum +
+  productsTotal +
+  gohanSurcharge +
+  customRollSurcharge +
+  getPaidSaucesTotal(item);
   }, 0);
 }
 
@@ -925,7 +930,55 @@ function cartTotal() {
 function cartItemDescription(item) {
   const config = item.config || {};
   const sections = [];
+  if (config.customRoll) {
+    const roll = config.customRoll;
 
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Personalización Arma tu Roll</strong>
+
+        <div class="cart-config-row">
+          <span class="cart-config-label">Base</span>
+          <span class="cart-option">${escapeHTML(roll.rice)}</span>
+        </div>
+
+        <div class="cart-config-row">
+          <span class="cart-config-label">Nori</span>
+          <span class="cart-option">${escapeHTML(roll.nori)}</span>
+        </div>
+
+        <div class="cart-config-row">
+          <span class="cart-config-label">Queso crema</span>
+          <span class="cart-option">${escapeHTML(roll.creamCheese)}</span>
+        </div>
+
+        <div class="cart-config-row">
+          <span class="cart-config-label">Cobertura</span>
+          <span class="cart-option">
+            ${escapeHTML(roll.covering)}
+            ${Number(roll.coveringSurcharge) > 0
+              ? ` (+${money(roll.coveringSurcharge)})`
+              : ""}
+          </span>
+        </div>
+
+        <div class="cart-config-row">
+          <span class="cart-config-label">Proteína</span>
+          <span class="cart-option">
+            ${escapeHTML(roll.protein)}
+            ${Number(roll.proteinSurcharge) > 0
+              ? ` (+${money(roll.proteinSurcharge)})`
+              : ""}
+          </span>
+        </div>
+
+        <div class="cart-config-row">
+          <span class="cart-config-label">Vegetales</span>
+          <span class="cart-option">${escapeHTML(roll.vegetable)}</span>
+        </div>
+      </div>
+    `);
+  }
   if (config.gohan) {
     const gohan = config.gohan;
 
@@ -1450,7 +1503,25 @@ const isGohan = isDish && options.gohan_customizable === true;
   $("#confirmAdd").addEventListener("click", () => {
     const qty = Math.max(1, Math.min(20, Number(quantity.value) || 1));
     const config = {};
+if (isCustomRoll) {
+  const coveringSelect = $("#customRollCovering");
+  const proteinSelect = $("#customRollProtein");
 
+  config.customRoll = {
+    rice: $("#customRollRice").value,
+    nori: $("#customRollNori").value,
+    creamCheese: $("#customRollCreamCheese").value,
+    covering: coveringSelect.value,
+    coveringSurcharge: Number(
+      coveringSelect.options[coveringSelect.selectedIndex].dataset.surcharge || 0
+    ),
+    protein: proteinSelect.value,
+    proteinSurcharge: Number(
+      proteinSelect.options[proteinSelect.selectedIndex].dataset.surcharge || 0
+    ),
+    vegetable: $("#customRollVegetable").value
+  };
+}
     if (freePerUnit > 0) {
       const soyValue = Math.max(0, Number(soy.value) || 0);
       const teriyakiValue = Math.max(0, Number(teriyaki.value) || 0);
@@ -1710,15 +1781,22 @@ const lines = cart.map(item => {
 
   const gohanSurcharge =
     Number(item.config?.gohan?.proteinSurcharge || 0) * quantity;
+const customRollSurcharge =
+  (
+    Number(item.config?.customRoll?.coveringSurcharge || 0) +
+    Number(item.config?.customRoll?.proteinSurcharge || 0)
+  ) * quantity;
+ const itemTotal =
+  Number(item.price || 0) * quantity +
+  gohanSurcharge +
+  customRollSurcharge +
+  getPaidSaucesTotal(item);
 
-  const itemTotal =
-    Number(item.price || 0) * quantity +
-    gohanSurcharge +
-    getPaidSaucesTotal(item);
-
-  const unitPrice =
-    Number(item.price || 0) +
-    Number(item.config?.gohan?.proteinSurcharge || 0);
+const unitPrice =
+  Number(item.price || 0) +
+  Number(item.config?.gohan?.proteinSurcharge || 0) +
+  Number(item.config?.customRoll?.coveringSurcharge || 0) +
+  Number(item.config?.customRoll?.proteinSurcharge || 0);
 
   return `
     <div class="cart-line">
@@ -1934,15 +2012,44 @@ async function sendOrder(fulfillment = {}) {
     const config = item.config || {};
     const quantity = Number(item.quantity || 1);
 
-    const gohanSurcharge =
-      Number(config.gohan?.proteinSurcharge || 0) * quantity;
+  const gohanSurcharge =
+  Number(config.gohan?.proteinSurcharge || 0) * quantity;
 
-    const itemPrice =
-      Number(item.price || 0) * quantity + gohanSurcharge;
+const customRollSurcharge =
+  (
+    Number(config.customRoll?.coveringSurcharge || 0) +
+    Number(config.customRoll?.proteinSurcharge || 0)
+  ) * quantity;
 
-    const lines = [
+const itemPrice =
+  Number(item.price || 0) * quantity +
+  gohanSurcharge +
+  customRollSurcharge;
+       const lines = [
       `${quantity} × ${item.name} — ${money(itemPrice)}`
     ];
+
+    if (config.customRoll) {
+      const roll = config.customRoll;
+
+      lines.push("PERSONALIZACIÓN ARMA TU ROLL:");
+      lines.push(`Base: ${roll.rice}`);
+      lines.push(`Nori: ${roll.nori}`);
+      lines.push(`Queso crema: ${roll.creamCheese}`);
+      lines.push(
+        `Cobertura: ${roll.covering}` +
+        (Number(roll.coveringSurcharge) > 0
+          ? ` (+${money(roll.coveringSurcharge)})`
+          : "")
+      );
+      lines.push(
+        `Proteína: ${roll.protein}` +
+        (Number(roll.proteinSurcharge) > 0
+          ? ` (+${money(roll.proteinSurcharge)})`
+          : "")
+      );
+      lines.push(`Vegetales: ${roll.vegetable}`);
+    }
 
     if (config.gohan) {
       const gohan = config.gohan;
