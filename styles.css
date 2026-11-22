@@ -1071,3 +1071,28 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+/* =====================================
+   TEXTOS DE PROMOCIONES SEMANALES
+   MISMA TIPOGRAFÍA DEL CATÁLOGO
+===================================== */
+
+.weekly-promos .product h3 {
+  color: #fffaf2;
+  font-family: var(--font-display);
+  font-size: var(--texto-producto);
+  font-weight: var(--peso-producto);
+  letter-spacing: var(--espaciado-titulos);
+}
+
+.weekly-promos .product p {
+  color: #e0d2bf;
+  font-family: var(--font-general);
+  font-size: var(--texto-descripcion-producto);
+  line-height: var(--altura-linea-descripcion);
+}
+
+.weekly-promos .product .price {
+  color: var(--gold);
+  font-size: var(--texto-precio);
+  font-weight: var(--peso-precio);
+}
