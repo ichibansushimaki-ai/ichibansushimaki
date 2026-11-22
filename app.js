@@ -1108,7 +1108,7 @@ const isGohan = isDish && options.gohan_customizable === true;
         ? `${name} (+${money(surcharge)})`
         : name;
 
-      return `<option value="${name}" ${item.name === selectedValue ? "selected" : ""}>${label}</option>`;
+      return `<option value="${name}" data-surcharge="${surcharge}" ${item.name === selectedValue ? "selected" : ""}>${label}</option>`;
     }).join("");
   };
 
