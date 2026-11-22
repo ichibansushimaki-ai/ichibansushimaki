@@ -519,34 +519,105 @@ function renderWeeklyPromosAdmin() {
       <input name="price" type="number" min="1" required
         placeholder="Ej: 5000">
 
-      <label>Imagen (URL)</label>
-      <input name="image" type="url"
-        placeholder="https://...">
+<label>Imagen desde tu computador</label>
+<input
+  name="imageFile"
+  id="weeklyPromoImageFile"
+  type="file"
+  accept="image/*"
+>
+
+<img
+  id="weeklyPromoImagePreview"
+  alt="Vista previa de la promoción"
+  style="display:none;width:100%;max-width:220px;height:130px;object-fit:cover;margin:10px 0;border-radius:8px;"
+>
+
+<label>O dirección de imagen (URL)</label>
+<input name="image" type="url"
+  placeholder="https://...">
 
       <button type="submit">Agregar promoción</button>
     </form>
 
     <div id="weeklyPromoList"></div>
   `;
+  const weeklyImageInput = $("#weeklyPromoImageFile");
+const weeklyImagePreview = $("#weeklyPromoImagePreview");
+
+if (weeklyImageInput && weeklyImagePreview) {
+  weeklyImageInput.addEventListener("change", () => {
+    const file = weeklyImageInput.files[0];
+
+    if (!file) {
+      weeklyImagePreview.style.display = "none";
+      weeklyImagePreview.removeAttribute("src");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("La imagen supera el límite de 5 MB.");
+      weeklyImageInput.value = "";
+      weeklyImagePreview.style.display = "none";
+      return;
+    }
+
+    weeklyImagePreview.src = URL.createObjectURL(file);
+    weeklyImagePreview.style.display = "block";
+  });
+}
   $("#weeklyPromoForm").onsubmit = async event => {
     event.preventDefault();
 
-    const form = event.currentTarget;
+   const form = event.currentTarget;
 
-    const promo = {
-      id: String(Date.now()),
-      day: form.elements.day.value,
-      name: form.elements.name.value.trim(),
-      description: form.elements.description.value.trim(),
-      price: Number(form.elements.price.value),
-      image: form.elements.image.value.trim(),
-      active: true
-    };
+let image = form.elements.image.value.trim();
+const imageFile = form.elements.imageFile.files[0];
 
-    if (!promo.name || promo.price <= 0) {
-      alert("Completa el nombre y un precio válido.");
-      return;
-    }
+if (imageFile) {
+  if (imageFile.size > 5 * 1024 * 1024) {
+    alert("La imagen supera el límite de 5 MB.");
+    return;
+  }
+
+  const submitButton = form.querySelector('button[type="submit"]');
+
+  try {
+    submitButton.disabled = true;
+    submitButton.dataset.originalText = submitButton.textContent;
+    submitButton.textContent = "Subiendo imagen...";
+
+    image = await uploadImage(imageFile);
+
+    submitButton.textContent = "Agregando promoción...";
+  } catch (error) {
+    submitButton.disabled = false;
+    submitButton.textContent =
+      submitButton.dataset.originalText || "Agregar promoción";
+
+    alert("No se pudo subir la imagen: " + error.message);
+    return;
+  }
+}
+
+const promo = {
+  id: String(Date.now()),
+  day: form.elements.day.value,
+  name: form.elements.name.value.trim(),
+  description: form.elements.description.value.trim(),
+  price: Number(form.elements.price.value),
+  image,
+  active: true
+};
+
+   if (!promo.name || !Number.isFinite(promo.price) || promo.price <= 0) {
+  const submitButton = form.querySelector('button[type="submit"]');
+  submitButton.disabled = false;
+  submitButton.textContent = "Agregar promoción";
+
+  alert("Completa el nombre y un precio válido.");
+  return;
+}
 
 const updatedPromos = [...weeklyPromos, promo];
 
@@ -555,6 +626,10 @@ try {
   alert("¡Promoción agregada correctamente!");
 } catch (error) {
   alert("No se pudo guardar la promoción: " + error.message);
+} finally {
+  const submitButton = form.querySelector('button[type="submit"]');
+  submitButton.disabled = false;
+  submitButton.textContent = "Agregar promoción";
 }
   };
   const list = $("#weeklyPromoList");
