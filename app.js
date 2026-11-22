@@ -1140,7 +1140,7 @@ const isGohan = isDish && options.gohan_customizable === true;
       </div>
     `;
  } else if (isCustomRoll) {
-  const customConfig = settings.custom_roll_config || {};
+ const customConfig = parseOptions(settings.custom_roll_config);
   const customSelection = initialConfig.customRoll || {};
 
   const renderCustomOptions = (items, selected, fallback, noneLabel) => {
