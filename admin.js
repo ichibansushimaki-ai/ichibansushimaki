@@ -492,15 +492,88 @@ async function saveWeeklyPromos(updatedPromos) {
 
   renderWeeklyPromosAdmin();
 }
+function renderWeeklyPromoComponents(type) {
+  const container = $("#weeklyPromoComponents");
+  if (!container) return;
+
+  const configurations = {
+    simple: `
+      <p>Esta oferta no necesita personalización.</p>
+    `,
+
+    handroll_combo: `
+      <h4>Configuración del Handroll</h4>
+
+      <label>Proteínas disponibles</label>
+      <label><input type="checkbox" name="handroll_protein" value="Pollo" checked> Pollo</label>
+      <label><input type="checkbox" name="handroll_protein" value="Camarón" checked> Camarón</label>
+      <label><input type="checkbox" name="handroll_protein" value="Kanikama" checked> Kanikama</label>
+
+      <label>Vegetales disponibles</label>
+      <label><input type="checkbox" name="handroll_vegetable" value="Cebollín" checked> Cebollín</label>
+      <label><input type="checkbox" name="handroll_vegetable" value="Palta" checked> Palta</label>
+      <label><input type="checkbox" name="handroll_vegetable" value="Pimentón" checked> Pimentón</label>
+      <label><input type="checkbox" name="handroll_vegetable" value="Sin vegetal" checked> Sin vegetal</label>
+
+      <label>
+        <input type="checkbox" name="handroll_cheese" checked>
+        Permitir elegir queso crema con o sin
+      </label>
+
+      <p>Las papas fritas se consideran incluidas en el combo.</p>
+    `,
+
+    sushi_burger_combo: `
+      <h4>Configuración de Sushi Burger</h4>
+
+      <label>Proteínas disponibles</label>
+      <label><input type="checkbox" name="burger_protein" value="Pollo" checked> Pollo</label>
+      <label><input type="checkbox" name="burger_protein" value="Camarón" checked> Camarón</label>
+
+      <label>Recargo por camarón ($)</label>
+      <input type="number" name="burger_shrimp_extra" min="0" value="1000">
+
+      <label>Vegetales disponibles (máximo 2)</label>
+      <label><input type="checkbox" name="burger_vegetable" value="Cebollín" checked> Cebollín</label>
+      <label><input type="checkbox" name="burger_vegetable" value="Palta" checked> Palta</label>
+      <label>
+        <input type="checkbox" name="burger_no_vegetable" checked>
+        Permitir sin vegetales
+      </label>
+
+      <label>
+        <input type="checkbox" name="burger_cheese" checked>
+        Permitir elegir queso crema con o sin
+      </label>
+    `,
+
+    custom_combo: `
+      <h4>Combo personalizado</h4>
+      <p>En la siguiente etapa agregaremos componentes y opciones personalizadas para este tipo de oferta.</p>
+    `
+  };
+
+  container.innerHTML = configurations[type] || configurations.simple;
+}
 function renderWeeklyPromosAdmin() {
   const container = $("#weeklyPromosAdmin");
   if (!container) return;
 
   container.innerHTML = `
     <form id="weeklyPromoForm">
-      <h3>Crear promoción semanal</h3>
+     <h3>Crear promoción semanal</h3>
 
-      <label>Día de la promoción</label>
+<label>Tipo de oferta</label>
+<select name="offer_type" required>
+  <option value="simple">Oferta simple</option>
+  <option value="handroll_combo">Combo Handroll</option>
+  <option value="sushi_burger_combo">Combo Sushi Burger</option>
+  <option value="custom_combo">Combo personalizado</option>
+</select>
+<div id="weeklyPromoComponents">
+  <p>Selecciona un tipo de oferta para configurar sus componentes.</p>
+</div>
+<label>Día de la promoción</label>
       <select name="day" required>
         ${weeklyPromoDays.map(day =>
           `<option value="${day}">${day}</option>`
@@ -542,6 +615,15 @@ function renderWeeklyPromosAdmin() {
 
     <div id="weeklyPromoList"></div>
   `;
+  const offerTypeSelect = $("#weeklyPromoForm").elements.offer_type;
+
+if (offerTypeSelect) {
+  renderWeeklyPromoComponents(offerTypeSelect.value);
+
+  offerTypeSelect.addEventListener("change", () => {
+    renderWeeklyPromoComponents(offerTypeSelect.value);
+  });
+}
   const weeklyImageInput = $("#weeklyPromoImageFile");
 const weeklyImagePreview = $("#weeklyPromoImagePreview");
 
@@ -566,72 +648,98 @@ if (weeklyImageInput && weeklyImagePreview) {
     weeklyImagePreview.style.display = "block";
   });
 }
-  $("#weeklyPromoForm").onsubmit = async event => {
-    event.preventDefault();
 
-   const form = event.currentTarget;
+$("#weeklyPromoForm").onsubmit = async event => {
+  event.preventDefault();
 
-let image = form.elements.image.value.trim();
-const imageFile = form.elements.imageFile.files[0];
-
-if (imageFile) {
-  if (imageFile.size > 5 * 1024 * 1024) {
-    alert("La imagen supera el límite de 5 MB.");
-    return;
-  }
+  const form = event.currentTarget;
+  const editingId = form.dataset.editingId || "";
+  const existingPromo = weeklyPromos.find(
+    item => item.id === editingId
+  );
 
   const submitButton = form.querySelector('button[type="submit"]');
+
+  let image = form.elements.image.value.trim();
+  const imageFile = form.elements.imageFile.files[0];
 
   try {
     submitButton.disabled = true;
-    submitButton.dataset.originalText = submitButton.textContent;
-    submitButton.textContent = "Subiendo imagen...";
+    submitButton.textContent = imageFile
+      ? "Subiendo imagen..."
+      : editingId
+        ? "Guardando cambios..."
+        : "Agregando promoción...";
 
-    image = await uploadImage(imageFile);
+    if (imageFile) {
+      if (imageFile.size > 5 * 1024 * 1024) {
+        throw new Error("La imagen supera el límite de 5 MB.");
+      }
 
-    submitButton.textContent = "Agregando promoción...";
-  } catch (error) {
-    submitButton.disabled = false;
-    submitButton.textContent =
-      submitButton.dataset.originalText || "Agregar promoción";
+      image = await uploadImage(imageFile);
+    }
 
-    alert("No se pudo subir la imagen: " + error.message);
-    return;
-  }
+    const promo = {
+      id: editingId || String(Date.now()),
+      day: form.elements.day.value,
+      offer_type: form.elements.offer_type.value,
+      name: form.elements.name.value.trim(),
+      description: form.elements.description.value.trim(),
+      price: Number(form.elements.price.value),
+      image,
+
+      components: {
+        handroll_proteins: [...form.querySelectorAll('input[name="handroll_protein"]:checked')].map(el => el.value),
+        handroll_vegetables: [...form.querySelectorAll('input[name="handroll_vegetable"]:checked')].map(el => el.value),
+        handroll_cheese: form.querySelector('[name="handroll_cheese"]')?.checked ?? false,
+
+        burger_proteins: [...form.querySelectorAll('input[name="burger_protein"]:checked')].map(el => el.value),
+        burger_vegetables: [...form.querySelectorAll('input[name="burger_vegetable"]:checked')].map(el => el.value),
+        burger_no_vegetable: form.querySelector('[name="burger_no_vegetable"]')?.checked ?? false,
+        burger_cheese: form.querySelector('[name="burger_cheese"]')?.checked ?? false,
+        burger_shrimp_extra: Number(form.querySelector('[name="burger_shrimp_extra"]')?.value || 0)
+      },
+
+      active: existingPromo ? existingPromo.active : true
+    };
+
+    if (!promo.name || !Number.isFinite(promo.price) || promo.price <= 0) {
+      throw new Error("Completa el nombre y un precio válido.");
+    }
+
+    const updatedPromos = editingId
+      ? weeklyPromos.map(item =>
+          item.id === editingId ? promo : item
+        )
+      : [...weeklyPromos, promo];
+
+    await saveWeeklyPromos(updatedPromos);
+
+    alert(editingId
+      ? "¡Promoción actualizada correctamente!"
+      : "¡Promoción agregada correctamente!"
+    );
+form.dataset.editingId = "";
+form.reset();
+
+const componentsContainer = $("#weeklyPromoComponents");
+if (componentsContainer) {
+  componentsContainer.innerHTML =
+    "<p>Selecciona un tipo de oferta para configurar sus componentes.</p>";
 }
+    if (imageFile) {
+      form.elements.imageFile.value = "";
+    }
 
-const promo = {
-  id: String(Date.now()),
-  day: form.elements.day.value,
-  name: form.elements.name.value.trim(),
-  description: form.elements.description.value.trim(),
-  price: Number(form.elements.price.value),
-  image,
-  active: true
+  } catch (error) {
+    alert("No se pudo guardar la promoción: " + error.message);
+
+  } finally {
+    submitButton.disabled = false;
+   submitButton.textContent = "Agregar promoción";
+  }
 };
 
-   if (!promo.name || !Number.isFinite(promo.price) || promo.price <= 0) {
-  const submitButton = form.querySelector('button[type="submit"]');
-  submitButton.disabled = false;
-  submitButton.textContent = "Agregar promoción";
-
-  alert("Completa el nombre y un precio válido.");
-  return;
-}
-
-const updatedPromos = [...weeklyPromos, promo];
-
-try {
-  await saveWeeklyPromos(updatedPromos);
-  alert("¡Promoción agregada correctamente!");
-} catch (error) {
-  alert("No se pudo guardar la promoción: " + error.message);
-} finally {
-  const submitButton = form.querySelector('button[type="submit"]');
-  submitButton.disabled = false;
-  submitButton.textContent = "Agregar promoción";
-}
-  };
   const list = $("#weeklyPromoList");
 
   weeklyPromoDays.forEach(day => {
@@ -690,76 +798,69 @@ try {
       editButton.type = "button";
       editButton.textContent = "Editar";
 
-      editButton.onclick = async () => {
-        const newDay = prompt(
-          "Día de la promoción (Lunes, Martes, Miércoles, Jueves, Viernes o Sábado):",
-          promo.day
-        );
-        if (newDay === null) return;
+editButton.onclick = () => {
+  const form = $("#weeklyPromoForm");
+  const components = promo.components || {};
 
-        const days = [
-          "Lunes",
-          "Martes",
-          "Miércoles",
-          "Jueves",
-          "Viernes",
-          "Sábado"
-        ];
+  // Cargar datos principales
+  form.elements.day.value = promo.day;
+  form.elements.offer_type.value = promo.offer_type || "simple";
+  form.elements.name.value = promo.name || "";
+  form.elements.description.value = promo.description || "";
+  form.elements.price.value = promo.price || "";
 
-        const day = days.find(
-          value => value.toLowerCase() === newDay.trim().toLowerCase()
-        );
+  // Mostrar las opciones correspondientes al tipo de oferta
+  renderWeeklyPromoComponents(form.elements.offer_type.value);
 
-        if (!day) {
-          alert("Selecciona un día válido, de lunes a sábado.");
-          return;
-        }
+  // Cargar opciones del Handroll
+  form.querySelectorAll('[name="handroll_protein"]').forEach(el => {
+    el.checked = (components.handroll_proteins || []).includes(el.value);
+  });
 
-        const newName = prompt("Nombre de la promoción:", promo.name);
-        if (newName === null) return;
+  form.querySelectorAll('[name="handroll_vegetable"]').forEach(el => {
+    el.checked = (components.handroll_vegetables || []).includes(el.value);
+  });
 
-        const newDescription = prompt(
-          "Descripción de la promoción:",
-          promo.description || ""
-        );
-        if (newDescription === null) return;
+  const handrollCheese = form.querySelector('[name="handroll_cheese"]');
+  if (handrollCheese) {
+    handrollCheese.checked = components.handroll_cheese ?? false;
+  }
 
-        const newPrice = prompt("Precio de la promoción:", promo.price);
-        if (newPrice === null) return;
+  // Cargar opciones de Sushi Burger
+  form.querySelectorAll('[name="burger_protein"]').forEach(el => {
+    el.checked = (components.burger_proteins || []).includes(el.value);
+  });
 
-        const newImage = prompt(
-          "URL de la imagen de la promoción:",
-          promo.image || ""
-        );
-        if (newImage === null) return;
+  form.querySelectorAll('[name="burger_vegetable"]').forEach(el => {
+    el.checked = (components.burger_vegetables || []).includes(el.value);
+  });
 
-        const price = Number(newPrice);
+  const burgerNoVegetable = form.querySelector('[name="burger_no_vegetable"]');
+  if (burgerNoVegetable) {
+    burgerNoVegetable.checked = components.burger_no_vegetable ?? false;
+  }
 
-        if (!newName.trim() || !Number.isFinite(price) || price <= 0) {
-          alert("Ingresa un nombre y un precio válido.");
-          return;
-        }
+  const burgerCheese = form.querySelector('[name="burger_cheese"]');
+  if (burgerCheese) {
+    burgerCheese.checked = components.burger_cheese ?? false;
+  }
 
-        try {
-          const updated = weeklyPromos.map(item =>
-            item.id === promo.id
-              ? {
-                  ...item,
-                  day,
-                  name: newName.trim(),
-                  description: newDescription.trim(),
-                  price,
-                  image: newImage.trim()
-                }
-              : item
-          );
+  const shrimpExtra = form.querySelector('[name="burger_shrimp_extra"]');
+  if (shrimpExtra) {
+    shrimpExtra.value = components.burger_shrimp_extra ?? 1000;
+  }
 
-          await saveWeeklyPromos(updated);
-          alert("Promoción actualizada correctamente.");
-        } catch (error) {
-          alert("No se pudo editar: " + error.message);
-        }
-      };
+  // Identificar la promoción que estamos editando
+  form.dataset.editingId = promo.id;
+const submitButton = form.querySelector('button[type="submit"]');
+submitButton.textContent = "Guardar cambios";
+  form.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+  alert("Promoción cargada. Puedes modificar sus datos.");
+};
 
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
