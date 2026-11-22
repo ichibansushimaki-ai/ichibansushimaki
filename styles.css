@@ -1041,3 +1041,33 @@ button:disabled {
   background: #211d1a;
   border-color: #80643c;
 }
+
+/* CORRECCIÓN DE DISTRIBUCIÓN DE PROMOCIONES */
+
+.weekly-promos #promoGrid {
+  display: block;
+}
+
+.weekly-promos .weekly-promo-day > .grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+}
+
+@media (max-width: 1099px) and (min-width: 761px) {
+  .weekly-promos .weekly-promo-day > .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .weekly-promos .weekly-promo-day > .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 430px) {
+  .weekly-promos .weekly-promo-day > .grid {
+    grid-template-columns: 1fr;
+  }
+}
