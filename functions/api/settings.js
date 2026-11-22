@@ -78,7 +78,7 @@ if (data.weekly_promos !== undefined) {
       );
     }
 
-    let typography = "{}";
+   let typography = null;
 
     if (data.typography !== undefined) {
       try {
@@ -103,7 +103,7 @@ if (data.weekly_promos !== undefined) {
       }
     }
 
-    let gohanConfig = "{}";
+  let gohanConfig = null;
 
     if (data.gohan_config !== undefined) {
       try {
@@ -127,7 +127,7 @@ if (data.weekly_promos !== undefined) {
         );
       }
     }
-    let customRollConfig = "{}";
+    let customRollConfig = null;
 
     if (data.custom_roll_config !== undefined) {
       try {
@@ -166,9 +166,9 @@ if (data.weekly_promos !== undefined) {
         color_background = ?,
         color_cream = ?,
         color_gold = ?,
-        typography = ?,
-        gohan_config = ?,
-        custom_roll_config = ?,
+           typography = COALESCE(?, typography),
+        gohan_config = COALESCE(?, gohan_config),
+        custom_roll_config = COALESCE(?, custom_roll_config),
         weekly_promos = COALESCE(?, weekly_promos)
       WHERE id = 1
     `).bind(
