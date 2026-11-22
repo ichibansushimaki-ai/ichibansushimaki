@@ -1028,6 +1028,7 @@ function openProduct(product, editingItem = null) {
   const isHandroll = type === "handroll";
   const isDish = type === "dish";
 const isGohan = isDish && options.gohan_customizable === true;
+  const isCustomRoll = isRoll && options.custom_roll === true;
   const rollCount = isPromo
     ? Math.max(1, Number(options.rolls_count || 1))
     : 1;
