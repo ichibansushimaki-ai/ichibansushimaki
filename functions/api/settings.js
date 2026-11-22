@@ -105,7 +105,30 @@ export async function onRequestPut({ request, env }) {
         );
       }
     }
+    let customRollConfig = "{}";
 
+    if (data.custom_roll_config !== undefined) {
+      try {
+        const parsed = typeof data.custom_roll_config === "string"
+          ? JSON.parse(data.custom_roll_config)
+          : data.custom_roll_config;
+
+        if (
+          !parsed ||
+          typeof parsed !== "object" ||
+          Array.isArray(parsed)
+        ) {
+          throw new Error("Formato de configuración de roll inválido");
+        }
+
+        customRollConfig = JSON.stringify(parsed);
+      } catch {
+        return Response.json(
+          { error: "La configuración de Arma tu Roll clásico no es válida" },
+          { status: 400 }
+        );
+      }
+    }
     const values = fields.map(field => data[field] ?? "");
 
     await env.DB.prepare(`
@@ -122,9 +145,15 @@ export async function onRequestPut({ request, env }) {
         color_cream = ?,
         color_gold = ?,
         typography = ?,
-        gohan_config = ?
+        gohan_config = ?,
+        custom_roll_config = ?
       WHERE id = 1
-    `).bind(...values, typography, gohanConfig).run();
+    `).bind(
+      ...values,
+      typography,
+      gohanConfig,
+      customRollConfig
+    ).run();
 
     return Response.json({ ok: true });
 
