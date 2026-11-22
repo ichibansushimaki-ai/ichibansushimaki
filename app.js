@@ -736,12 +736,12 @@ function addStoreStyles() {
     flex:1;
   }
 
-  .cart-line-info h3 {
-    font-size:15px;
+   .cart-line-info h3 {
+    font-size:17px;
   }
 
   .cart-line-price {
-    font-size:15px;
+    font-size:17px;
   }
 
   .cart-line-actions {
@@ -751,11 +751,11 @@ function addStoreStyles() {
   .cart-line-actions button {
     min-height:42px;
     padding:10px 14px;
-    font-size:13px;
+    font-size:14px;
   }
 
-  .cart-line-description {
-    font-size:12px;
+   .cart-line-description {
+    font-size:13px;
   }
 .cart-line-description {
   padding:10px;
@@ -781,18 +781,18 @@ function addStoreStyles() {
 
 .cart-option {
   padding:5px 8px;
-  font-size:11px;
+  font-size:12px;
 }
   .cart-summary {
     padding:13px;
   }
 
-  .cart-total {
-    font-size:18px;
+   .cart-total {
+    font-size:20px;
   }
 
-    .cart-total strong {
-    font-size:20px;
+  .cart-total strong {
+    font-size:22px;
   }
 
   .ichiban-dialog .dialog-primary,
