@@ -123,13 +123,12 @@ if (!["debit_credit", "cash", "transfer"].includes(body.payment_method)) {
       ? String(body.reference).trim().slice(0, 500)
       : null;
 
-    const settingsRow = await env.DB.prepare(`
-      SELECT gohan_config
-      FROM store_settings
-      WHERE id = 1
-    `).first();
+  const settingsRow = await env.DB.prepare(`
+  SELECT gohan_config, custom_roll_config FROM store_settings WHERE id = 1
+`).first();
 
-    const gohanSettings = parseObject(settingsRow?.gohan_config);
+const gohanSettings = parseObject(settingsRow?.gohan_config);
+const customRollSettings = parseObject(settingsRow?.custom_roll_config);
 
     const activeVegetables = (gohanSettings.vegetables || [])
       .filter(item => item && item.active && item.name)
