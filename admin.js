@@ -548,27 +548,14 @@ function renderWeeklyPromosAdmin() {
       return;
     }
 
-    const updatedPromos = [...weeklyPromos, promo];
+const updatedPromos = [...weeklyPromos, promo];
 
-    const response = await api("/api/settings", {
-      method: "PUT",
-      body: JSON.stringify({
-        ...settings,
-        weekly_promos: JSON.stringify(updatedPromos)
-      })
-    });
-
-    if (!response.ok) {
-      alert("No se pudo guardar la promoción: " + await response.text());
-      return;
-    }
-
-    weeklyPromos = updatedPromos;
-    settings.weekly_promos = JSON.stringify(weeklyPromos);
-
-    renderWeeklyPromosAdmin();
-
-    alert("¡Promoción agregada correctamente!");
+try {
+  await saveWeeklyPromos(updatedPromos);
+  alert("¡Promoción agregada correctamente!");
+} catch (error) {
+  alert("No se pudo guardar la promoción: " + error.message);
+}
   };
   const list = $("#weeklyPromoList");
 
@@ -629,11 +616,47 @@ function renderWeeklyPromosAdmin() {
       editButton.textContent = "Editar";
 
       editButton.onclick = async () => {
+        const newDay = prompt(
+          "Día de la promoción (Lunes, Martes, Miércoles, Jueves, Viernes o Sábado):",
+          promo.day
+        );
+        if (newDay === null) return;
+
+        const days = [
+          "Lunes",
+          "Martes",
+          "Miércoles",
+          "Jueves",
+          "Viernes",
+          "Sábado"
+        ];
+
+        const day = days.find(
+          value => value.toLowerCase() === newDay.trim().toLowerCase()
+        );
+
+        if (!day) {
+          alert("Selecciona un día válido, de lunes a sábado.");
+          return;
+        }
+
         const newName = prompt("Nombre de la promoción:", promo.name);
         if (newName === null) return;
 
+        const newDescription = prompt(
+          "Descripción de la promoción:",
+          promo.description || ""
+        );
+        if (newDescription === null) return;
+
         const newPrice = prompt("Precio de la promoción:", promo.price);
         if (newPrice === null) return;
+
+        const newImage = prompt(
+          "URL de la imagen de la promoción:",
+          promo.image || ""
+        );
+        if (newImage === null) return;
 
         const price = Number(newPrice);
 
@@ -645,11 +668,19 @@ function renderWeeklyPromosAdmin() {
         try {
           const updated = weeklyPromos.map(item =>
             item.id === promo.id
-              ? { ...item, name: newName.trim(), price }
+              ? {
+                  ...item,
+                  day,
+                  name: newName.trim(),
+                  description: newDescription.trim(),
+                  price,
+                  image: newImage.trim()
+                }
               : item
           );
 
           await saveWeeklyPromos(updated);
+          alert("Promoción actualizada correctamente.");
         } catch (error) {
           alert("No se pudo editar: " + error.message);
         }
