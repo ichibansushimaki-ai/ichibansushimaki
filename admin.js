@@ -441,11 +441,246 @@ async function loadSettings() {
     );
   }
 
-  fillSettings(await response.json());
+  const data = await response.json();
+
+  fillSettings(data);
+
+  weeklyPromos = normalizeWeeklyPromos(data.weekly_promos);
+  renderWeeklyPromosAdmin();
 }
 
 // INGRESO AL PANEL
+// PROMOCIONES SEMANALES ICHIBAN
 
+let weeklyPromos = [];
+
+const weeklyPromoDays = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado"
+];
+
+function normalizeWeeklyPromos(data) {
+  try {
+    const parsed = typeof data === "string"
+      ? JSON.parse(data)
+      : data;
+
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+async function saveWeeklyPromos(updatedPromos) {
+  const response = await api("/api/settings", {
+    method: "PUT",
+    body: JSON.stringify({
+      ...settings,
+      weekly_promos: JSON.stringify(updatedPromos)
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+
+  weeklyPromos = updatedPromos;
+  settings.weekly_promos = JSON.stringify(weeklyPromos);
+
+  renderWeeklyPromosAdmin();
+}
+function renderWeeklyPromosAdmin() {
+  const container = $("#weeklyPromosAdmin");
+  if (!container) return;
+
+  container.innerHTML = `
+    <form id="weeklyPromoForm">
+      <h3>Crear promoción semanal</h3>
+
+      <label>Día de la promoción</label>
+      <select name="day" required>
+        ${weeklyPromoDays.map(day =>
+          `<option value="${day}">${day}</option>`
+        ).join("")}
+      </select>
+
+      <label>Nombre de la promoción</label>
+      <input name="name" type="text" required
+        placeholder="Ej: Jueves de Handroll">
+
+      <label>Descripción</label>
+      <textarea name="description"
+        placeholder="Describe qué incluye la promoción"></textarea>
+
+      <label>Precio</label>
+      <input name="price" type="number" min="1" required
+        placeholder="Ej: 5000">
+
+      <label>Imagen (URL)</label>
+      <input name="image" type="url"
+        placeholder="https://...">
+
+      <button type="submit">Agregar promoción</button>
+    </form>
+
+    <div id="weeklyPromoList"></div>
+  `;
+  $("#weeklyPromoForm").onsubmit = async event => {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+
+    const promo = {
+      id: String(Date.now()),
+      day: form.elements.day.value,
+      name: form.elements.name.value.trim(),
+      description: form.elements.description.value.trim(),
+      price: Number(form.elements.price.value),
+      image: form.elements.image.value.trim(),
+      active: true
+    };
+
+    if (!promo.name || promo.price <= 0) {
+      alert("Completa el nombre y un precio válido.");
+      return;
+    }
+
+    const updatedPromos = [...weeklyPromos, promo];
+
+    const response = await api("/api/settings", {
+      method: "PUT",
+      body: JSON.stringify({
+        ...settings,
+        weekly_promos: JSON.stringify(updatedPromos)
+      })
+    });
+
+    if (!response.ok) {
+      alert("No se pudo guardar la promoción: " + await response.text());
+      return;
+    }
+
+    weeklyPromos = updatedPromos;
+    settings.weekly_promos = JSON.stringify(weeklyPromos);
+
+    renderWeeklyPromosAdmin();
+
+    alert("¡Promoción agregada correctamente!");
+  };
+  const list = $("#weeklyPromoList");
+
+  weeklyPromoDays.forEach(day => {
+    const dayPromos = weeklyPromos.filter(
+      promo => promo.day === day
+    );
+
+    const section = document.createElement("div");
+    section.className = "weekly-promo-day";
+
+    const title = document.createElement("h3");
+    title.textContent = day;
+    section.appendChild(title);
+
+    if (!dayPromos.length) {
+      const empty = document.createElement("p");
+      empty.textContent = "Todavía no hay promociones para este día.";
+      section.appendChild(empty);
+    }
+
+    dayPromos.forEach(promo => {
+      const item = document.createElement("div");
+      item.className = "weekly-promo-item";
+
+      const name = document.createElement("strong");
+      name.textContent = promo.name || "Promoción sin nombre";
+
+      const price = document.createElement("p");
+      price.textContent = "$" +
+        Number(promo.price || 0).toLocaleString("es-CL");
+
+      const status = document.createElement("small");
+      status.textContent = promo.active ? "Activa" : "Inactiva";
+
+          const actions = document.createElement("div");
+
+      const toggleButton = document.createElement("button");
+      toggleButton.type = "button";
+      toggleButton.textContent = promo.active ? "Desactivar" : "Activar";
+
+      toggleButton.onclick = async () => {
+        try {
+          const updated = weeklyPromos.map(item =>
+            item.id === promo.id
+              ? { ...item, active: !item.active }
+              : item
+          );
+
+          await saveWeeklyPromos(updated);
+        } catch (error) {
+          alert("No se pudo actualizar: " + error.message);
+        }
+      };
+
+      const editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.textContent = "Editar";
+
+      editButton.onclick = async () => {
+        const newName = prompt("Nombre de la promoción:", promo.name);
+        if (newName === null) return;
+
+        const newPrice = prompt("Precio de la promoción:", promo.price);
+        if (newPrice === null) return;
+
+        const price = Number(newPrice);
+
+        if (!newName.trim() || !Number.isFinite(price) || price <= 0) {
+          alert("Ingresa un nombre y un precio válido.");
+          return;
+        }
+
+        try {
+          const updated = weeklyPromos.map(item =>
+            item.id === promo.id
+              ? { ...item, name: newName.trim(), price }
+              : item
+          );
+
+          await saveWeeklyPromos(updated);
+        } catch (error) {
+          alert("No se pudo editar: " + error.message);
+        }
+      };
+
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.textContent = "Eliminar";
+
+      deleteButton.onclick = async () => {
+        if (!confirm(`¿Eliminar la promoción "${promo.name}"?`)) return;
+
+        try {
+          const updated = weeklyPromos.filter(
+            item => item.id !== promo.id
+          );
+
+          await saveWeeklyPromos(updated);
+        } catch (error) {
+          alert("No se pudo eliminar: " + error.message);
+        }
+      };
+
+      actions.append(toggleButton, editButton, deleteButton);
+      item.append(name, price, status, actions);
+      section.appendChild(item);
+    });
+
+    list.appendChild(section);
+  });
+}
 $("#loginBtn").onclick = async () => {
   const response = await fetch("/api/login", {
     method: "POST",
