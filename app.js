@@ -930,6 +930,50 @@ return sum +
 function cartItemDescription(item) {
   const config = item.config || {};
   const sections = [];
+  
+  if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple") {
+    const weekly = config.weeklyPromo;
+
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Personalización del combo</strong>
+
+        ${weekly.protein ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Proteína</span>
+            <span class="cart-option">${escapeHTML(weekly.protein)}</span>
+          </div>
+        ` : ""}
+
+        ${weekly.vegetables?.length ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Vegetales</span>
+            <span class="cart-option">${weekly.vegetables.map(escapeHTML).join(", ")}</span>
+          </div>
+        ` : `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Vegetales</span>
+            <span class="cart-option">Sin vegetales</span>
+          </div>
+        `}
+
+        ${weekly.cheese ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Queso crema</span>
+            <span class="cart-option">${escapeHTML(weekly.cheese)}</span>
+          </div>
+        ` : ""}
+
+        ${weekly.shrimpExtra > 0 ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Recargo por camarón</span>
+            <span class="cart-option">+${money(weekly.shrimpExtra)}</span>
+          </div>
+        ` : ""}
+      </div>
+    `);
+  }
+
   if (config.customRoll) {
     const roll = config.customRoll;
 
@@ -1014,7 +1058,52 @@ function cartItemDescription(item) {
       </div>
     `);
   }
+    if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple") {
+      const weekly = config.weeklyPromo;
 
+      lines.push("PERSONALIZACIÓN PROMOCIÓN SEMANAL:");
+
+      if (weekly.protein) {
+        lines.push(`Proteína: ${weekly.protein}`);
+      }
+
+      lines.push(
+        weekly.vegetables?.length
+          ? `Vegetales: ${weekly.vegetables.join(", ")}`
+          : "Vegetales: Sin vegetales"
+      );
+
+      if (weekly.cheese) {
+        lines.push(`Queso crema: ${weekly.cheese}`);
+      }
+
+      if (weekly.shrimpExtra > 0) {
+        lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
+      }
+    }
+      if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple") {
+      const weekly = config.weeklyPromo;
+
+      lines.push("PERSONALIZACIÓN PROMOCIÓN SEMANAL:");
+
+      if (weekly.protein) {
+        lines.push(`Proteína: ${weekly.protein}`);
+      }
+
+      lines.push(
+        weekly.vegetables?.length
+          ? `Vegetales: ${weekly.vegetables.join(", ")}`
+          : "Vegetales: Sin vegetales"
+      );
+
+      if (weekly.cheese) {
+        lines.push(`Queso crema: ${weekly.cheese}`);
+      }
+
+      if (weekly.shrimpExtra > 0) {
+        lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
+      }
+    }
   if (config.vegetables?.length) {
     sections.push(`
       <div class="cart-config-section">
@@ -1068,6 +1157,251 @@ function cartItemDescription(item) {
 
 // PERSONALIZACIÓN DE PRODUCTOS
 
+
+function openWeeklyPromo(promo, editingItem = null) {
+  const components = promo.components || {};
+  const type = promo.offer_type || "simple";
+
+  const handrollProteins = components.handroll_proteins || [];
+  const handrollVegetables = components.handroll_vegetables || [];
+  const burgerProteins = components.burger_proteins || [];
+  const burgerVegetables = components.burger_vegetables || [];
+  const savedConfig = editingItem?.config?.weeklyPromo || {};
+
+  const savedProtein = savedConfig.protein || "";
+  const savedVegetables = savedConfig.vegetables || [];
+  const savedCheese = savedConfig.cheese || "";
+  const choices = (items, name, required = false, selected = "") =>
+    items.map((value, index) => `
+      <label>
+        <input
+          type="radio"
+          name="${name}"
+          value="${escapeHTML(value)}"
+          ${value === selected || (!selected && index === 0) ? "checked" : ""}
+          ${required ? "required" : ""}
+        >
+        ${escapeHTML(value)}
+      </label>
+    `).join("");
+
+  let options = "";
+
+  if (type === "handroll_combo") {
+    options = `
+      <h3>Personaliza tu Handroll</h3>
+
+      <strong>Elige tu proteína</strong>
+      ${choices(handrollProteins, "weeklyProtein", true, savedProtein)}
+
+      <strong>Elige tu vegetal</strong>
+      ${choices(handrollVegetables, "weeklyVegetable", true, savedVegetables[0] || "")}
+
+      ${components.handroll_cheese ? `
+        <strong>Queso crema</strong>
+        <label>
+  <input type="radio" name="weeklyCheese" value="Con queso crema"
+    ${savedCheese === "Con queso crema" || !savedCheese ? "checked" : ""}>
+  Con queso crema
+</label>
+        <label>
+  <input type="radio" name="weeklyCheese" value="Sin queso crema"
+    ${savedCheese === "Sin queso crema" ? "checked" : ""}>
+  Sin queso crema
+</label>
+      ` : ""}
+      
+      <p>Incluye papas fritas.</p>
+    `;
+  }
+
+  if (type === "sushi_burger_combo") {
+    options = `
+      <h3>Personaliza tu Sushi Burger</h3>
+
+      <strong>Elige tu proteína</strong>
+     ${choices(burgerProteins, "weeklyProtein", true, savedProtein)}
+
+      <strong>Elige hasta 2 vegetales</strong>
+     ${burgerVegetables.map(value => `
+        <label>
+          <input
+            type="checkbox"
+            name="weeklyVegetable"
+            value="${escapeHTML(value)}"
+            ${savedVegetables.includes(value) ? "checked" : ""}
+          >
+          ${escapeHTML(value)}
+        </label>
+      `).join("")}
+
+      ${components.burger_no_vegetable
+        ? "<p>Puedes dejar los vegetales sin seleccionar.</p>"
+        : "<p>Debes seleccionar al menos un vegetal.</p>"}
+
+      ${components.burger_cheese ? `
+        <strong>Queso crema</strong>
+        <label>
+  <input type="radio" name="weeklyCheese" value="Con queso crema"
+    ${savedCheese === "Con queso crema" || !savedCheese ? "checked" : ""}>
+  Con queso crema
+</label>
+        <label>
+  <input type="radio" name="weeklyCheese" value="Sin queso crema"
+    ${savedCheese === "Sin queso crema" ? "checked" : ""}>
+  Sin queso crema
+</label>
+      ` : ""}
+    `;
+  }
+
+  openDialog(`
+    <div class="weekly-promo-dialog">
+      <h2>${escapeHTML(promo.name || "Promoción Ichiban")}</h2>
+      <p>${escapeHTML(promo.description || "")}</p>
+
+      ${options}
+
+      <div class="weekly-quantity">
+        <strong>Cantidad</strong>
+        <button type="button" id="weeklyMinus">−</button>
+        <span id="weeklyQuantity">1</span>
+        <button type="button" id="weeklyPlus">+</button>
+      </div>
+
+      <p>Precio unitario: <strong id="weeklyUnitPrice"></strong></p>
+      <h3>Total: <span id="weeklyTotal"></span></h3>
+
+      <button type="button" class="dialog-primary" id="weeklyAddCart">
+        Agregar al pedido
+      </button>
+
+      <button type="button" class="dialog-secondary" data-close>
+        Cancelar
+      </button>
+    </div>
+  `);
+
+  let quantity = Number(editingItem?.quantity || 1);
+
+  const basePrice = Number(savedConfig.basePrice ?? promo.price ?? 0);
+  const shrimpExtra = Number(components.burger_shrimp_extra || 0);
+
+  const form = $("#ichibanDialogContent");
+
+  const getProtein = () =>
+    form.querySelector('[name="weeklyProtein"]:checked')?.value || "";
+
+  const getExtra = () =>
+    type === "sushi_burger_combo" && getProtein() === "Camarón"
+      ? shrimpExtra
+      : 0;
+
+  const updatePrice = () => {
+    const unitPrice = basePrice + getExtra();
+
+    $("#weeklyQuantity").textContent = quantity;
+    $("#weeklyUnitPrice").textContent = money(unitPrice);
+    $("#weeklyTotal").textContent = money(unitPrice * quantity);
+  };
+
+  $("#weeklyMinus").addEventListener("click", () => {
+    if (quantity > 1) quantity--;
+    updatePrice();
+  });
+
+  $("#weeklyPlus").addEventListener("click", () => {
+    quantity++;
+    updatePrice();
+  });
+
+  form.addEventListener("change", event => {
+    if (event.target.name === "weeklyVegetable" &&
+        type === "sushi_burger_combo") {
+      const selected = form.querySelectorAll(
+        '[name="weeklyVegetable"]:checked'
+      );
+
+      if (selected.length > 2) {
+        event.target.checked = false;
+        alert("Puedes elegir máximo 2 vegetales.");
+      }
+    }
+
+    updatePrice();
+  });
+
+  $("#weeklyAddCart").addEventListener("click", () => {
+    const protein = getProtein();
+
+    const vegetables = type === "handroll_combo"
+      ? [form.querySelector('[name="weeklyVegetable"]:checked')?.value].filter(Boolean)
+      : [...form.querySelectorAll('[name="weeklyVegetable"]:checked')].map(el => el.value);
+
+    if (type !== "simple" && !protein) {
+      alert("Selecciona una proteína.");
+      return;
+    }
+
+    if (type === "handroll_combo" && !vegetables.length) {
+      alert("Selecciona un vegetal.");
+      return;
+    }
+
+    if (
+      type === "sushi_burger_combo" &&
+      !components.burger_no_vegetable &&
+      !vegetables.length
+    ) {
+      alert("Debes seleccionar al menos un vegetal.");
+      return;
+    }
+
+    const cheese = form.querySelector(
+      '[name="weeklyCheese"]:checked'
+    )?.value || "";
+
+    const extra = getExtra();
+
+   const updatedItem = {
+  key: editingItem?.key || "weekly-" + promo.id + "-" + Date.now(),
+  id: "weekly-" + promo.id,
+  name: promo.name,
+  price: basePrice + extra,
+  quantity,
+  product_type: "weekly_promo",
+  config: {
+    weeklyPromo: {
+      promoId: promo.id,
+      offerType: type,
+      protein,
+      vegetables,
+      cheese,
+      shrimpExtra: extra,
+      basePrice
+    }
+  }
+};
+
+if (editingItem) {
+  const index = cart.findIndex(item => item.key === editingItem.key);
+
+  if (index !== -1) {
+    cart[index] = updatedItem;
+  } else {
+    cart.push(updatedItem);
+  }
+} else {
+  cart.push(updatedItem);
+}
+
+    saveCart();
+    closeDialog();
+    openCart();
+  });
+
+  updatePrice();
+}
 
 function openProduct(product, editingItem = null) {
   currentProduct = product;
@@ -2249,11 +2583,38 @@ document.addEventListener("click", event => {
   if (edit) {
     const item = cart.find(entry => entry.key === edit.dataset.cartEdit);
 
-    if (!item) return;
+  if (!item) return;
 
-    const product = products.find(
-      p => String(p.id) === String(item.id)
-    );
+if (item.product_type === "weekly_promo") {
+  let weeklyPromos = [];
+
+  try {
+    const data = settings.weekly_promos;
+    weeklyPromos = typeof data === "string"
+      ? JSON.parse(data || "[]")
+      : data || [];
+  } catch {
+    weeklyPromos = [];
+  }
+
+  const promoId = item.config?.weeklyPromo?.promoId;
+
+  const promo = weeklyPromos.find(
+    p => String(p.id) === String(promoId)
+  );
+
+  if (!promo) {
+    alert("No se encontró esta promoción semanal.");
+    return;
+  }
+
+  openWeeklyPromo(promo, item);
+  return;
+}
+
+const product = products.find(
+  p => String(p.id) === String(item.id)
+);
 
     if (!product) {
       alert("No se encontró este producto en la carta.");
@@ -2404,7 +2765,14 @@ function render() {
         price.className = "price";
         price.textContent = money(promo.price);
 
-        inside.append(title, description, price);
+  const addButton = document.createElement("button");
+addButton.type = "button";
+addButton.textContent = "Elegir opciones";
+addButton.addEventListener("click", () => {
+  openWeeklyPromo(promo);
+});
+
+inside.append(title, description, price, addButton);
         article.append(img, inside);
         dayGrid.appendChild(article);
       });
