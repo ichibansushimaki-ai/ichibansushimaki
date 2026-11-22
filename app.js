@@ -1028,7 +1028,7 @@ function openProduct(product, editingItem = null) {
   const isHandroll = type === "handroll";
   const isDish = type === "dish";
 const isGohan = isDish && options.gohan_customizable === true;
-  const isCustomRoll = isRoll && options.custom_roll === true;
+    const isCustomRoll = isRoll && options.custom_roll === true;
   const rollCount = isPromo
     ? Math.max(1, Number(options.rolls_count || 1))
     : 1;
@@ -1086,9 +1086,88 @@ const isGohan = isDish && options.gohan_customizable === true;
         }).join("")}
       </div>
     `;
-  } else if (isRoll) {
-    configuration = `<div class="dialog-note">Incluye una salsa de cortesía y un par de palitos por roll. Máximo 6 pares de palitos por pedido.</div>`;
-  } else if (isHandroll) {
+ } else if (isCustomRoll) {
+  const customConfig = settings.custom_roll_config || {};
+  const customSelection = initialConfig.customRoll || {};
+
+  const renderCustomOptions = (items, selected, fallback, noneLabel) => {
+    const activeItems = (Array.isArray(items) ? items : [])
+      .filter(item => item && item.active !== false);
+
+    const list = [
+      ...activeItems,
+      { name: noneLabel, surcharge: 0 }
+    ];
+
+    const selectedValue = selected || fallback;
+
+    return list.map(item => {
+      const name = escapeHTML(item.name);
+      const surcharge = Number(item.surcharge || 0);
+      const label = surcharge > 0
+        ? `${name} (+${money(surcharge)})`
+        : name;
+
+      return `<option value="${name}" ${item.name === selectedValue ? "selected" : ""}>${label}</option>`;
+    }).join("");
+  };
+
+  configuration = `
+    <div class="dialog-note">
+      Arma tu roll a tu gusto. Precio base: ${money(product.price)}.
+      Incluye una salsa de cortesía y un par de palitos.
+    </div>
+
+    <div class="form">
+      <label>
+        Base
+        <select id="customRollRice">
+          <option value="Con arroz" ${customSelection.rice !== "Sin arroz" ? "selected" : ""}>Con arroz</option>
+          <option value="Sin arroz" ${customSelection.rice === "Sin arroz" ? "selected" : ""}>Sin arroz</option>
+        </select>
+      </label>
+
+      <label>
+        Nori
+        <select id="customRollNori">
+          <option value="Con Nori" ${customSelection.nori !== "Sin Nori" ? "selected" : ""}>Con Nori</option>
+          <option value="Sin Nori" ${customSelection.nori === "Sin Nori" ? "selected" : ""}>Sin Nori</option>
+        </select>
+      </label>
+
+      <label>
+        Queso crema
+        <select id="customRollCreamCheese">
+          <option value="Con queso crema" ${customSelection.creamCheese !== "Sin queso crema" ? "selected" : ""}>Con queso crema</option>
+          <option value="Sin queso crema" ${customSelection.creamCheese === "Sin queso crema" ? "selected" : ""}>Sin queso crema</option>
+        </select>
+      </label>
+
+      <label>
+        Cobertura
+        <select id="customRollCovering">
+          ${renderCustomOptions(customConfig.coverings, customSelection.covering, "Panko (frito)", "Sin cobertura")}
+        </select>
+      </label>
+
+      <label>
+        Proteína
+        <select id="customRollProtein">
+          ${renderCustomOptions(customConfig.proteins, customSelection.protein, "Pollo furay", "Sin proteína")}
+        </select>
+      </label>
+
+      <label>
+        Vegetales
+        <select id="customRollVegetable">
+          ${renderCustomOptions(customConfig.vegetables, customSelection.vegetable, "Cebollín", "Sin vegetales")}
+        </select>
+      </label>
+    </div>
+  `;
+} else if (isRoll) {
+  configuration = `<div class="dialog-note">Incluye una salsa de cortesía y un par de palitos por roll. Máximo 6 pares de palitos por pedido.</div>`;
+}else if (isHandroll) {
     configuration = `<div class="dialog-note">Incluye una salsa de cortesía por handroll. No incluye palitos.</div>`;
   
 } else if (isGohan) {
