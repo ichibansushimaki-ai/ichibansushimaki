@@ -1210,12 +1210,16 @@ const isGohan = isDish && options.gohan_customizable === true;
         </select>
       </label>
 
-      <label>
+           <label>
         Vegetales
         <select id="customRollVegetable">
           ${renderCustomOptions(customConfig.vegetables, customSelection.vegetable, "Cebollín", "Sin vegetales")}
         </select>
       </label>
+
+      <div id="customRollLivePrice" style="margin-top:16px;font-size:20px;font-weight:700;text-align:center;">
+        Precio: ${money(product.price)}
+      </div>
     </div>
   `;
 } else if (isRoll) {
@@ -1499,7 +1503,33 @@ const isGohan = isDish && options.gohan_customizable === true;
   });
 
   validateSauces();
+if (isCustomRoll) {
+  const coveringSelect = $("#customRollCovering");
+  const proteinSelect = $("#customRollProtein");
+  const livePrice = $("#customRollLivePrice");
 
+  const updateCustomRollPrice = () => {
+    const coveringSurcharge = Number(
+      coveringSelect.options[coveringSelect.selectedIndex].dataset.surcharge || 0
+    );
+
+    const proteinSurcharge = Number(
+      proteinSelect.options[proteinSelect.selectedIndex].dataset.surcharge || 0
+    );
+
+    const total =
+      Number(product.price || 0) +
+      coveringSurcharge +
+      proteinSurcharge;
+
+    livePrice.textContent = `Precio: ${money(total)}`;
+  };
+
+  coveringSelect.addEventListener("change", updateCustomRollPrice);
+  proteinSelect.addEventListener("change", updateCustomRollPrice);
+
+  updateCustomRollPrice();
+}
   $("#confirmAdd").addEventListener("click", () => {
     const qty = Math.max(1, Math.min(20, Number(quantity.value) || 1));
     const config = {};
