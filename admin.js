@@ -388,6 +388,8 @@ function fillSettings(data) {
   settings = { ...defaults, ...data };
 gohanConfig = normalizeGohanConfig(settings.gohan_config);
 renderGohanConfig();
+  customRollConfig = normalizeCustomRollConfig(settings.custom_roll_config);
+renderCustomRollConfig();
   const form = $("#settingsForm");
 
   Object.entries(settings).forEach(([key, value]) => {
@@ -1854,3 +1856,230 @@ $("#saveGohanConfig")?.addEventListener("click", async () => {
     alert("No se pudo guardar la configuración: " + error.message);
   }
 });
+
+// ========================================
+// CONFIGURACIÓN DE ARMA TU ROLL CLÁSICO
+// ========================================
+
+const defaultCustomRollConfig = {
+  coverings: [
+    { name: "Panko (frito)", surcharge: 0, active: true },
+    { name: "Sésamo", surcharge: 0, active: true },
+    { name: "Palta", surcharge: 0, active: true },
+    { name: "Jamón serrano", surcharge: 1000, active: true },
+    { name: "Salmón", surcharge: 1000, active: true },
+    { name: "Masago", surcharge: 0, active: true }
+  ],
+  proteins: [
+    { name: "Pollo furay", surcharge: 0, active: true },
+    { name: "Pollo teriyaki", surcharge: 0, active: true },
+    { name: "Kanikama", surcharge: 0, active: true },
+    { name: "Camarón", surcharge: 0, active: true },
+    { name: "Salmón", surcharge: 1000, active: true },
+    { name: "Camarón furay", surcharge: 0, active: true }
+  ],
+  vegetables: [
+    { name: "Cebollín", surcharge: 0, active: true },
+    { name: "Palta", surcharge: 0, active: true },
+    { name: "Pimentón", surcharge: 0, active: true },
+    { name: "Choclito baby", surcharge: 0, active: true }
+  ]
+};
+
+let customRollConfig = JSON.parse(JSON.stringify(defaultCustomRollConfig));
+
+function normalizeCustomRollConfig(value) {
+  try {
+    if (typeof value === "string") value = JSON.parse(value);
+    if (!value || typeof value !== "object") value = {};
+
+    const normalizeList = (list, defaults) => {
+      if (!Array.isArray(list)) return JSON.parse(JSON.stringify(defaults));
+
+      return list.map(item => ({
+        name: String(item.name || ""),
+        surcharge: Math.max(0, Number(item.surcharge) || 0),
+        active: item.active !== false
+      }));
+    };
+
+    return {
+      coverings: normalizeList(value.coverings, defaultCustomRollConfig.coverings),
+      proteins: normalizeList(value.proteins, defaultCustomRollConfig.proteins),
+      vegetables: normalizeList(value.vegetables, defaultCustomRollConfig.vegetables)
+    };
+  } catch {
+    return JSON.parse(JSON.stringify(defaultCustomRollConfig));
+  }
+}
+
+function escapeCustomRollHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function renderCustomRollConfig() {
+  const sections = [
+    ["coverings", "customRollCoverings"],
+    ["proteins", "customRollProteins"],
+    ["vegetables", "customRollVegetables"]
+  ];
+
+  sections.forEach(([type, containerId]) => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = customRollConfig[type].map((item, index) => `
+      <div class="custom-roll-row" data-index="${index}"
+        style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0;padding:10px;border:1px solid #ddd;border-radius:8px;">
+
+        <input class="custom-roll-name"
+          type="text"
+          value="${escapeCustomRollHTML(item.name)}"
+          placeholder="Nombre del ingrediente"
+          style="flex:2;min-width:150px;padding:9px;">
+
+        <input class="custom-roll-surcharge"
+          type="number"
+          min="0"
+          step="100"
+          value="${item.surcharge}"
+          title="Recargo en pesos"
+          style="width:115px;padding:9px;">
+
+        <label style="display:flex;align-items:center;gap:5px;">
+          <input class="custom-roll-active" type="checkbox"
+            ${item.active ? "checked" : ""}>
+          Activo
+        </label>
+
+        <button type="button" class="custom-roll-delete"
+          data-type="${type}" data-index="${index}">
+          Eliminar
+        </button>
+      </div>
+    `).join("");
+  });
+}
+
+function readCustomRollConfig() {
+  const result = {};
+
+  const sections = [
+    ["coverings", "customRollCoverings"],
+    ["proteins", "customRollProteins"],
+    ["vegetables", "customRollVegetables"]
+  ];
+
+  sections.forEach(([type, containerId]) => {
+    const container = document.getElementById(containerId);
+
+    result[type] = Array.from(
+      container.querySelectorAll(".custom-roll-row")
+    ).map(row => ({
+      name: row.querySelector(".custom-roll-name").value.trim(),
+      surcharge: Math.max(
+        0,
+        Number(row.querySelector(".custom-roll-surcharge").value) || 0
+      ),
+      active: row.querySelector(".custom-roll-active").checked
+    })).filter(item => item.name);
+  });
+
+  return result;
+}
+
+[
+  ["addCustomRollCovering", "coverings"],
+  ["addCustomRollProtein", "proteins"],
+  ["addCustomRollVegetable", "vegetables"]
+].forEach(([buttonId, type]) => {
+  const button = document.getElementById(buttonId);
+
+  if (button) {
+    button.addEventListener("click", () => {
+      customRollConfig[type].push({
+        name: "",
+        surcharge: 0,
+        active: true
+      });
+
+      renderCustomRollConfig();
+    });
+  }
+});
+
+document.addEventListener("click", event => {
+  const button = event.target.closest(".custom-roll-delete");
+  if (!button) return;
+
+  const type = button.dataset.type;
+  const index = Number(button.dataset.index);
+
+  if (!customRollConfig[type]) return;
+
+  customRollConfig[type].splice(index, 1);
+  renderCustomRollConfig();
+});
+
+
+const saveCustomRollButton = document.getElementById("saveCustomRollConfig");
+
+if (saveCustomRollButton) {
+  saveCustomRollButton.addEventListener("click", async () => {
+    const config = readCustomRollConfig();
+
+    if (
+      !config.coverings.length ||
+      !config.proteins.length ||
+      !config.vegetables.length
+    ) {
+      alert("Debes mantener al menos una opción en cada grupo.");
+      return;
+    }
+
+    const data = {
+      ...settings,
+      custom_roll_config: JSON.stringify(config)
+    };
+
+    try {
+      saveCustomRollButton.disabled = true;
+      saveCustomRollButton.textContent = "Guardando...";
+
+      const response = await fetch("/api/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      customRollConfig = config;
+      settings = {
+        ...settings,
+        custom_roll_config: JSON.stringify(config)
+      };
+
+      alert("Configuración de Arma tu Roll guardada correctamente.");
+
+    } catch (error) {
+      alert("No se pudo guardar la configuración: " + error.message);
+    } finally {
+      saveCustomRollButton.disabled = false;
+      saveCustomRollButton.textContent =
+        "Guardar configuración de Arma tu Roll";
+    }
+  });
+}
+
