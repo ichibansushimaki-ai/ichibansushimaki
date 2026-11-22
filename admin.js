@@ -113,11 +113,22 @@ function ensureProductFields() {
       Tipo interno de producto
     </label>
 
+ 
     <select name="product_type" id="productType" required>
       ${productTypes.map(([value, label]) =>
         `<option value="${value}">${label}</option>`
       ).join("")}
     </select>
+
+    <label id="customRollProductLabel" style="display:none;margin:12px 0;">
+      <input
+        type="checkbox"
+        id="customRollProduct"
+        name="custom_roll"
+      >
+      Producto personalizable: Arma tu Roll clásico
+    </label>
+
 
     <div id="productRules" class="product-rules-box">
       <label for="rollsCount">Cantidad de rolls que incluye</label>
@@ -156,7 +167,11 @@ function updateProductRules() {
   const rules = $("#productRules");
   const count = $("#rollsCount");
   const help = $("#productRulesHelp");
+const customRollLabel = $("#customRollProductLabel");
 
+if (customRollLabel) {
+  customRollLabel.style.display = type === "roll" ? "block" : "none";
+}
   if (!rules || !count || !help) return;
 
   if (type === "promotion") {
@@ -746,6 +761,7 @@ form.elements.weekly_promotion.checked =
   // Recuperar identificación de Gohan configurable
 form.elements.gohan_customizable.checked =
   isTrue(product.options?.gohan_customizable);
+  form.elements.custom_roll.checked = isTrue(product.options?.custom_roll);
   const categoryField = form.elements.category;
 
   if (
@@ -872,7 +888,7 @@ $("#productForm").onsubmit = async event => {
   data.product_type,
   rollsCount
 );
-
+data.options.custom_roll = !!form.elements.custom_roll?.checked;
 // Guardar selección de promociones semanales
 data.options.weekly_promotion =
   form.elements.weekly_promotion.checked;
