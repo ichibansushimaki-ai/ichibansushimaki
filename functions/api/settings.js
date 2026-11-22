@@ -171,7 +171,7 @@ if (data.weekly_promos !== undefined) {
         custom_roll_config = ?,
         weekly_promos = COALESCE(?, weekly_promos)
       WHERE id = 1
-        ).bind(
+    `).bind(
       ...values,
       typography,
       gohanConfig,
