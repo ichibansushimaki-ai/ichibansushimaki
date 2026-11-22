@@ -2329,24 +2329,96 @@ function render() {
     }
   }
 
-  // PROMOCIONES REALES
+
+  // PROMOCIONES SEMANALES DESDE EL ADMINISTRADOR
   const promoGrid = $("#promoGrid");
 
   if (promoGrid) {
     promoGrid.replaceChildren();
 
-    const promotions = visible.filter(
-  product =>
-    getType(product) === "promotion" &&
-    product.options?.weekly_promotion === true
-);
+    let weeklyPromos = [];
 
-    if (promotions.length) {
-      promotions.forEach(product => promoGrid.appendChild(card(product)));
-    } else {
-      promoGrid.textContent = "Pronto anunciaremos promociones.";
+    try {
+      const data = settings.weekly_promos;
+      weeklyPromos = typeof data === "string"
+        ? JSON.parse(data || "[]")
+        : data || [];
+
+      if (!Array.isArray(weeklyPromos)) {
+        weeklyPromos = [];
+      }
+    } catch {
+      weeklyPromos = [];
+    }
+
+    const days = [
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado"
+    ];
+
+    const activePromos = weeklyPromos.filter(promo =>
+      isEnabled(promo.active) &&
+      days.includes(promo.day)
+    );
+
+    days.forEach(day => {
+      const dayPromos = activePromos.filter(
+        promo => promo.day === day
+      );
+
+      if (!dayPromos.length) return;
+
+      const section = document.createElement("div");
+      section.className = "weekly-promo-day";
+
+      const heading = document.createElement("h3");
+      heading.textContent = day;
+
+      const dayGrid = document.createElement("div");
+      dayGrid.className = "grid";
+
+      dayPromos.forEach(promo => {
+        const article = document.createElement("article");
+        article.className = "product";
+
+        const img = document.createElement("img");
+        img.src = promo.image ||
+          "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800";
+        img.alt = promo.name || "Promoción Ichiban";
+        img.loading = "lazy";
+
+        const inside = document.createElement("div");
+        inside.className = "inside";
+
+        const title = document.createElement("h3");
+        title.textContent = promo.name || "Promoción Ichiban";
+
+        const description = document.createElement("p");
+        description.textContent = promo.description || "";
+
+        const price = document.createElement("div");
+        price.className = "price";
+        price.textContent = money(promo.price);
+
+        inside.append(title, description, price);
+        article.append(img, inside);
+        dayGrid.appendChild(article);
+      });
+
+      section.append(heading, dayGrid);
+      promoGrid.appendChild(section);
+    });
+
+    if (!activePromos.length) {
+      promoGrid.textContent =
+        "Pronto anunciaremos nuestras promociones.";
     }
   }
+
 
 const standardCategories = [
   "Rolls Signature",
