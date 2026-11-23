@@ -492,6 +492,7 @@ async function saveWeeklyPromos(updatedPromos) {
 
   renderWeeklyPromosAdmin();
 }
+
 function renderWeeklyPromoComponents(type) {
   const container = $("#weeklyPromoComponents");
   if (!container) return;
@@ -515,10 +516,7 @@ function renderWeeklyPromoComponents(type) {
       <label><input type="checkbox" name="handroll_vegetable" value="Pimentón" checked> Pimentón</label>
       <label><input type="checkbox" name="handroll_vegetable" value="Sin vegetal" checked> Sin vegetal</label>
 
-      <label>
-        <input type="checkbox" name="handroll_cheese" checked>
-        Permitir elegir queso crema con o sin
-      </label>
+      <label><input type="checkbox" name="handroll_cheese" checked> Permitir elegir queso crema con o sin</label>
 
       <p>Las papas fritas se consideran incluidas en el combo.</p>
     `,
@@ -536,25 +534,53 @@ function renderWeeklyPromoComponents(type) {
       <label>Vegetales disponibles (máximo 2)</label>
       <label><input type="checkbox" name="burger_vegetable" value="Cebollín" checked> Cebollín</label>
       <label><input type="checkbox" name="burger_vegetable" value="Palta" checked> Palta</label>
-      <label>
-        <input type="checkbox" name="burger_no_vegetable" checked>
-        Permitir sin vegetales
-      </label>
+      <label><input type="checkbox" name="burger_no_vegetable" checked> Permitir sin vegetales</label>
 
-      <label>
-        <input type="checkbox" name="burger_cheese" checked>
-        Permitir elegir queso crema con o sin
-      </label>
+      <label><input type="checkbox" name="burger_cheese" checked> Permitir elegir queso crema con o sin</label>
     `,
 
     custom_combo: `
-      <h4>Combo personalizado</h4>
-      <p>En la siguiente etapa agregaremos componentes y opciones personalizadas para este tipo de oferta.</p>
+      <h4>Configuración del combo personalizado</h4>
+
+      <label>Tipo interno del producto</label>
+      <select name="custom_product_type">
+        <option value="roll">Roll</option>
+        <option value="handroll">Handroll</option>
+        <option value="gohan">Gohan</option>
+        <option value="sushi_burger">Sushi Burger</option>
+        <option value="other">Otro producto</option>
+      </select>
+
+      <label>Cantidad de unidades o rolls</label>
+      <input type="number" name="custom_quantity" min="1" value="2" required>
+
+      <h4>Opciones para el producto principal</h4>
+
+      <label>Proteínas disponibles</label>
+      <label><input type="checkbox" name="custom_protein" value="Pollo"> Pollo</label>
+      <label><input type="checkbox" name="custom_protein" value="Camarón"> Camarón</label>
+      <label><input type="checkbox" name="custom_protein" value="Kanikama"> Kanikama</label>
+      <label><input type="checkbox" name="custom_protein" value="Salmón"> Salmón</label>
+
+      <label>Vegetales disponibles</label>
+      <label><input type="checkbox" name="custom_vegetable" value="Cebollín"> Cebollín</label>
+      <label><input type="checkbox" name="custom_vegetable" value="Pimentón"> Pimentón</label>
+      <label><input type="checkbox" name="custom_vegetable" value="Palta"> Palta</label>
+      <label><input type="checkbox" name="custom_vegetable" value="Sin vegetal"> Sin vegetal</label>
+
+      <label><input type="checkbox" name="custom_cheese"> Permitir elegir queso crema con o sin</label>
+
+      <h4>Acompañamientos incluidos</h4>
+      <label><input type="checkbox" name="custom_fries"> Papas fritas individuales</label>
+      <label><input type="checkbox" name="custom_drink"> Bebida mini</label>
+
+      <p>Solo se incluirán los acompañamientos que marques.</p>
     `
   };
 
   container.innerHTML = configurations[type] || configurations.simple;
 }
+
 function renderWeeklyPromosAdmin() {
   const container = $("#weeklyPromosAdmin");
   if (!container) return;
