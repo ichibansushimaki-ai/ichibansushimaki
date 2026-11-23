@@ -970,6 +970,14 @@ function cartItemDescription(item) {
             <span class="cart-option">+${money(weekly.shrimpExtra)}</span>
           </div>
         ` : ""}
+                ${weekly.accompaniment ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Acompañamiento incluido</span>
+            <span class="cart-option">
+              ${escapeHTML(weekly.accompaniment)} × ${Number(item.quantity || 1)}
+            </span>
+          </div>
+        ` : ""}
       </div>
     `);
   }
@@ -1166,7 +1174,7 @@ function openWeeklyPromo(promo, editingItem = null) {
 </label>
       ` : ""}
       
-      <p>Incluye papas fritas.</p>
+      
     `;
   }
 
@@ -1209,7 +1217,19 @@ function openWeeklyPromo(promo, editingItem = null) {
       ` : ""}
     `;
   }
+  // Mostrar el acompañamiento fijo incluido en la promoción
+  const accompaniment = (
+    components.weekly_accompaniments || []
+  ).find(item => String(item).trim()) || "";
 
+  if (type !== "simple" && accompaniment) {
+    options += `
+      <p class="weekly-included-accompaniment">
+        <strong>Incluye:</strong>
+        ${escapeHTML(accompaniment)} por cada promoción.
+      </p>
+    `;
+  }
   openDialog(`
     <div class="weekly-promo-dialog">
       <h2>${escapeHTML(promo.name || "Promoción Ichiban")}</h2>
@@ -1326,15 +1346,16 @@ function openWeeklyPromo(promo, editingItem = null) {
   quantity,
   product_type: "weekly_promo",
   config: {
-    weeklyPromo: {
-      promoId: promo.id,
-      offerType: type,
-      protein,
-      vegetables,
-      cheese,
-      shrimpExtra: extra,
-      basePrice
-    }
+            weeklyPromo: {
+          promoId: promo.id,
+          offerType: type,
+          protein,
+          vegetables,
+          cheese,
+          shrimpExtra: extra,
+          basePrice,
+          accompaniment
+        }
   }
 };
 
@@ -2412,6 +2433,11 @@ const itemPrice =
 
       if (Number(weekly.shrimpExtra) > 0) {
         lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
+      }
+            if (weekly.accompaniment) {
+        lines.push(
+          `Acompañamiento incluido: ${weekly.accompaniment} × ${quantity}`
+        );
       }
     }
     if (config.customRoll) {
