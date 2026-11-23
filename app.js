@@ -2518,9 +2518,10 @@ const itemPrice =
         address: fulfillment.address || null,
         reference: fulfillment.reference || null,
         subtotal,
-        items: cart.map(item => ({
+       items: cart.map(item => ({
           id: item.id,
           name: item.name,
+          product_type: item.product_type || "",
           quantity: item.quantity,
           unit_price: item.price,
           config: item.config || {}
