@@ -605,23 +605,18 @@ gohan_combo: `
   };
 
   container.innerHTML = configurations[type] || configurations.simple;
-    // Configurador común de acompañamientos para todos los combos
-  if (type !== "simple") {
-    container.insertAdjacentHTML("beforeend", `
-      <hr>
-      <h4>Acompañamientos disponibles para elegir</h4>
-
-      <p>Escribe un acompañamiento por línea. El cliente podrá elegir entre las opciones que habilites.</p>
-
-      <textarea
-        name="weekly_accompaniments"
-        rows="5"
-        placeholder="Papas fritas individuales&#10;Bebida mini&#10;Empanaditas"
-      ></textarea>
-
-      <p>Ejemplo: papas fritas individuales, bebida mini, empanaditas u otras opciones.</p>
-    `);
-  }
+// Acompañamiento único incluido en cada promoción
+if (type !== "simple") {
+  container.insertAdjacentHTML("beforeend", `
+    <hr>
+    <h4>Acompañamiento incluido en esta promoción</h4>
+    <p>Escribe un solo acompañamiento. Se incluirá automáticamente por cada promoción comprada.</p>
+    <input
+      type="text"
+      name="weekly_accompaniments"
+      placeholder="Ejemplo: Bebida mini o Papas fritas individuales"
+    >
+  `);
 }
 
 function renderWeeklyPromosAdmin() {
