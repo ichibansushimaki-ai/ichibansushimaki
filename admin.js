@@ -605,6 +605,23 @@ gohan_combo: `
   };
 
   container.innerHTML = configurations[type] || configurations.simple;
+    // Configurador común de acompañamientos para todos los combos
+  if (type !== "simple") {
+    container.insertAdjacentHTML("beforeend", `
+      <hr>
+      <h4>Acompañamientos disponibles para elegir</h4>
+
+      <p>Escribe un acompañamiento por línea. El cliente podrá elegir entre las opciones que habilites.</p>
+
+      <textarea
+        name="weekly_accompaniments"
+        rows="5"
+        placeholder="Papas fritas individuales&#10;Bebida mini&#10;Empanaditas"
+      ></textarea>
+
+      <p>Ejemplo: papas fritas individuales, bebida mini, empanaditas u otras opciones.</p>
+    `);
+  }
 }
 
 function renderWeeklyPromosAdmin() {
@@ -815,7 +832,12 @@ gohan_drink: form.querySelector('[name="gohan_drink"]')?.checked ?? false,
   custom_vegetables: [...form.querySelectorAll('input[name="custom_vegetable"]:checked')].map(el => el.value),
   custom_cheese: form.querySelector('[name="custom_cheese"]')?.checked ?? false,
   custom_fries: form.querySelector('[name="custom_fries"]')?.checked ?? false,
-  custom_drink: form.querySelector('[name="custom_drink"]')?.checked ?? false
+  custom_drink: form.querySelector('[name="custom_drink"]')?.checked ?? false,
+
+weekly_accompaniments: (form.querySelector('[name="weekly_accompaniments"]')?.value || "")
+  .split("\n")
+  .map(item => item.trim())
+  .filter(item => item !== "")
 },
 
 
@@ -936,6 +958,14 @@ form.elements.offer_type.dataset.previousType =
 
   // Mostrar las opciones correspondientes al tipo de oferta
   renderWeeklyPromoComponents(form.elements.offer_type.value);
+    // Recuperar los acompañamientos guardados
+  const weeklyAccompaniments = form.querySelector('[name="weekly_accompaniments"]');
+
+  if (weeklyAccompaniments) {
+    weeklyAccompaniments.value = (
+      components.weekly_accompaniments || []
+    ).join("\n");
+  }
 
   // Cargar opciones del Handroll
   form.querySelectorAll('[name="handroll_protein"]').forEach(el => {
