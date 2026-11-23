@@ -2308,6 +2308,48 @@ function calculateChopsticks() {
 
 async function sendOrder(fulfillment = {}) {
   if (!cart.length) return;
+    const today = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado"
+  ][new Date().getDay()];
+
+  let currentWeeklyPromos = [];
+
+  try {
+    const data = settings.weekly_promos;
+    currentWeeklyPromos = typeof data === "string"
+      ? JSON.parse(data || "[]")
+      : data || [];
+  } catch {
+    currentWeeklyPromos = [];
+  }
+
+  const invalidWeeklyPromo = cart.find(item => {
+    if (item.product_type !== "weekly_promo") return false;
+
+    const promoId = item.config?.weeklyPromo?.promoId;
+
+    const currentPromo = currentWeeklyPromos.find(
+      promo => String(promo.id) === String(promoId)
+    );
+
+    return !currentPromo ||
+      !isEnabled(currentPromo.active) ||
+      currentPromo.day !== today;
+  });
+
+  if (invalidWeeklyPromo) {
+    alert(
+      "Una promoción de tu carrito ya no está disponible hoy. " +
+      "Elimina esa promoción del carrito para continuar con tu pedido."
+    );
+    return;
+  }
 
   if (!fulfillment.method) {
     alert("Selecciona cómo deseas recibir tu pedido.");
