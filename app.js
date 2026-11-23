@@ -2800,7 +2800,8 @@ function render() {
         const canBuyToday = promo.day === today;
 
         const addButton = document.createElement("button");
-        addButton.type = "button";
+addButton.type = "button";
+addButton.className = "product-add";
         addButton.disabled = !canBuyToday;
         addButton.textContent = canBuyToday
           ? "Elegir opciones"
