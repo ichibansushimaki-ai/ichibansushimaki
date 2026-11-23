@@ -227,7 +227,7 @@ try {
           ? weeklyConfig.vegetables
           : [];
 
-        if (weeklyPromo.offerType === "handroll_combo") {
+        if (weeklyPromo.offer_type === "handroll_combo") {
           const allowedProteins = components.handroll_proteins || [];
           const allowedVegetables = components.handroll_vegetables || [];
 
@@ -253,7 +253,7 @@ try {
           }
         }
 
-        if (weeklyPromo.offerType === "sushi_burger_combo") {
+        if (weeklyPromo.offer_type === "sushi_burger_combo") {
           const allowedProteins = components.burger_proteins || [];
           const allowedVegetables = components.burger_vegetables || [];
 
