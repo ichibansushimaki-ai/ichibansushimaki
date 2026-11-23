@@ -641,15 +641,66 @@ function renderWeeklyPromosAdmin() {
 
     <div id="weeklyPromoList"></div>
   `;
-  const offerTypeSelect = $("#weeklyPromoForm").elements.offer_type;
+
+const offerTypeSelect = $("#weeklyPromoForm").elements.offer_type;
+
+const componentDrafts = {};
 
 if (offerTypeSelect) {
+
   renderWeeklyPromoComponents(offerTypeSelect.value);
 
   offerTypeSelect.addEventListener("change", () => {
-    renderWeeklyPromoComponents(offerTypeSelect.value);
+    const previousType = offerTypeSelect.dataset.previousType ||
+      offerTypeSelect.value;
+
+    const container = $("#weeklyPromoComponents");
+
+    if (container) {
+      componentDrafts[previousType] = [
+        ...container.querySelectorAll("input, select, textarea")
+      ].map(el => ({
+        name: el.name,
+        type: el.type,
+        value: el.value,
+        checked: el.checked
+      }));
+    }
+
+    const newType = offerTypeSelect.value;
+
+    renderWeeklyPromoComponents(newType);
+
+    const savedFields = componentDrafts[newType] || [];
+    const newContainer = $("#weeklyPromoComponents");
+
+    if (newContainer) {
+      newContainer.querySelectorAll("input, select, textarea").forEach(el => {
+        const saved = savedFields.find(field =>
+          field.name === el.name &&
+          field.type === el.type &&
+          (el.type !== "checkbox" && el.type !== "radio"
+            ? true
+            : field.value === el.value)
+        );
+
+        if (!saved) return;
+
+        if (el.type === "checkbox" || el.type === "radio") {
+          el.checked = saved.checked;
+        } else {
+          el.value = saved.value;
+        }
+      });
+    }
+
+    offerTypeSelect.dataset.previousType = newType;
   });
+
+  offerTypeSelect.dataset.previousType = offerTypeSelect.value;
 }
+
+
   const weeklyImageInput = $("#weeklyPromoImageFile");
 const weeklyImagePreview = $("#weeklyPromoImagePreview");
 
@@ -841,6 +892,12 @@ editButton.onclick = () => {
   // Cargar datos principales
   form.elements.day.value = promo.day;
   form.elements.offer_type.value = promo.offer_type || "simple";
+  Object.keys(componentDrafts).forEach(type => {
+  delete componentDrafts[type];
+});
+
+form.elements.offer_type.dataset.previousType =
+  form.elements.offer_type.value;
   form.elements.name.value = promo.name || "";
   form.elements.description.value = promo.description || "";
   form.elements.price.value = promo.price || "";
@@ -884,6 +941,41 @@ editButton.onclick = () => {
   const shrimpExtra = form.querySelector('[name="burger_shrimp_extra"]');
   if (shrimpExtra) {
     shrimpExtra.value = components.burger_shrimp_extra ?? 1000;
+  }
+
+  
+  // Cargar opciones del Combo personalizado
+  const customProductType = form.querySelector('[name="custom_product_type"]');
+  if (customProductType) {
+    customProductType.value = components.custom_product_type || "handroll";
+  }
+
+  const customQuantity = form.querySelector('[name="custom_quantity"]');
+  if (customQuantity) {
+    customQuantity.value = components.custom_quantity ?? 2;
+  }
+
+  form.querySelectorAll('[name="custom_protein"]').forEach(el => {
+    el.checked = (components.custom_proteins || []).includes(el.value);
+  });
+
+  form.querySelectorAll('[name="custom_vegetable"]').forEach(el => {
+    el.checked = (components.custom_vegetables || []).includes(el.value);
+  });
+
+  const customCheese = form.querySelector('[name="custom_cheese"]');
+  if (customCheese) {
+    customCheese.checked = components.custom_cheese ?? false;
+  }
+
+  const customFries = form.querySelector('[name="custom_fries"]');
+  if (customFries) {
+    customFries.checked = components.custom_fries ?? false;
+  }
+
+  const customDrink = form.querySelector('[name="custom_drink"]');
+  if (customDrink) {
+    customDrink.checked = components.custom_drink ?? false;
   }
 
   // Identificar la promoción que estamos editando
