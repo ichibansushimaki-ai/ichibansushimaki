@@ -166,6 +166,21 @@ try {
     const validatedItems = [];
 
     for (const item of body.items) {
+            const config = cleanConfig(item.config);
+
+      const isWeeklyPromo = item.product_type === "weekly_promo";
+
+      let weeklyPromo = null;
+
+      if (isWeeklyPromo) {
+        weeklyPromo = weeklyPromos.find(
+          promo => String(promo.id) === String(config.weeklyPromo?.promoId)
+        );
+
+        if (!weeklyPromo || weeklyPromo.active === false) {
+          return jsonError("La promoción semanal ya no está disponible.");
+        }
+      }
       if (!item.id) {
         return jsonError("Falta el identificador de un producto.");
       }
@@ -176,21 +191,106 @@ try {
         return jsonError("Cantidad de producto no válida.");
       }
 
-      const product = await env.DB.prepare(`
-        SELECT id, name, price, available, product_type, options
-        FROM products
-        WHERE id = ?
-      `).bind(String(item.id)).first();
+      const product = isWeeklyPromo
+        ? {
+            id: String(item.id),
+            name: weeklyPromo.name,
+            price: Number(weeklyPromo.price),
+            available: 1,
+            product_type: "weekly_promo",
+            options: "{}"
+          }
+        : await env.DB.prepare(`
+            SELECT id, name, price, available, product_type, options
+            FROM products
+            WHERE id = ?
+          `).bind(String(item.id)).first();
 
       if (!product) {
         return jsonError("Uno de los productos ya no existe.");
       }
 
-      if (Number(product.available) !== 1) {
-        return jsonError(`El producto ${product.name} no está disponible.`);
-      }
+      let price = Number(product.price);
+            let weeklySurcharge = 0;
 
-      const price = Number(product.price);
+      if (isWeeklyPromo) {
+        const weeklyConfig = config.weeklyPromo;
+        const components = weeklyPromo.components || {};
+
+        if (!weeklyConfig || typeof weeklyConfig !== "object") {
+          return jsonError("La personalización de la promoción no es válida.");
+        }
+        if (weeklyConfig.offerType !== weeklyPromo.offer_type) {
+          return jsonError("El tipo de promoción no coincide con la configuración.");
+        }
+        const selectedVegetables = Array.isArray(weeklyConfig.vegetables)
+          ? weeklyConfig.vegetables
+          : [];
+
+        if (weeklyPromo.offerType === "handroll_combo") {
+          const allowedProteins = components.handroll_proteins || [];
+          const allowedVegetables = components.handroll_vegetables || [];
+
+          if (
+            weeklyConfig.protein &&
+            !allowedProteins.includes(weeklyConfig.protein)
+          ) {
+            return jsonError("La proteína del handroll no está disponible.");
+          }
+
+          if (selectedVegetables.length > 1) {
+            return jsonError("El handroll permite elegir un solo vegetal.");
+          }
+
+          if (selectedVegetables.some(v => !allowedVegetables.includes(v))) {
+            return jsonError("Un vegetal del handroll no está disponible.");
+          }
+                    if (
+            weeklyConfig.cheese === true &&
+            components.handroll_cheese !== true
+          ) {
+            return jsonError("El queso crema no está disponible para este handroll.");
+          }
+        }
+
+        if (weeklyPromo.offerType === "sushi_burger_combo") {
+          const allowedProteins = components.burger_proteins || [];
+          const allowedVegetables = components.burger_vegetables || [];
+
+          if (
+            weeklyConfig.protein &&
+            !allowedProteins.includes(weeklyConfig.protein)
+          ) {
+            return jsonError("La proteína de la Sushi Burger no está disponible.");
+          }
+
+          if (selectedVegetables.length > 2) {
+            return jsonError("La Sushi Burger permite máximo 2 vegetales.");
+          }
+
+          if (selectedVegetables.some(v => !allowedVegetables.includes(v))) {
+            return jsonError("Un vegetal de la Sushi Burger no está disponible.");
+          }
+                    if (
+            weeklyConfig.cheese === true &&
+            components.burger_cheese !== true
+          ) {
+            return jsonError("El queso crema no está disponible para esta Sushi Burger.");
+          }
+
+          if (weeklyConfig.protein === "Camarón") {
+            weeklySurcharge = Number(components.burger_shrimp_extra) || 0;
+
+            if (
+              !Number.isSafeInteger(weeklySurcharge) ||
+              weeklySurcharge < 0
+            ) {
+              return jsonError("El recargo de camarón no es válido.");
+            }
+          }
+        }
+      }
+      price += weeklySurcharge;
 
       if (!Number.isSafeInteger(price) || price < 0) {
         return jsonError("Precio de producto no válido.", 500);
@@ -201,7 +301,6 @@ const productOptions = parseObject(product.options);
 const isGohan = product.product_type === "dish" &&
   productOptions.gohan_customizable === true;
 
-const config = cleanConfig(item.config);
 
       let gohanSurcharge = 0;
 
