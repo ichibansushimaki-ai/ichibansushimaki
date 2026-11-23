@@ -714,17 +714,27 @@ $("#weeklyPromoForm").onsubmit = async event => {
       price: Number(form.elements.price.value),
       image,
 
-      components: {
-        handroll_proteins: [...form.querySelectorAll('input[name="handroll_protein"]:checked')].map(el => el.value),
-        handroll_vegetables: [...form.querySelectorAll('input[name="handroll_vegetable"]:checked')].map(el => el.value),
-        handroll_cheese: form.querySelector('[name="handroll_cheese"]')?.checked ?? false,
+    
+components: {
+  handroll_proteins: [...form.querySelectorAll('input[name="handroll_protein"]:checked')].map(el => el.value),
+  handroll_vegetables: [...form.querySelectorAll('input[name="handroll_vegetable"]:checked')].map(el => el.value),
+  handroll_cheese: form.querySelector('[name="handroll_cheese"]')?.checked ?? false,
 
-        burger_proteins: [...form.querySelectorAll('input[name="burger_protein"]:checked')].map(el => el.value),
-        burger_vegetables: [...form.querySelectorAll('input[name="burger_vegetable"]:checked')].map(el => el.value),
-        burger_no_vegetable: form.querySelector('[name="burger_no_vegetable"]')?.checked ?? false,
-        burger_cheese: form.querySelector('[name="burger_cheese"]')?.checked ?? false,
-        burger_shrimp_extra: Number(form.querySelector('[name="burger_shrimp_extra"]')?.value || 0)
-      },
+  burger_proteins: [...form.querySelectorAll('input[name="burger_protein"]:checked')].map(el => el.value),
+  burger_vegetables: [...form.querySelectorAll('input[name="burger_vegetable"]:checked')].map(el => el.value),
+  burger_no_vegetable: form.querySelector('[name="burger_no_vegetable"]')?.checked ?? false,
+  burger_cheese: form.querySelector('[name="burger_cheese"]')?.checked ?? false,
+  burger_shrimp_extra: Number(form.querySelector('[name="burger_shrimp_extra"]')?.value || 0),
+
+  custom_product_type: form.querySelector('[name="custom_product_type"]')?.value || "",
+  custom_quantity: Number(form.querySelector('[name="custom_quantity"]')?.value || 1),
+  custom_proteins: [...form.querySelectorAll('input[name="custom_protein"]:checked')].map(el => el.value),
+  custom_vegetables: [...form.querySelectorAll('input[name="custom_vegetable"]:checked')].map(el => el.value),
+  custom_cheese: form.querySelector('[name="custom_cheese"]')?.checked ?? false,
+  custom_fries: form.querySelector('[name="custom_fries"]')?.checked ?? false,
+  custom_drink: form.querySelector('[name="custom_drink"]')?.checked ?? false
+},
+
 
       active: existingPromo ? existingPromo.active : true
     };
