@@ -614,6 +614,7 @@ if (type !== "simple") {
     >
   `);
 }
+}
 
 function renderWeeklyPromosAdmin() {
   const container = $("#weeklyPromosAdmin");
