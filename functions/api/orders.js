@@ -39,7 +39,14 @@ function parseObject(value) {
     return {};
   }
 }
+function getChileWeekday() {
+  const day = new Intl.DateTimeFormat("es-CL", {
+    timeZone: "America/Santiago",
+    weekday: "long"
+  }).format(new Date());
 
+  return day.charAt(0).toLocaleUpperCase("es-CL") + day.slice(1);
+}
 
 export async function onRequestGet({ request, env }) {
   if (!await authorized(request, env)) {
