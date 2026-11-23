@@ -2659,13 +2659,15 @@ const itemPrice =
         lines.push(`Proteína: ${weekly.protein}`);
       }
 
-      lines.push(
-        `Vegetales: ${
-          weekly.vegetables?.length
-            ? weekly.vegetables.join(", ")
-            : "Sin vegetales"
-        }`
-      );
+           if (weekly.offerType !== "gohan_combo") {
+        lines.push(
+          `Vegetales: ${
+            weekly.vegetables?.length
+              ? weekly.vegetables.join(", ")
+              : "Sin vegetales"
+          }`
+        );
+      }
 
       if (weekly.cheese) {
         lines.push(`Queso crema: ${weekly.cheese}`);
