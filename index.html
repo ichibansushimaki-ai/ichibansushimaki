@@ -68,18 +68,39 @@
     <p>Descubre los favoritos de Ichiban.</p>
   </div>
 
-  <div id="featuredGrid" class="grid"></div>
+  <button
+    type="button"
+    class="btn btn-outline section-toggle"
+    id="toggleFeatured"
+    aria-expanded="false"
+    aria-controls="featuredGrid"
+  >
+    Ver destacados
+  </button>
+
+  <div id="featuredGrid" class="grid" hidden></div>
 </section>
- <section class="section weekly-promos" id="promos">
-    <div class="section-head">
-      <div>
-       <p class="eyebrow">PARA DISFRUTAR</p>
-<h2>Promociones <em>semanales</em></h2>
-</div>
-<p>Ofertas especiales de Ichiban para disfrutar durante la semana.</p>
+<section class="section weekly-promos" id="promos">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">PARA DISFRUTAR</p>
+      <h2>Promociones <em>semanales</em></h2>
     </div>
-    <div id="promoGrid" class="grid"></div>
-  </section>
+    <p>Ofertas especiales de Ichiban para disfrutar durante la semana.</p>
+  </div>
+
+  <button
+    type="button"
+    class="btn btn-outline section-toggle"
+    id="togglePromos"
+    aria-expanded="false"
+    aria-controls="promoGrid"
+  >
+    Ver promociones
+  </button>
+
+  <div id="promoGrid" class="grid" hidden></div>
+</section>
 
   <section class="section dark" id="carta">
     <div class="section-head">
