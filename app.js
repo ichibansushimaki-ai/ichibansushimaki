@@ -970,6 +970,22 @@ function cartItemDescription(item) {
             <span class="cart-option">+${money(weekly.shrimpExtra)}</span>
           </div>
         ` : ""}
+                ${Array.isArray(weekly.gohans) && weekly.gohans.length ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Personalización de Gohan</span>
+            <span class="cart-option">
+              ${weekly.gohans.map((gohan, index) => `
+                Gohan ${index + 1}: ${escapeHTML(gohan.protein || "Sin proteína")}
+                · Vegetales: ${
+                  Array.isArray(gohan.vegetables) && gohan.vegetables.length
+                    ? gohan.vegetables.map(value => escapeHTML(value)).join(", ")
+                    : "Sin vegetales"
+                }
+                ${gohan.cheese ? ` · ${escapeHTML(gohan.cheese)}` : ""}
+              `).join("<br>")}
+            </span>
+          </div>
+        ` : ""}
                 ${weekly.accompaniment ? `
           <div class="cart-config-row">
             <span class="cart-config-label">Acompañamiento incluido</span>
@@ -1178,45 +1194,118 @@ function openWeeklyPromo(promo, editingItem = null) {
     `;
   }
 
-  if (type === "sushi_burger_combo") {
-    options = `
-      <h3>Personaliza tu Sushi Burger</h3>
 
-      <strong>Elige tu proteína</strong>
-     ${choices(burgerProteins, "weeklyProtein", true, savedProtein)}
+if (type === "sushi_burger_combo") {
+  options = `
+    <h3>Personaliza tu Sushi Burger</h3>
 
-      <strong>Elige hasta 2 vegetales</strong>
-     ${burgerVegetables.map(value => `
-        <label>
-          <input
-            type="checkbox"
-            name="weeklyVegetable"
-            value="${escapeHTML(value)}"
-            ${savedVegetables.includes(value) ? "checked" : ""}
-          >
-          ${escapeHTML(value)}
-        </label>
-      `).join("")}
+    <strong>Elige tu proteína</strong>
+    ${choices(burgerProteins, "weeklyProtein", true, savedProtein)}
 
-      ${components.burger_no_vegetable
-        ? "<p>Puedes dejar los vegetales sin seleccionar.</p>"
-        : "<p>Debes seleccionar al menos un vegetal.</p>"}
+    <strong>Elige hasta 2 vegetales</strong>
+    ${burgerVegetables.map(value => `
+      <label>
+        <input
+          type="checkbox"
+          name="weeklyVegetable"
+          value="${escapeHTML(value)}"
+          ${savedVegetables.includes(value) ? "checked" : ""}
+        >
+        ${escapeHTML(value)}
+      </label>
+    `).join("")}
 
-      ${components.burger_cheese ? `
-        <strong>Queso crema</strong>
-        <label>
-  <input type="radio" name="weeklyCheese" value="Con queso crema"
-    ${savedCheese === "Con queso crema" || !savedCheese ? "checked" : ""}>
-  Con queso crema
-</label>
-        <label>
-  <input type="radio" name="weeklyCheese" value="Sin queso crema"
-    ${savedCheese === "Sin queso crema" ? "checked" : ""}>
-  Sin queso crema
-</label>
-      ` : ""}
-    `;
-  }
+    ${components.burger_no_vegetable
+      ? "<p>Puedes dejar los vegetales sin seleccionar.</p>"
+      : "<p>Debes seleccionar al menos un vegetal.</p>"}
+
+    ${components.burger_cheese ? `
+      <strong>Queso crema</strong>
+      <label>
+        <input type="radio" name="weeklyCheese" value="Con queso crema"
+          ${savedCheese === "Con queso crema" || !savedCheese ? "checked" : ""}>
+        Con queso crema
+      </label>
+      <label>
+        <input type="radio" name="weeklyCheese" value="Sin queso crema"
+          ${savedCheese === "Sin queso crema" ? "checked" : ""}>
+        Sin queso crema
+      </label>
+    ` : ""}
+  `;
+} else if (type === "gohan_combo") {
+  const gohanProteins = components.gohan_proteins || [];
+  const gohanVegetables = components.gohan_vegetable_options || [];
+  const savedGohans = savedConfig.gohans || [];
+  const gohanCount = Math.max(1, Number(editingItem?.quantity || 1));
+
+options = `
+    <div id="weeklyGohanConfigs">
+      <h3>Personaliza tus Gohan</h3>
+    <p>Personaliza cada Gohan por separado.</p>
+
+    ${Array.from({ length: gohanCount }, (_, index) => {
+      const saved = savedGohans[index] || {};
+
+      return `
+        <div class="weekly-gohan-config">
+          <h3>Gohan ${index + 1}</h3>
+
+          <strong>Elige tu proteína</strong>
+          ${gohanProteins.map(protein => `
+            <label>
+              <input
+                type="radio"
+                name="weeklyGohanProtein-${index}"
+                value="${escapeHTML(protein)}"
+                ${saved.protein === protein ? "checked" : ""}
+              >
+              ${escapeHTML(protein)}
+            </label>
+          `).join("")}
+
+          <strong>Elige hasta 3 vegetales</strong>
+          ${gohanVegetables.map(vegetable => `
+            <label>
+              <input
+                type="checkbox"
+                class="weeklyGohanVegetable"
+                data-gohan="${index}"
+                value="${escapeHTML(vegetable)}"
+                ${(saved.vegetables || []).includes(vegetable) ? "checked" : ""}
+              >
+              ${escapeHTML(vegetable)}
+            </label>
+          `).join("")}
+
+          ${components.gohan_cheese ? `
+            <strong>Queso crema</strong>
+            <label>
+              <input
+                type="radio"
+                name="weeklyGohanCheese-${index}"
+                value="Con queso crema"
+                ${saved.cheese !== "Sin queso crema" ? "checked" : ""}
+              >
+              Con queso crema
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="weeklyGohanCheese-${index}"
+                value="Sin queso crema"
+                ${saved.cheese === "Sin queso crema" ? "checked" : ""}
+              >
+              Sin queso crema
+            </label>
+          ` : ""}
+        </div>
+      `;
+    }).join("")}
+        </div>
+  `;
+}
+
   // Mostrar el acompañamiento fijo incluido en la promoción
   const accompaniment = (
     components.weekly_accompaniments || []
@@ -1258,6 +1347,100 @@ function openWeeklyPromo(promo, editingItem = null) {
   `);
 
   let quantity = Number(editingItem?.quantity || 1);
+let weeklyGohanDrafts = (savedConfig.gohans || []).map(gohan => ({
+  ...gohan,
+  vegetables: [...(gohan.vegetables || [])]
+}));
+
+const renderWeeklyGohanConfigs = () => {
+  const container = form.querySelector("#weeklyGohanConfigs");
+  if (!container) return;
+
+  const currentGohans = Array.from(
+    container.querySelectorAll(".weekly-gohan-config")
+  ).map((card, index) => ({
+    protein: card.querySelector(
+      `[name="weeklyGohanProtein-${index}"]:checked`
+    )?.value || "",
+    vegetables: Array.from(
+      card.querySelectorAll(".weeklyGohanVegetable:checked")
+    ).map(input => input.value),
+    cheese: card.querySelector(
+      `[name="weeklyGohanCheese-${index}"]:checked`
+    )?.value || "Con queso crema"
+  }));
+
+  currentGohans.forEach((gohan, index) => {
+    weeklyGohanDrafts[index] = gohan;
+  });
+
+  const proteins = components.gohan_proteins || [];
+  const vegetables = components.gohan_vegetable_options || [];
+
+  container.innerHTML = `
+    <h3>Personaliza tus Gohan</h3>
+    <p>Personaliza cada Gohan por separado.</p>
+
+    ${Array.from({ length: quantity }, (_, index) => {
+     const saved = weeklyGohanDrafts[index] || {};
+
+      return `
+        <div class="weekly-gohan-config">
+          <h3>Gohan ${index + 1}</h3>
+
+          <strong>Elige tu proteína</strong>
+          ${proteins.map(protein => `
+            <label>
+              <input
+                type="radio"
+                name="weeklyGohanProtein-${index}"
+                value="${escapeHTML(protein)}"
+                ${saved.protein === protein ? "checked" : ""}
+              >
+              ${escapeHTML(protein)}
+            </label>
+          `).join("")}
+
+          <strong>Elige hasta 3 vegetales</strong>
+          ${vegetables.map(vegetable => `
+            <label>
+              <input
+                type="checkbox"
+                class="weeklyGohanVegetable"
+                data-gohan="${index}"
+                value="${escapeHTML(vegetable)}"
+                ${(saved.vegetables || []).includes(vegetable) ? "checked" : ""}
+              >
+              ${escapeHTML(vegetable)}
+            </label>
+          `).join("")}
+
+          ${components.gohan_cheese ? `
+            <strong>Queso crema</strong>
+            <label>
+              <input
+                type="radio"
+                name="weeklyGohanCheese-${index}"
+                value="Con queso crema"
+                ${saved.cheese !== "Sin queso crema" ? "checked" : ""}
+              >
+              Con queso crema
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="weeklyGohanCheese-${index}"
+                value="Sin queso crema"
+                ${saved.cheese === "Sin queso crema" ? "checked" : ""}
+              >
+              Sin queso crema
+            </label>
+          ` : ""}
+        </div>
+      `;
+    }).join("")}
+  `;
+};
 
   const basePrice = Number(savedConfig.basePrice ?? promo.price ?? 0);
   const shrimpExtra = Number(components.burger_shrimp_extra || 0);
@@ -1280,15 +1463,25 @@ function openWeeklyPromo(promo, editingItem = null) {
     $("#weeklyTotal").textContent = money(unitPrice * quantity);
   };
 
-  $("#weeklyMinus").addEventListener("click", () => {
-    if (quantity > 1) quantity--;
-    updatePrice();
-  });
+ $("#weeklyMinus").addEventListener("click", () => {
+  if (quantity > 1) quantity--;
 
-  $("#weeklyPlus").addEventListener("click", () => {
-    quantity++;
-    updatePrice();
-  });
+  updatePrice();
+
+  if (type === "gohan_combo") {
+    renderWeeklyGohanConfigs();
+  }
+});
+
+$("#weeklyPlus").addEventListener("click", () => {
+  quantity++;
+
+  updatePrice();
+
+  if (type === "gohan_combo") {
+    renderWeeklyGohanConfigs();
+  }
+});
 
   form.addEventListener("change", event => {
     if (event.target.name === "weeklyVegetable" &&
@@ -1303,6 +1496,23 @@ function openWeeklyPromo(promo, editingItem = null) {
       }
     }
 
+    if (
+      type === "gohan_combo" &&
+      event.target.classList.contains("weeklyGohanVegetable") &&
+      event.target.checked
+    ) {
+      const gohanIndex = event.target.dataset.gohan;
+
+      const selectedVegetables = form.querySelectorAll(
+        `.weeklyGohanVegetable[data-gohan="${gohanIndex}"]:checked`
+      );
+
+      if (selectedVegetables.length > 3) {
+        event.target.checked = false;
+        alert("Puedes elegir máximo 3 vegetales por cada Gohan.");
+      }
+    }
+
     updatePrice();
   });
 
@@ -1313,10 +1523,14 @@ function openWeeklyPromo(promo, editingItem = null) {
       ? [form.querySelector('[name="weeklyVegetable"]:checked')?.value].filter(Boolean)
       : [...form.querySelectorAll('[name="weeklyVegetable"]:checked')].map(el => el.value);
 
-    if (type !== "simple" && !protein) {
-      alert("Selecciona una proteína.");
-      return;
-    }
+   if (
+  type !== "simple" &&
+  type !== "gohan_combo" &&
+  !protein
+) {
+  alert("Selecciona una proteína.");
+  return;
+}
 
     if (type === "handroll_combo" && !vegetables.length) {
       alert("Selecciona un vegetal.");
@@ -1338,6 +1552,29 @@ function openWeeklyPromo(promo, editingItem = null) {
 
     const extra = getExtra();
 
+const gohans = type === "gohan_combo"
+  ? Array.from({ length: quantity }, (_, index) => ({
+      protein: form.querySelector(
+        `[name="weeklyGohanProtein-${index}"]:checked`
+      )?.value || "",
+      vegetables: Array.from(
+        form.querySelectorAll(
+          `.weeklyGohanVegetable[data-gohan="${index}"]:checked`
+        )
+      ).map(input => input.value),
+      cheese: form.querySelector(
+        `[name="weeklyGohanCheese-${index}"]:checked`
+      )?.value || ""
+    }))
+  : [];
+    if (
+  type === "gohan_combo" &&
+  gohans.some(gohan => !gohan.protein)
+) {
+  alert("Selecciona una proteína para cada Gohan.");
+  return;
+}
+
    const updatedItem = {
   key: editingItem?.key || "weekly-" + promo.id + "-" + Date.now(),
   id: "weekly-" + promo.id,
@@ -1350,11 +1587,12 @@ function openWeeklyPromo(promo, editingItem = null) {
           promoId: promo.id,
           offerType: type,
           protein,
-          vegetables,
-          cheese,
-          shrimpExtra: extra,
-          basePrice,
-          accompaniment
+vegetables,
+cheese,
+gohans,
+shrimpExtra: extra,
+basePrice,
+accompaniment
         }
   }
 };
@@ -2434,6 +2672,21 @@ const itemPrice =
       if (Number(weekly.shrimpExtra) > 0) {
         lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
       }
+      if (Array.isArray(weekly.gohans) && weekly.gohans.length) {
+  weekly.gohans.forEach((gohan, index) => {
+    lines.push(`Gohan ${index + 1}:`);
+    lines.push(`Proteína: ${gohan.protein || "Sin proteína"}`);
+    lines.push(
+      `Vegetales: ${gohan.vegetables?.length
+        ? gohan.vegetables.join(", ")
+        : "Sin vegetales"}`
+    );
+
+    if (gohan.cheese) {
+      lines.push(`Queso crema: ${gohan.cheese}`);
+    }
+  });
+}
             if (weekly.accompaniment) {
         lines.push(
           `Acompañamiento incluido: ${weekly.accompaniment} × ${quantity}`
