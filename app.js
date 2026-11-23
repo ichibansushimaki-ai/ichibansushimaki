@@ -2745,12 +2745,30 @@ function render() {
         price.className = "price";
         price.textContent = money(promo.price);
 
-  const addButton = document.createElement("button");
-addButton.type = "button";
-addButton.textContent = "Elegir opciones";
-addButton.addEventListener("click", () => {
-  openWeeklyPromo(promo);
-});
+         const today = [
+          "Domingo",
+          "Lunes",
+          "Martes",
+          "Miércoles",
+          "Jueves",
+          "Viernes",
+          "Sábado"
+        ][new Date().getDay()];
+
+        const canBuyToday = promo.day === today;
+
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.disabled = !canBuyToday;
+        addButton.textContent = canBuyToday
+          ? "Elegir opciones"
+          : `Disponible el ${promo.day.toLowerCase()}`;
+
+        addButton.addEventListener("click", () => {
+          if (canBuyToday) {
+            openWeeklyPromo(promo);
+          }
+        });
 
 inside.append(title, description, price, addButton);
         article.append(img, inside);
