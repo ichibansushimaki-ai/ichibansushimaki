@@ -151,8 +151,6 @@ try {
   weeklyPromos = [];
 }
 
-const gohanSettings = parseObject(settingsRow?.gohan_config);
-
     const activeVegetables = (gohanSettings.vegetables || [])
       .filter(item => item && item.active && item.name)
       .map(item => String(item.name));
