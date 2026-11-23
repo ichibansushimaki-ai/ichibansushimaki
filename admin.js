@@ -550,12 +550,14 @@ gohan_combo: `
   <label><input type="checkbox" name="gohan_protein" value="Kanikama"> Kanikama</label>
   <label><input type="checkbox" name="gohan_protein" value="Salmón"> Salmón</label>
 
-  <h4>Vegetales disponibles</h4>
-  <label><input type="checkbox" name="gohan_vegetable" value="Cebollín"> Cebollín</label>
-  <label><input type="checkbox" name="gohan_vegetable" value="Pimentón"> Pimentón</label>
-  <label><input type="checkbox" name="gohan_vegetable" value="Palta"> Palta</label>
-  <label><input type="checkbox" name="gohan_vegetable" value="Sin vegetal"> Sin vegetal</label>
-
+    <h4>Vegetales disponibles para los Gohan</h4>
+  <p>Escribe un vegetal por línea. Puedes agregar nuevos o quitar los que no tengas disponibles.</p>
+  <textarea
+    name="gohan_vegetable_options"
+    rows="6"
+    placeholder="Palta&#10;Cebollín&#10;Maíz&#10;Champiñones"
+  ></textarea>
+  <p>El cliente podrá elegir hasta 3 vegetales por cada Gohan.</p>
   <h4>Queso crema</h4>
   <label><input type="checkbox" name="gohan_cheese"> Permitir elegir con o sin queso crema</label>
 
@@ -817,7 +819,11 @@ components: {
   burger_shrimp_extra: Number(form.querySelector('[name="burger_shrimp_extra"]')?.value || 0),
 gohan_quantity: Number(form.querySelector('[name="gohan_quantity"]')?.value || 1),
 gohan_proteins: [...form.querySelectorAll('input[name="gohan_protein"]:checked')].map(el => el.value),
-gohan_vegetables: [...form.querySelectorAll('input[name="gohan_vegetable"]:checked')].map(el => el.value),
+gohan_vegetables: [],
+gohan_vegetable_options: (form.querySelector('[name="gohan_vegetable_options"]')?.value || "")
+  .split("\n")
+  .map(item => item.trim())
+  .filter(item => item !== ""),
 gohan_cheese: form.querySelector('[name="gohan_cheese"]')?.checked ?? false,
 gohan_fries: form.querySelector('[name="gohan_fries"]')?.checked ?? false,
 gohan_drink: form.querySelector('[name="gohan_drink"]')?.checked ?? false,
@@ -961,7 +967,16 @@ form.elements.offer_type.dataset.previousType =
       components.weekly_accompaniments || []
     ).join("\n");
   }
+  // Recuperar los vegetales disponibles para Gohan
+  const gohanVegetableOptions = form.querySelector(
+    '[name="gohan_vegetable_options"]'
+  );
 
+  if (gohanVegetableOptions) {
+    gohanVegetableOptions.value = (
+      components.gohan_vegetable_options || []
+    ).join("\n");
+  }
   // Cargar opciones del Handroll
   form.querySelectorAll('[name="handroll_protein"]').forEach(el => {
     el.checked = (components.handroll_proteins || []).includes(el.value);
