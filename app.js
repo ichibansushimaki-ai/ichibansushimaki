@@ -2347,7 +2347,31 @@ const itemPrice =
        const lines = [
       `${quantity} × ${item.name} — ${money(itemPrice)}`
     ];
+    if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple") {
+      const weekly = config.weeklyPromo;
 
+      lines.push("PERSONALIZACIÓN PROMOCIÓN SEMANAL:");
+
+      if (weekly.protein) {
+        lines.push(`Proteína: ${weekly.protein}`);
+      }
+
+      lines.push(
+        `Vegetales: ${
+          weekly.vegetables?.length
+            ? weekly.vegetables.join(", ")
+            : "Sin vegetales"
+        }`
+      );
+
+      if (weekly.cheese) {
+        lines.push(`Queso crema: ${weekly.cheese}`);
+      }
+
+      if (Number(weekly.shrimpExtra) > 0) {
+        lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
+      }
+    }
     if (config.customRoll) {
       const roll = config.customRoll;
 
