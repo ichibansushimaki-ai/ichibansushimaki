@@ -538,7 +538,33 @@ function renderWeeklyPromoComponents(type) {
 
       <label><input type="checkbox" name="burger_cheese" checked> Permitir elegir queso crema con o sin</label>
     `,
+gohan_combo: `
+  <h4>Configuración del Combo Gohan</h4>
 
+  <label>Cantidad de Gohan</label>
+  <input type="number" name="gohan_quantity" min="1" value="1" required>
+
+  <h4>Proteínas disponibles</h4>
+  <label><input type="checkbox" name="gohan_protein" value="Pollo"> Pollo</label>
+  <label><input type="checkbox" name="gohan_protein" value="Camarón"> Camarón</label>
+  <label><input type="checkbox" name="gohan_protein" value="Kanikama"> Kanikama</label>
+  <label><input type="checkbox" name="gohan_protein" value="Salmón"> Salmón</label>
+
+  <h4>Vegetales disponibles</h4>
+  <label><input type="checkbox" name="gohan_vegetable" value="Cebollín"> Cebollín</label>
+  <label><input type="checkbox" name="gohan_vegetable" value="Pimentón"> Pimentón</label>
+  <label><input type="checkbox" name="gohan_vegetable" value="Palta"> Palta</label>
+  <label><input type="checkbox" name="gohan_vegetable" value="Sin vegetal"> Sin vegetal</label>
+
+  <h4>Queso crema</h4>
+  <label><input type="checkbox" name="gohan_cheese"> Permitir elegir con o sin queso crema</label>
+
+  <h4>Acompañamientos opcionales</h4>
+  <label><input type="checkbox" name="gohan_fries"> Papas fritas individuales</label>
+  <label><input type="checkbox" name="gohan_drink"> Bebida mini</label>
+
+  <p>Solo se incluirán los acompañamientos que marques.</p>
+`,
     custom_combo: `
       <h4>Configuración del combo personalizado</h4>
 
@@ -777,7 +803,12 @@ components: {
   burger_no_vegetable: form.querySelector('[name="burger_no_vegetable"]')?.checked ?? false,
   burger_cheese: form.querySelector('[name="burger_cheese"]')?.checked ?? false,
   burger_shrimp_extra: Number(form.querySelector('[name="burger_shrimp_extra"]')?.value || 0),
-
+gohan_quantity: Number(form.querySelector('[name="gohan_quantity"]')?.value || 1),
+gohan_proteins: [...form.querySelectorAll('input[name="gohan_protein"]:checked')].map(el => el.value),
+gohan_vegetables: [...form.querySelectorAll('input[name="gohan_vegetable"]:checked')].map(el => el.value),
+gohan_cheese: form.querySelector('[name="gohan_cheese"]')?.checked ?? false,
+gohan_fries: form.querySelector('[name="gohan_fries"]')?.checked ?? false,
+gohan_drink: form.querySelector('[name="gohan_drink"]')?.checked ?? false,
   custom_product_type: form.querySelector('[name="custom_product_type"]')?.value || "",
   custom_quantity: Number(form.querySelector('[name="custom_quantity"]')?.value || 1),
   custom_proteins: [...form.querySelectorAll('input[name="custom_protein"]:checked')].map(el => el.value),
@@ -944,7 +975,34 @@ form.elements.offer_type.dataset.previousType =
     shrimpExtra.value = components.burger_shrimp_extra ?? 1000;
   }
 
-  
+  // Cargar opciones del Combo Gohan
+  const gohanQuantity = form.querySelector('[name="gohan_quantity"]');
+  if (gohanQuantity) {
+    gohanQuantity.value = components.gohan_quantity ?? 1;
+  }
+
+  form.querySelectorAll('[name="gohan_protein"]').forEach(el => {
+    el.checked = (components.gohan_proteins || []).includes(el.value);
+  });
+
+  form.querySelectorAll('[name="gohan_vegetable"]').forEach(el => {
+    el.checked = (components.gohan_vegetables || []).includes(el.value);
+  });
+
+  const gohanCheese = form.querySelector('[name="gohan_cheese"]');
+  if (gohanCheese) {
+    gohanCheese.checked = components.gohan_cheese ?? false;
+  }
+
+  const gohanFries = form.querySelector('[name="gohan_fries"]');
+  if (gohanFries) {
+    gohanFries.checked = components.gohan_fries ?? false;
+  }
+
+  const gohanDrink = form.querySelector('[name="gohan_drink"]');
+  if (gohanDrink) {
+    gohanDrink.checked = components.gohan_drink ?? false;
+  }  
   // Cargar opciones del Combo personalizado
   const customProductType = form.querySelector('[name="custom_product_type"]');
   if (customProductType) {
