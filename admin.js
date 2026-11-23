@@ -594,6 +594,7 @@ function renderWeeklyPromosAdmin() {
   <option value="simple">Oferta simple</option>
   <option value="handroll_combo">Combo Handroll</option>
   <option value="sushi_burger_combo">Combo Sushi Burger</option>
+  <option value="gohan_combo">Combo Gohan</option>
   <option value="custom_combo">Combo personalizado</option>
 </select>
 <div id="weeklyPromoComponents">
