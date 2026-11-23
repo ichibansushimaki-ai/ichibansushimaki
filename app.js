@@ -945,17 +945,19 @@ function cartItemDescription(item) {
           </div>
         ` : ""}
 
-        ${weekly.vegetables?.length ? `
-          <div class="cart-config-row">
-            <span class="cart-config-label">Vegetales</span>
-            <span class="cart-option">${weekly.vegetables.map(escapeHTML).join(", ")}</span>
-          </div>
-        ` : `
-          <div class="cart-config-row">
-            <span class="cart-config-label">Vegetales</span>
-            <span class="cart-option">Sin vegetales</span>
-          </div>
-        `}
+       ${weekly.offerType !== "gohan_combo" ? (
+  weekly.vegetables?.length ? `
+    <div class="cart-config-row">
+      <span class="cart-config-label">Vegetales</span>
+      <span class="cart-option">${weekly.vegetables.map(escapeHTML).join(", ")}</span>
+    </div>
+  ` : `
+    <div class="cart-config-row">
+      <span class="cart-config-label">Vegetales</span>
+      <span class="cart-option">Sin vegetales</span>
+    </div>
+  `
+) : ""}
 
         ${weekly.cheese ? `
           <div class="cart-config-row">
