@@ -2920,10 +2920,37 @@ function setupMobileMenu() {
     });
   });
 }
+function setupSectionToggles() {
+  const toggles = [
+    {
+      button: $("#toggleFeatured"),
+      content: $("#featuredGrid"),
+      openText: "Ver destacados",
+      closeText: "Ocultar destacados"
+    },
+    {
+      button: $("#togglePromos"),
+      content: $("#promoGrid"),
+      openText: "Ver promociones",
+      closeText: "Ocultar promociones"
+    }
+  ];
 
+  toggles.forEach(({ button, content, openText, closeText }) => {
+    if (!button || !content) return;
+
+    button.addEventListener("click", () => {
+      const isOpen = !content.hidden;
+      content.hidden = isOpen;
+      button.setAttribute("aria-expanded", String(!isOpen));
+      button.textContent = isOpen ? openText : closeText;
+    });
+  });
+}
 async function initialize() {
   addStoreStyles();
   setupMobileMenu();
+  setupSectionToggles();
   ensureCartUI();
   await loadSettings();
   await loadProducts();
