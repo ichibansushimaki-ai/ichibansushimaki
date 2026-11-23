@@ -177,8 +177,22 @@ try {
           promo => String(promo.id) === String(config.weeklyPromo?.promoId)
         );
 
-        if (!weeklyPromo || weeklyPromo.active === false) {
-          return jsonError("La promoción semanal ya no está disponible.");
+              const today = new Intl.DateTimeFormat("es-CL", {
+          timeZone: "America/Santiago",
+          weekday: "long"
+        }).format(new Date());
+
+        const todayName =
+          today.charAt(0).toUpperCase() + today.slice(1);
+
+        if (
+          !weeklyPromo ||
+          weeklyPromo.active === false ||
+          weeklyPromo.day !== todayName
+        ) {
+          return jsonError(
+            "La promoción semanal ya no está disponible hoy."
+          );
         }
       }
       if (!item.id) {
