@@ -930,7 +930,38 @@ return sum +
 function cartItemDescription(item) {
   const config = item.config || {};
   const sections = [];
-  
+    if (
+    config.weeklyPromo &&
+    config.weeklyPromo.offerType === "simple" &&
+    Array.isArray(config.weeklyPromo.simpleOffers)
+  ) {
+    const weekly = config.weeklyPromo;
+
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Personalización de la promoción</strong>
+
+        ${weekly.simpleOffers.map((offer, index) => `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Unidad ${index + 1}</span>
+            <span class="cart-option">
+              Proteína: ${escapeHTML(offer.protein || "Sin proteína")}
+              <br>
+              Vegetales: ${
+                offer.vegetables?.length
+                  ? offer.vegetables.map(value => escapeHTML(value)).join(", ")
+                  : "Sin vegetales"
+              }
+              <br>
+              Queso crema: ${escapeHTML(offer.cheese || "Sin selección")}
+              <br>
+              Nori: ${escapeHTML(offer.nori || "Sin selección")}
+            </span>
+          </div>
+        `).join("")}
+      </div>
+    `);
+  }
   if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple") {
     const weekly = config.weeklyPromo;
 
@@ -1152,6 +1183,29 @@ function openWeeklyPromo(promo, editingItem = null) {
   const burgerProteins = components.burger_proteins || [];
   const burgerVegetables = components.burger_vegetables || [];
   const savedConfig = editingItem?.config?.weeklyPromo || {};
+  
+  // Opciones dinámicas de Oferta simple
+  const simpleProteins = (
+    components.simple_proteins_config ||
+    (components.simple_protein_options || []).map(name => ({
+      name,
+      active: true
+    }))
+  ).filter(item => item && item.active !== false && item.name);
+
+  const simpleVegetables = (
+    components.simple_vegetables_config ||
+    (components.simple_vegetable_options || []).map(name => ({
+      name,
+      active: true
+    }))
+  ).filter(item => item && item.active !== false && item.name);
+
+  const simpleCheese = components.simple_cheese === true;
+  const simpleNori = components.simple_nori === true;
+
+  const savedSimpleOffers = savedConfig.simpleOffers || [];
+
 
   const savedProtein = savedConfig.protein || "";
   const savedVegetables = savedConfig.vegetables || [];
@@ -1176,8 +1230,117 @@ function openWeeklyPromo(promo, editingItem = null) {
     </label>
   `).join("");
   let options = "";
+  
+  const renderSimpleOffers = () => {
+    const container = form?.querySelector("#weeklySimpleConfigs");
+    if (!container) return;
 
- if (type === "handroll_combo") {
+    const currentOffers = Array.from(
+      container.querySelectorAll(".weekly-simple-config")
+    ).map((card, index) => ({
+      protein: card.querySelector(
+        `[name="simpleProtein-${index}"]:checked`
+      )?.value || "",
+      vegetables: Array.from(
+        card.querySelectorAll(".simpleVegetable:checked")
+      ).map(input => input.value),
+      cheese: card.querySelector(
+        `[name="simpleCheese-${index}"]:checked`
+      )?.value || "Con queso crema",
+      nori: card.querySelector(
+        `[name="simpleNori-${index}"]:checked`
+      )?.value || "Con nori"
+    }));
+
+    currentOffers.forEach((offer, index) => {
+      savedSimpleOffers[index] = offer;
+    });
+
+    container.innerHTML = `
+      ${Array.from({ length: quantity }, (_, index) => {
+        const saved = savedSimpleOffers[index] || {};
+
+        return `
+          <div class="weekly-simple-config">
+            <h3>Unidad ${index + 1}</h3>
+
+            <strong>Elige tu proteína</strong>
+            ${simpleProteins.map(item => `
+              <label>
+                <input
+                  type="radio"
+                  name="simpleProtein-${index}"
+                  value="${escapeHTML(item.name)}"
+                  ${saved.protein === item.name ? "checked" : ""}
+                  ${!saved.protein && item === simpleProteins[0] ? "checked" : ""}
+                >
+                ${escapeHTML(item.name)}
+              </label>
+            `).join("")}
+
+            <strong>Elige tus vegetales</strong>
+            ${simpleVegetables.map(item => `
+              <label>
+                <input
+                  type="checkbox"
+                  class="simpleVegetable"
+                  value="${escapeHTML(item.name)}"
+                  ${saved.vegetables?.includes(item.name) ? "checked" : ""}
+                >
+                ${escapeHTML(item.name)}
+              </label>
+            `).join("")}
+
+            ${simpleCheese ? `
+              <strong>Queso crema</strong>
+              <label>
+                <input type="radio"
+                  name="simpleCheese-${index}"
+                  value="Con queso crema"
+                  ${saved.cheese !== "Sin queso crema" ? "checked" : ""}>
+                Con queso crema
+              </label>
+              <label>
+                <input type="radio"
+                  name="simpleCheese-${index}"
+                  value="Sin queso crema"
+                  ${saved.cheese === "Sin queso crema" ? "checked" : ""}>
+                Sin queso crema
+              </label>
+            ` : ""}
+
+            ${simpleNori ? `
+              <strong>Nori</strong>
+              <label>
+                <input type="radio"
+                  name="simpleNori-${index}"
+                  value="Con nori"
+                  ${saved.nori !== "Sin nori" ? "checked" : ""}>
+                Con nori
+              </label>
+              <label>
+                <input type="radio"
+                  name="simpleNori-${index}"
+                  value="Sin nori"
+                  ${saved.nori === "Sin nori" ? "checked" : ""}>
+                Sin nori
+              </label>
+            ` : ""}
+          </div>
+        `;
+      }).join("")}
+    `;
+  };
+
+
+if (type === "simple") {
+  options = `
+    <div id="weeklySimpleConfigs">
+      <h3>Personaliza tu promoción</h3>
+      <p>Elige los ingredientes de cada unidad por separado.</p>
+    </div>
+  `;
+} else if (type === "handroll_combo") {
   options = `
     <div id="weeklyHandrollConfigs">
       <h3>Personaliza tus Handroll</h3>
@@ -1571,11 +1734,15 @@ const renderWeeklyGohanConfigs = () => {
   const basePrice = Number(savedConfig.basePrice ?? promo.price ?? 0);
   const shrimpExtra = Number(components.burger_shrimp_extra || 0);
 
-  const form = $("#ichibanDialogContent");
+ const form = $("#ichibanDialogContent");
 
-  if (type === "handroll_combo") {
-    renderWeeklyHandrollConfigs();
-  }
+if (type === "simple") {
+  renderSimpleOffers();
+}
+
+if (type === "handroll_combo") {
+  renderWeeklyHandrollConfigs();
+}
   const getProtein = () =>
     form.querySelector('[name="weeklyProtein"]:checked')?.value || "";
 
@@ -1596,6 +1763,9 @@ const renderWeeklyGohanConfigs = () => {
   if (quantity > 1) quantity--;
 
   updatePrice();
+     if (type === "simple") {
+    renderSimpleOffers();
+  }
     
   if (type === "gohan_combo") {
   renderWeeklyGohanConfigs();
@@ -1610,7 +1780,9 @@ $("#weeklyPlus").addEventListener("click", () => {
   quantity++;
 
   updatePrice();
-  
+    if (type === "simple") {
+    renderSimpleOffers();
+  }
 
  if (type === "gohan_combo") {
   renderWeeklyGohanConfigs();
@@ -1693,6 +1865,43 @@ if (type === "handroll_combo") {
       })
     )
   : [];
+    
+const simpleOffers = type === "simple"
+  ? Array.from({ length: quantity }, (_, index) => ({
+      protein: form.querySelector(
+        `[name="simpleProtein-${index}"]:checked`
+      )?.value || "",
+
+     vegetables: Array.from(
+  form.querySelectorAll(".weekly-simple-config")[index]
+    ?.querySelectorAll(".simpleVegetable:checked") || []
+).map(input => input.value),
+
+      cheese: form.querySelector(
+        `[name="simpleCheese-${index}"]:checked`
+      )?.value || "Con queso crema",
+
+      nori: form.querySelector(
+        `[name="simpleNori-${index}"]:checked`
+      )?.value || "Con nori"
+    }))
+  : [];
+
+if (
+  type === "simple" &&
+  (
+    simpleProteins.length === 0 ||
+    simpleOffers.some(offer => !offer.protein)
+  )
+) {
+  alert(
+    simpleProteins.length === 0
+      ? "Esta promoción no tiene proteínas disponibles. Contacta con el local."
+      : "Selecciona una proteína para cada unidad de la promoción."
+  );
+  return;
+}
+
 
     if (
       type !== "simple" &&
@@ -1767,7 +1976,8 @@ if (type === "handroll_combo") {
 vegetables,
 cheese,
 gohans,
-handrolls,              
+handrolls,
+simpleOffers,
 shrimpExtra: extra,
 basePrice,
           accompaniment
@@ -2680,6 +2890,32 @@ if (
 
 handrolls.length = totalHandrolls;
 }
+    if (
+  item.config?.weeklyPromo?.offerType === "simple" &&
+  Array.isArray(item.config.weeklyPromo.simpleOffers)
+) {
+  const simpleOffers = item.config.weeklyPromo.simpleOffers;
+
+  while (simpleOffers.length < item.quantity) {
+    const previousOffer = simpleOffers[simpleOffers.length - 1];
+
+    simpleOffers.push(
+      previousOffer
+        ? {
+            ...previousOffer,
+            vegetables: [...(previousOffer.vegetables || [])]
+          }
+        : {
+            protein: "",
+            vegetables: [],
+            cheese: "Con queso crema",
+            nori: "Con nori"
+          }
+    );
+  }
+
+  simpleOffers.length = item.quantity;
+}
     if (item.config?.vegetables && item.product_type === "promotion") {
       const product = products.find(
         p => String(p.id) === String(item.id)
@@ -2880,11 +3116,29 @@ const itemPrice =
        const lines = [
       `${quantity} × ${item.name} — ${money(itemPrice)}`
     ];
-    if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple") {
+   if (config.weeklyPromo) {
       const weekly = config.weeklyPromo;
 
  
 lines.push("PERSONALIZACIÓN PROMOCIÓN SEMANAL:");
+     if (
+  weekly.offerType === "simple" &&
+  Array.isArray(weekly.simpleOffers)
+) {
+  weekly.simpleOffers.forEach((offer, index) => {
+    lines.push(`Unidad ${index + 1}:`);
+    lines.push(`Proteína: ${offer.protein || "Sin proteína"}`);
+    lines.push(
+      `Vegetales: ${
+        offer.vegetables?.length
+          ? offer.vegetables.join(", ")
+          : "Sin vegetales"
+      }`
+    );
+    lines.push(`Queso crema: ${offer.cheese || "Sin selección"}`);
+    lines.push(`Nori: ${offer.nori || "Sin selección"}`);
+  });
+}
 
 if (weekly.offerType === "handroll_combo" && Array.isArray(weekly.handrolls)) {
   weekly.handrolls.forEach((handroll, index) => {
@@ -2909,7 +3163,7 @@ if (weekly.offerType === "handroll_combo" && Array.isArray(weekly.handrolls)) {
       lines.push(`Queso crema: ${gohan.cheese}`);
     }
   });
-} else {
+} else if (weekly.offerType !== "simple") {
   if (weekly.protein) {
     lines.push(`Proteína: ${weekly.protein}`);
   }
