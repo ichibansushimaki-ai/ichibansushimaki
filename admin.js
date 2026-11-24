@@ -493,32 +493,74 @@ async function saveWeeklyPromos(updatedPromos) {
   renderWeeklyPromosAdmin();
 }
 
+
 function renderWeeklyPromoComponents(type) {
   const container = $("#weeklyPromoComponents");
   if (!container) return;
 
   const configurations = {
     simple: `
-      <p>Esta oferta no necesita personalización.</p>
+      <h4>Personalización de la oferta</h4>
+
+      <label>Proteínas disponibles</label>
+      <p>Escribe una proteína por línea.</p>
+      <textarea
+        name="simple_protein_options"
+        rows="5"
+        placeholder="Pollo&#10;Camarón&#10;Kanikama"
+      ></textarea>
+
+      <label>Vegetales disponibles</label>
+      <p>Escribe un vegetal por línea.</p>
+      <textarea
+        name="simple_vegetable_options"
+        rows="5"
+        placeholder="Cebollín&#10;Palta&#10;Pimentón"
+      ></textarea>
+
+      <h4>Queso crema</h4>
+      <label>
+        <input type="checkbox" name="simple_cheese">
+        Permitir elegir con o sin queso crema
+      </label>
     `,
 
     handroll_combo: `
       <h4>Configuración del Handroll</h4>
+<label>Tipo interno del producto</label>
+<select name="handroll_product_type">
+  <option value="handroll" selected>Handroll</option>
+</select>
 
+<label>Cantidad de handroll incluidos</label>
+<input
+  type="number"
+  name="handroll_quantity"
+  min="1"
+  value="2"
+  required
+>
       <label>Proteínas disponibles</label>
-      <label><input type="checkbox" name="handroll_protein" value="Pollo" checked> Pollo</label>
-      <label><input type="checkbox" name="handroll_protein" value="Camarón" checked> Camarón</label>
-      <label><input type="checkbox" name="handroll_protein" value="Kanikama" checked> Kanikama</label>
+      <p>Escribe una proteína por línea.</p>
+      <textarea
+        name="handroll_protein_options"
+        rows="5"
+        placeholder="Pollo&#10;Camarón&#10;Kanikama"
+      ></textarea>
 
       <label>Vegetales disponibles</label>
-      <label><input type="checkbox" name="handroll_vegetable" value="Cebollín" checked> Cebollín</label>
-      <label><input type="checkbox" name="handroll_vegetable" value="Palta" checked> Palta</label>
-      <label><input type="checkbox" name="handroll_vegetable" value="Pimentón" checked> Pimentón</label>
-      <label><input type="checkbox" name="handroll_vegetable" value="Sin vegetal" checked> Sin vegetal</label>
+      <p>Escribe un vegetal por línea.</p>
+      <textarea
+        name="handroll_vegetable_options"
+        rows="5"
+        placeholder="Cebollín&#10;Palta&#10;Pimentón&#10;Sin vegetal"
+      ></textarea>
 
-      <label><input type="checkbox" name="handroll_cheese" checked> Permitir elegir queso crema con o sin</label>
-
-      <p>Las papas fritas se consideran incluidas en el combo.</p>
+      <h4>Queso crema</h4>
+      <label>
+        <input type="checkbox" name="handroll_cheese" checked>
+        Permitir elegir con o sin queso crema
+      </label>
     `,
 
     sushi_burger_combo: `
@@ -539,27 +581,27 @@ function renderWeeklyPromoComponents(type) {
       <label><input type="checkbox" name="burger_cheese" checked> Permitir elegir queso crema con o sin</label>
     `,
 
-gohan_combo: `
-  <h4>Configuración del Combo Gohan</h4>
+    gohan_combo: `
+      <h4>Configuración del Combo Gohan</h4>
 
-  <h4>Proteínas disponibles</h4>
-  <label><input type="checkbox" name="gohan_protein" value="Pollo"> Pollo</label>
-  <label><input type="checkbox" name="gohan_protein" value="Camarón"> Camarón</label>
-  <label><input type="checkbox" name="gohan_protein" value="Kanikama"> Kanikama</label>
-  <label><input type="checkbox" name="gohan_protein" value="Salmón"> Salmón</label>
+      <h4>Proteínas disponibles</h4>
+      <label><input type="checkbox" name="gohan_protein" value="Pollo"> Pollo</label>
+      <label><input type="checkbox" name="gohan_protein" value="Camarón"> Camarón</label>
+      <label><input type="checkbox" name="gohan_protein" value="Kanikama"> Kanikama</label>
+      <label><input type="checkbox" name="gohan_protein" value="Salmón"> Salmón</label>
 
-  <h4>Vegetales disponibles para los Gohan</h4>
-  <p>Escribe un vegetal por línea. Puedes agregar nuevos o quitar los que no tengas disponibles.</p>
-  <textarea
-    name="gohan_vegetable_options"
-    rows="6"
-    placeholder="Palta&#10;Cebollín&#10;Maíz&#10;Champiñones"
-  ></textarea>
-  <p>El cliente podrá elegir hasta 3 vegetales por cada Gohan.</p>
+      <h4>Vegetales disponibles para los Gohan</h4>
+      <p>Escribe un vegetal por línea.</p>
+      <textarea
+        name="gohan_vegetable_options"
+        rows="6"
+        placeholder="Palta&#10;Cebollín&#10;Maíz&#10;Champiñones"
+      ></textarea>
+      <p>El cliente podrá elegir hasta 3 vegetales por cada Gohan.</p>
 
-  <h4>Queso crema</h4>
-  <label><input type="checkbox" name="gohan_cheese"> Permitir elegir con o sin queso crema</label>
-`,
+      <h4>Queso crema</h4>
+      <label><input type="checkbox" name="gohan_cheese"> Permitir elegir con o sin queso crema</label>
+    `,
 
     custom_combo: `
       <h4>Configuración del combo personalizado</h4>
@@ -576,21 +618,24 @@ gohan_combo: `
       <label>Cantidad de unidades o rolls</label>
       <input type="number" name="custom_quantity" min="1" value="2" required>
 
-      <h4>Opciones para el producto principal</h4>
+      <h4>Proteínas disponibles</h4>
+      <p>Escribe una proteína por línea.</p>
+      <textarea
+        name="custom_protein_options"
+        rows="5"
+        placeholder="Pollo&#10;Camarón&#10;Kanikama&#10;Salmón"
+      ></textarea>
 
-      <label>Proteínas disponibles</label>
-      <label><input type="checkbox" name="custom_protein" value="Pollo"> Pollo</label>
-      <label><input type="checkbox" name="custom_protein" value="Camarón"> Camarón</label>
-      <label><input type="checkbox" name="custom_protein" value="Kanikama"> Kanikama</label>
-      <label><input type="checkbox" name="custom_protein" value="Salmón"> Salmón</label>
+      <h4>Vegetales disponibles</h4>
+      <p>Escribe un vegetal por línea.</p>
+      <textarea
+        name="custom_vegetable_options"
+        rows="5"
+        placeholder="Cebollín&#10;Pimentón&#10;Palta&#10;Sin vegetal"
+      ></textarea>
 
-      <label>Vegetales disponibles</label>
-      <label><input type="checkbox" name="custom_vegetable" value="Cebollín"> Cebollín</label>
-      <label><input type="checkbox" name="custom_vegetable" value="Pimentón"> Pimentón</label>
-      <label><input type="checkbox" name="custom_vegetable" value="Palta"> Palta</label>
-      <label><input type="checkbox" name="custom_vegetable" value="Sin vegetal"> Sin vegetal</label>
-
-      <label><input type="checkbox" name="custom_cheese"> Permitir elegir queso crema con o sin</label>
+      <h4>Queso crema</h4>
+      <label><input type="checkbox" name="custom_cheese"> Permitir elegir con o sin queso crema</label>
 
       <h4>Acompañamientos incluidos</h4>
       <label><input type="checkbox" name="custom_fries"> Papas fritas individuales</label>
@@ -601,20 +646,21 @@ gohan_combo: `
   };
 
   container.innerHTML = configurations[type] || configurations.simple;
-// Acompañamiento único incluido en cada promoción
-if (type !== "simple") {
-  container.insertAdjacentHTML("beforeend", `
-    <hr>
-    <h4>Acompañamiento incluido en esta promoción</h4>
-    <p>Escribe un solo acompañamiento. Se incluirá automáticamente por cada promoción comprada.</p>
-    <input
-      type="text"
-      name="weekly_accompaniments"
-      placeholder="Ejemplo: Bebida mini o Papas fritas individuales"
-    >
-  `);
+
+  if (type !== "simple") {
+    container.insertAdjacentHTML("beforeend", `
+      <hr>
+      <h4>Acompañamiento incluido en esta promoción</h4>
+      <p>Escribe un solo acompañamiento. Se incluirá automáticamente por cada promoción comprada.</p>
+      <input
+        type="text"
+        name="weekly_accompaniments"
+        placeholder="Ejemplo: Bebida mini o Papas fritas individuales"
+      >
+    `);
+  }
 }
-}
+
 
 function renderWeeklyPromosAdmin() {
   const container = $("#weeklyPromosAdmin");
@@ -802,39 +848,58 @@ $("#weeklyPromoForm").onsubmit = async event => {
       image,
 
     
-components: {
-  handroll_proteins: [...form.querySelectorAll('input[name="handroll_protein"]:checked')].map(el => el.value),
-  handroll_vegetables: [...form.querySelectorAll('input[name="handroll_vegetable"]:checked')].map(el => el.value),
-  handroll_cheese: form.querySelector('[name="handroll_cheese"]')?.checked ?? false,
 
+components: {
+  simple_protein_options: (form.querySelector('[name="simple_protein_options"]')?.value || "")
+    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+
+  simple_vegetable_options: (form.querySelector('[name="simple_vegetable_options"]')?.value || "")
+    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+
+  simple_cheese: form.querySelector('[name="simple_cheese"]')?.checked ?? false,
+
+  handroll_proteins: (form.querySelector('[name="handroll_protein_options"]')?.value || "")
+    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+
+  handroll_vegetables: (form.querySelector('[name="handroll_vegetable_options"]')?.value || "")
+    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+
+  handroll_cheese: form.querySelector('[name="handroll_cheese"]')?.checked ?? false,
+handroll_product_type: form.querySelector('[name="handroll_product_type"]')?.value || "handroll",
+
+handroll_quantity: Number(form.querySelector('[name="handroll_quantity"]')?.value || 2),
   burger_proteins: [...form.querySelectorAll('input[name="burger_protein"]:checked')].map(el => el.value),
   burger_vegetables: [...form.querySelectorAll('input[name="burger_vegetable"]:checked')].map(el => el.value),
   burger_no_vegetable: form.querySelector('[name="burger_no_vegetable"]')?.checked ?? false,
   burger_cheese: form.querySelector('[name="burger_cheese"]')?.checked ?? false,
   burger_shrimp_extra: Number(form.querySelector('[name="burger_shrimp_extra"]')?.value || 0),
-gohan_proteins: [...form.querySelectorAll('input[name="gohan_protein"]:checked')].map(el => el.value),
 
-gohan_vegetables: [],
+  gohan_proteins: [...form.querySelectorAll('input[name="gohan_protein"]:checked')].map(el => el.value),
 
-gohan_vegetable_options: (form.querySelector('[name="gohan_vegetable_options"]')?.value || "")
-  .split("\n")
-  .map(item => item.trim())
-  .filter(item => item !== ""),
+  gohan_vegetables: [],
 
-gohan_cheese: form.querySelector('[name="gohan_cheese"]')?.checked ?? false,
+  gohan_vegetable_options: (form.querySelector('[name="gohan_vegetable_options"]')?.value || "")
+    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+
+  gohan_cheese: form.querySelector('[name="gohan_cheese"]')?.checked ?? false,
+
   custom_product_type: form.querySelector('[name="custom_product_type"]')?.value || "",
   custom_quantity: Number(form.querySelector('[name="custom_quantity"]')?.value || 1),
-  custom_proteins: [...form.querySelectorAll('input[name="custom_protein"]:checked')].map(el => el.value),
-  custom_vegetables: [...form.querySelectorAll('input[name="custom_vegetable"]:checked')].map(el => el.value),
+
+  custom_proteins: (form.querySelector('[name="custom_protein_options"]')?.value || "")
+    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+
+  custom_vegetables: (form.querySelector('[name="custom_vegetable_options"]')?.value || "")
+    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+
   custom_cheese: form.querySelector('[name="custom_cheese"]')?.checked ?? false,
   custom_fries: form.querySelector('[name="custom_fries"]')?.checked ?? false,
   custom_drink: form.querySelector('[name="custom_drink"]')?.checked ?? false,
 
-weekly_accompaniments: (form.querySelector('[name="weekly_accompaniments"]')?.value || "")
-  .split("\n")
-  .map(item => item.trim())
-  .filter(item => item !== "")
+  weekly_accompaniments: (form.querySelector('[name="weekly_accompaniments"]')?.value || "")
+    .split("\n").map(item => item.trim()).filter(item => item !== "")
 },
+
 
 
       active: existingPromo ? existingPromo.active : true
@@ -972,19 +1037,47 @@ form.elements.offer_type.dataset.previousType =
       components.gohan_vegetable_options || []
     ).join("\n");
   }
-  // Cargar opciones del Handroll
-  form.querySelectorAll('[name="handroll_protein"]').forEach(el => {
-    el.checked = (components.handroll_proteins || []).includes(el.value);
-  });
+ 
+  // Cargar opciones de Oferta simple
+  const simpleProteins = form.querySelector('[name="simple_protein_options"]');
+  if (simpleProteins) {
+    simpleProteins.value = (components.simple_protein_options || []).join("\n");
+  }
 
-  form.querySelectorAll('[name="handroll_vegetable"]').forEach(el => {
-    el.checked = (components.handroll_vegetables || []).includes(el.value);
-  });
+  const simpleVegetables = form.querySelector('[name="simple_vegetable_options"]');
+  if (simpleVegetables) {
+    simpleVegetables.value = (components.simple_vegetable_options || []).join("\n");
+  }
+
+  const simpleCheese = form.querySelector('[name="simple_cheese"]');
+  if (simpleCheese) {
+    simpleCheese.checked = components.simple_cheese ?? false;
+  }
+
+  // Cargar opciones del Handroll
+  const handrollProteins = form.querySelector('[name="handroll_protein_options"]');
+  if (handrollProteins) {
+    handrollProteins.value = (components.handroll_proteins || []).join("\n");
+  }
+
+  const handrollVegetables = form.querySelector('[name="handroll_vegetable_options"]');
+  if (handrollVegetables) {
+    handrollVegetables.value = (components.handroll_vegetables || []).join("\n");
+  }
 
   const handrollCheese = form.querySelector('[name="handroll_cheese"]');
   if (handrollCheese) {
     handrollCheese.checked = components.handroll_cheese ?? false;
   }
+const handrollProductType = form.querySelector('[name="handroll_product_type"]');
+if (handrollProductType) {
+  handrollProductType.value = components.handroll_product_type || "handroll";
+}
+
+const handrollQuantity = form.querySelector('[name="handroll_quantity"]');
+if (handrollQuantity) {
+  handrollQuantity.value = components.handroll_quantity ?? 2;
+}
 
   // Cargar opciones de Sushi Burger
   form.querySelectorAll('[name="burger_protein"]').forEach(el => {
@@ -1021,6 +1114,7 @@ form.querySelectorAll('[name="gohan_protein"]').forEach(el => {
   }
 
   
+
   // Cargar opciones del Combo personalizado
   const customProductType = form.querySelector('[name="custom_product_type"]');
   if (customProductType) {
@@ -1032,13 +1126,15 @@ form.querySelectorAll('[name="gohan_protein"]').forEach(el => {
     customQuantity.value = components.custom_quantity ?? 2;
   }
 
-  form.querySelectorAll('[name="custom_protein"]').forEach(el => {
-    el.checked = (components.custom_proteins || []).includes(el.value);
-  });
+  const customProteins = form.querySelector('[name="custom_protein_options"]');
+  if (customProteins) {
+    customProteins.value = (components.custom_proteins || []).join("\n");
+  }
 
-  form.querySelectorAll('[name="custom_vegetable"]').forEach(el => {
-    el.checked = (components.custom_vegetables || []).includes(el.value);
-  });
+  const customVegetables = form.querySelector('[name="custom_vegetable_options"]');
+  if (customVegetables) {
+    customVegetables.value = (components.custom_vegetables || []).join("\n");
+  }
 
   const customCheese = form.querySelector('[name="custom_cheese"]');
   if (customCheese) {
