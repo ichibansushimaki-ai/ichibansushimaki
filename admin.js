@@ -494,6 +494,174 @@ async function saveWeeklyPromos(updatedPromos) {
 }
 
 
+function escapeSimpleOption(value) {
+  return String(value || "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function renderSimpleOfferOptions(config = {}) {
+  const container = $("#weeklyPromoComponents");
+  if (!container) return;
+
+  const defaultProteins = [
+    { name: "Pollo", active: true },
+    { name: "Camarón", active: true },
+    { name: "Kanikama", active: true }
+  ];
+
+  const defaultVegetables = [
+    { name: "Cebollín", active: true },
+    { name: "Palta", active: true },
+    { name: "Pimentón", active: true }
+  ];
+
+  const proteins = config.proteins === undefined
+    ? defaultProteins
+    : config.proteins;
+
+  const vegetables = config.vegetables === undefined
+    ? defaultVegetables
+    : config.vegetables;
+
+  const proteinContainer = container.querySelector("#simpleProteins");
+  const vegetableContainer = container.querySelector("#simpleVegetables");
+
+  if (!proteinContainer || !vegetableContainer) return;
+
+  proteinContainer.innerHTML = proteins.map((item, index) => `
+    <div class="gohan-admin-row">
+      <input
+        type="text"
+        class="simple-protein-name"
+        value="${escapeSimpleOption(item.name)}"
+        placeholder="Nombre de proteína"
+      >
+
+      <label>
+        <input
+          type="checkbox"
+          class="simple-protein-active"
+          ${item.active !== false ? "checked" : ""}
+        >
+        Activo
+      </label>
+
+      <button
+        type="button"
+        class="btn btn-outline simple-remove-protein"
+        data-index="${index}"
+      >
+        Eliminar
+      </button>
+    </div>
+  `).join("");
+
+  vegetableContainer.innerHTML = vegetables.map((item, index) => `
+    <div class="gohan-admin-row">
+      <input
+        type="text"
+        class="simple-vegetable-name"
+        value="${escapeSimpleOption(item.name)}"
+        placeholder="Nombre de vegetal"
+      >
+
+      <label>
+        <input
+          type="checkbox"
+          class="simple-vegetable-active"
+          ${item.active !== false ? "checked" : ""}
+        >
+        Activo
+      </label>
+
+      <button
+        type="button"
+        class="btn btn-outline simple-remove-vegetable"
+        data-index="${index}"
+      >
+        Eliminar
+      </button>
+    </div>
+  `).join("");
+
+  const cheese = container.querySelector('[name="simple_cheese"]');
+  const nori = container.querySelector('[name="simple_nori"]');
+
+  if (cheese) cheese.checked = config.cheese ?? false;
+  if (nori) nori.checked = config.nori ?? false;
+}
+
+function readSimpleOfferOptions() {
+  const container = $("#weeklyPromoComponents");
+
+  if (!container) {
+    return {
+      proteins: [],
+      vegetables: [],
+      cheese: false,
+      nori: false
+    };
+  }
+
+  const proteins = [...container.querySelectorAll(".simple-protein-name")]
+    .map((input, index) => ({
+      name: input.value.trim(),
+      active: container.querySelectorAll(".simple-protein-active")[index]?.checked ?? false
+    }))
+    .filter(item => item.name !== "");
+
+  const vegetables = [...container.querySelectorAll(".simple-vegetable-name")]
+    .map((input, index) => ({
+      name: input.value.trim(),
+      active: container.querySelectorAll(".simple-vegetable-active")[index]?.checked ?? false
+    }))
+    .filter(item => item.name !== "");
+
+  return {
+    proteins,
+    vegetables,
+    cheese: container.querySelector('[name="simple_cheese"]')?.checked ?? false,
+    nori: container.querySelector('[name="simple_nori"]')?.checked ?? false
+  };
+}
+
+document.addEventListener("click", event => {
+  const addProtein = event.target.closest("#addSimpleProtein");
+  const addVegetable = event.target.closest("#addSimpleVegetable");
+  const removeProtein = event.target.closest(".simple-remove-protein");
+  const removeVegetable = event.target.closest(".simple-remove-vegetable");
+
+  if (addProtein) {
+    const config = readSimpleOfferOptions();
+    config.proteins.push({ name: "", active: true });
+    renderSimpleOfferOptions(config);
+  }
+
+  if (addVegetable) {
+    const config = readSimpleOfferOptions();
+    config.vegetables.push({ name: "", active: true });
+    renderSimpleOfferOptions(config);
+  }
+
+  if (removeProtein) {
+    const config = readSimpleOfferOptions();
+    config.proteins.splice(Number(removeProtein.dataset.index), 1);
+    renderSimpleOfferOptions(config);
+  }
+
+  if (removeVegetable) {
+    const config = readSimpleOfferOptions();
+    config.vegetables.splice(Number(removeVegetable.dataset.index), 1);
+    renderSimpleOfferOptions(config);
+  }
+});
+
+
 function renderWeeklyPromoComponents(type) {
   const container = $("#weeklyPromoComponents");
   if (!container) return;
@@ -503,58 +671,53 @@ function renderWeeklyPromoComponents(type) {
       <h4>Personalización de la oferta</h4>
 
       <label>Proteínas disponibles</label>
-      <p>Escribe una proteína por línea.</p>
-      <textarea
-        name="simple_protein_options"
-        rows="5"
-        placeholder="Pollo&#10;Camarón&#10;Kanikama"
-      ></textarea>
+      <p>Agrega, modifica o desactiva las proteínas.</p>
+      <div id="simpleProteins"></div>
+      <button type="button" class="btn btn-outline" id="addSimpleProtein">
+        + Agregar proteína
+      </button>
+
+      <hr>
 
       <label>Vegetales disponibles</label>
-      <p>Escribe un vegetal por línea.</p>
-      <textarea
-        name="simple_vegetable_options"
-        rows="5"
-        placeholder="Cebollín&#10;Palta&#10;Pimentón"
-      ></textarea>
+      <p>Agrega, modifica o desactiva los vegetales.</p>
+      <div id="simpleVegetables"></div>
+      <button type="button" class="btn btn-outline" id="addSimpleVegetable">
+        + Agregar vegetal
+      </button>
+
+      <hr>
 
       <h4>Queso crema</h4>
       <label>
         <input type="checkbox" name="simple_cheese">
         Permitir elegir con o sin queso crema
       </label>
+
+      <h4>Nori</h4>
+      <label>
+        <input type="checkbox" name="simple_nori">
+        Permitir elegir con o sin nori
+      </label>
     `,
 
     handroll_combo: `
       <h4>Configuración del Handroll</h4>
-<label>Tipo interno del producto</label>
-<select name="handroll_product_type">
-  <option value="handroll" selected>Handroll</option>
-</select>
+      <label>Tipo interno del producto</label>
+      <select name="handroll_product_type">
+        <option value="handroll" selected>Handroll</option>
+      </select>
 
-<label>Cantidad de handroll incluidos</label>
-<input
-  type="number"
-  name="handroll_quantity"
-  min="1"
-  value="2"
-  required
->
+      <label>Cantidad de handroll incluidos</label>
+      <input type="number" name="handroll_quantity" min="1" value="2" required>
+
       <label>Proteínas disponibles</label>
       <p>Escribe una proteína por línea.</p>
-      <textarea
-        name="handroll_protein_options"
-        rows="5"
-        placeholder="Pollo&#10;Camarón&#10;Kanikama"
-      ></textarea>
+      <textarea name="handroll_protein_options" rows="5" placeholder="Pollo&#10;Camarón&#10;Kanikama"></textarea>
 
       <label>Vegetales disponibles</label>
       <p>Escribe un vegetal por línea.</p>
-      <textarea
-        name="handroll_vegetable_options"
-        rows="5"
-        placeholder="Cebollín&#10;Palta&#10;Pimentón&#10;Sin vegetal"
-      ></textarea>
+      <textarea name="handroll_vegetable_options" rows="5" placeholder="Cebollín&#10;Palta&#10;Pimentón&#10;Sin vegetal"></textarea>
 
       <h4>Queso crema</h4>
       <label>
@@ -592,11 +755,7 @@ function renderWeeklyPromoComponents(type) {
 
       <h4>Vegetales disponibles para los Gohan</h4>
       <p>Escribe un vegetal por línea.</p>
-      <textarea
-        name="gohan_vegetable_options"
-        rows="6"
-        placeholder="Palta&#10;Cebollín&#10;Maíz&#10;Champiñones"
-      ></textarea>
+      <textarea name="gohan_vegetable_options" rows="6" placeholder="Palta&#10;Cebollín&#10;Maíz&#10;Champiñones"></textarea>
       <p>El cliente podrá elegir hasta 3 vegetales por cada Gohan.</p>
 
       <h4>Queso crema</h4>
@@ -620,19 +779,11 @@ function renderWeeklyPromoComponents(type) {
 
       <h4>Proteínas disponibles</h4>
       <p>Escribe una proteína por línea.</p>
-      <textarea
-        name="custom_protein_options"
-        rows="5"
-        placeholder="Pollo&#10;Camarón&#10;Kanikama&#10;Salmón"
-      ></textarea>
+      <textarea name="custom_protein_options" rows="5" placeholder="Pollo&#10;Camarón&#10;Kanikama&#10;Salmón"></textarea>
 
       <h4>Vegetales disponibles</h4>
       <p>Escribe un vegetal por línea.</p>
-      <textarea
-        name="custom_vegetable_options"
-        rows="5"
-        placeholder="Cebollín&#10;Pimentón&#10;Palta&#10;Sin vegetal"
-      ></textarea>
+      <textarea name="custom_vegetable_options" rows="5" placeholder="Cebollín&#10;Pimentón&#10;Palta&#10;Sin vegetal"></textarea>
 
       <h4>Queso crema</h4>
       <label><input type="checkbox" name="custom_cheese"> Permitir elegir con o sin queso crema</label>
@@ -647,6 +798,10 @@ function renderWeeklyPromoComponents(type) {
 
   container.innerHTML = configurations[type] || configurations.simple;
 
+  if (type === "simple") {
+    renderSimpleOfferOptions();
+  }
+
   if (type !== "simple") {
     container.insertAdjacentHTML("beforeend", `
       <hr>
@@ -660,7 +815,6 @@ function renderWeeklyPromoComponents(type) {
     `);
   }
 }
-
 
 function renderWeeklyPromosAdmin() {
   const container = $("#weeklyPromosAdmin");
@@ -724,12 +878,12 @@ function renderWeeklyPromosAdmin() {
     <div id="weeklyPromoList"></div>
   `;
 
-const offerTypeSelect = $("#weeklyPromoForm").elements.offer_type;
 
+
+const offerTypeSelect = $("#weeklyPromoForm").elements.offer_type;
 const componentDrafts = {};
 
 if (offerTypeSelect) {
-
   renderWeeklyPromoComponents(offerTypeSelect.value);
 
   offerTypeSelect.addEventListener("change", () => {
@@ -739,41 +893,51 @@ if (offerTypeSelect) {
     const container = $("#weeklyPromoComponents");
 
     if (container) {
-      componentDrafts[previousType] = [
-        ...container.querySelectorAll("input, select, textarea")
-      ].map(el => ({
-        name: el.name,
-        type: el.type,
-        value: el.value,
-        checked: el.checked
-      }));
+      if (previousType === "simple") {
+        componentDrafts.simple = readSimpleOfferOptions();
+      } else {
+        componentDrafts[previousType] = [
+          ...container.querySelectorAll("input, select, textarea")
+        ].map(el => ({
+          name: el.name,
+          type: el.type,
+          value: el.value,
+          checked: el.checked
+        }));
+      }
     }
 
     const newType = offerTypeSelect.value;
 
     renderWeeklyPromoComponents(newType);
 
-    const savedFields = componentDrafts[newType] || [];
-    const newContainer = $("#weeklyPromoComponents");
+    if (newType === "simple") {
+      if (componentDrafts.simple) {
+        renderSimpleOfferOptions(componentDrafts.simple);
+      }
+    } else {
+      const savedFields = componentDrafts[newType] || [];
+      const newContainer = $("#weeklyPromoComponents");
 
-    if (newContainer) {
-      newContainer.querySelectorAll("input, select, textarea").forEach(el => {
-        const saved = savedFields.find(field =>
-          field.name === el.name &&
-          field.type === el.type &&
-          (el.type !== "checkbox" && el.type !== "radio"
-            ? true
-            : field.value === el.value)
-        );
+      if (newContainer) {
+        newContainer.querySelectorAll("input, select, textarea").forEach(el => {
+          const saved = savedFields.find(field =>
+            field.name === el.name &&
+            field.type === el.type &&
+            (el.type !== "checkbox" && el.type !== "radio"
+              ? true
+              : field.value === el.value)
+          );
 
-        if (!saved) return;
+          if (!saved) return;
 
-        if (el.type === "checkbox" || el.type === "radio") {
-          el.checked = saved.checked;
-        } else {
-          el.value = saved.value;
-        }
-      });
+          if (el.type === "checkbox" || el.type === "radio") {
+            el.checked = saved.checked;
+          } else {
+            el.value = saved.value;
+          }
+        });
+      }
     }
 
     offerTypeSelect.dataset.previousType = newType;
@@ -831,12 +995,33 @@ $("#weeklyPromoForm").onsubmit = async event => {
         : "Agregando promoción...";
 
     if (imageFile) {
-      if (imageFile.size > 5 * 1024 * 1024) {
-        throw new Error("La imagen supera el límite de 5 MB.");
-      }
+  if (imageFile.size > 5 * 1024 * 1024) {
+    throw new Error("La imagen supera el límite de 5 MB.");
+  }
 
-      image = await uploadImage(imageFile);
-    }
+  image = await uploadImage(imageFile);
+}
+
+const previousComponents = existingPromo?.components || {};
+
+const simpleConfig = form.elements.offer_type.value === "simple"
+  ? readSimpleOfferOptions()
+  : {
+      proteins: previousComponents.simple_proteins_config ||
+        (previousComponents.simple_protein_options || []).map(name => ({
+          name,
+          active: true
+        })),
+
+      vegetables: previousComponents.simple_vegetables_config ||
+        (previousComponents.simple_vegetable_options || []).map(name => ({
+          name,
+          active: true
+        })),
+
+      cheese: previousComponents.simple_cheese ?? false,
+      nori: previousComponents.simple_nori ?? false
+    };
 
     const promo = {
       id: editingId || String(Date.now()),
@@ -850,14 +1035,19 @@ $("#weeklyPromoForm").onsubmit = async event => {
     
 
 components: {
-  simple_protein_options: (form.querySelector('[name="simple_protein_options"]')?.value || "")
-    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+simple_proteins_config: simpleConfig.proteins,
+simple_vegetables_config: simpleConfig.vegetables,
 
-  simple_vegetable_options: (form.querySelector('[name="simple_vegetable_options"]')?.value || "")
-    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+simple_protein_options: simpleConfig.proteins
+  .filter(item => item.active)
+  .map(item => item.name),
 
-  simple_cheese: form.querySelector('[name="simple_cheese"]')?.checked ?? false,
+simple_vegetable_options: simpleConfig.vegetables
+  .filter(item => item.active)
+  .map(item => item.name),
 
+simple_cheese: simpleConfig.cheese,
+simple_nori: simpleConfig.nori,
   handroll_proteins: (form.querySelector('[name="handroll_protein_options"]')?.value || "")
     .split("\n").map(item => item.trim()).filter(item => item !== ""),
 
@@ -922,12 +1112,24 @@ handroll_quantity: Number(form.querySelector('[name="handroll_quantity"]')?.valu
       : "¡Promoción agregada correctamente!"
     );
 form.dataset.editingId = "";
+form.dataset.editingId = "";
 form.reset();
 
+Object.keys(componentDrafts).forEach(type => {
+  delete componentDrafts[type];
+});
+
 const componentsContainer = $("#weeklyPromoComponents");
+
 if (componentsContainer) {
-  componentsContainer.innerHTML =
-    "<p>Selecciona un tipo de oferta para configurar sus componentes.</p>";
+  renderWeeklyPromoComponents(form.elements.offer_type.value);
+}
+
+form.elements.offer_type.dataset.previousType =
+  form.elements.offer_type.value;
+
+if (imageFile) {
+  form.elements.imageFile.value = "";
 }
     if (imageFile) {
       form.elements.imageFile.value = "";
@@ -1038,21 +1240,29 @@ form.elements.offer_type.dataset.previousType =
     ).join("\n");
   }
  
-  // Cargar opciones de Oferta simple
-  const simpleProteins = form.querySelector('[name="simple_protein_options"]');
-  if (simpleProteins) {
-    simpleProteins.value = (components.simple_protein_options || []).join("\n");
-  }
+// Cargar opciones de Oferta simple
+if (promo.offer_type === "simple") {
+  const simpleProteinsConfig = Array.isArray(components.simple_proteins_config)
+    ? components.simple_proteins_config
+    : (components.simple_protein_options || []).map(name => ({
+        name,
+        active: true
+      }));
 
-  const simpleVegetables = form.querySelector('[name="simple_vegetable_options"]');
-  if (simpleVegetables) {
-    simpleVegetables.value = (components.simple_vegetable_options || []).join("\n");
-  }
+  const simpleVegetablesConfig = Array.isArray(components.simple_vegetables_config)
+    ? components.simple_vegetables_config
+    : (components.simple_vegetable_options || []).map(name => ({
+        name,
+        active: true
+      }));
 
-  const simpleCheese = form.querySelector('[name="simple_cheese"]');
-  if (simpleCheese) {
-    simpleCheese.checked = components.simple_cheese ?? false;
-  }
+  renderSimpleOfferOptions({
+    proteins: simpleProteinsConfig,
+    vegetables: simpleVegetablesConfig,
+    cheese: components.simple_cheese ?? false,
+    nori: components.simple_nori ?? false
+  });
+}
 
   // Cargar opciones del Handroll
   const handrollProteins = form.querySelector('[name="handroll_protein_options"]');
