@@ -945,7 +945,7 @@ function cartItemDescription(item) {
           </div>
         ` : ""}
 
-       ${weekly.offerType !== "gohan_combo" ? (
+      ${weekly.offerType !== "gohan_combo" && weekly.offerType !== "handroll_combo" ? (
   weekly.vegetables?.length ? `
     <div class="cart-config-row">
       <span class="cart-config-label">Vegetales</span>
@@ -987,8 +987,22 @@ function cartItemDescription(item) {
               `).join("<br>")}
             </span>
           </div>
+                ` : ""}
+        ${Array.isArray(weekly.handrolls) && weekly.handrolls.length ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Personalización de Handroll</span>
+            <span class="cart-option">
+             ${weekly.handrolls.map((handroll, index) => `
+  Handroll ${index + 1}: ${escapeHTML(handroll.protein || "Sin proteína")}
+  · Vegetal: ${escapeHTML(handroll.vegetable || "Sin vegetal")}
+  · ${escapeHTML(handroll.cheese || "Sin selección de queso")}
+  · ${escapeHTML(handroll.nori || "Con nori")}
+  · Salsa: ${escapeHTML(handroll.sauce || "Sin salsa")}
+`).join("<br>")}
+            </span>
+          </div>
         ` : ""}
-                ${weekly.accompaniment ? `
+        ${weekly.accompaniment ? `
           <div class="cart-config-row">
             <span class="cart-config-label">Acompañamiento incluido</span>
             <span class="cart-option">
@@ -1098,17 +1112,7 @@ function cartItemDescription(item) {
     `);
   }
 
-  if (config.soy || config.teriyaki) {
-    sections.push(`
-      <div class="cart-config-section">
-        <strong class="cart-config-title">Salsas de cortesía</strong>
-        <div class="cart-options">
-          <span class="cart-option">${config.soy || 0} soya</span>
-          <span class="cart-option">${config.teriyaki || 0} teriyaki</span>
-        </div>
-      </div>
-    `);
-  }
+ 
 
   if (config.note) {
     sections.push(`<div class="cart-config-section">${escapeHTML(config.note)}</div>`);
@@ -1152,49 +1156,36 @@ function openWeeklyPromo(promo, editingItem = null) {
   const savedProtein = savedConfig.protein || "";
   const savedVegetables = savedConfig.vegetables || [];
   const savedCheese = savedConfig.cheese || "";
-  const choices = (items, name, required = false, selected = "") =>
-    items.map((value, index) => `
-      <label>
-        <input
-          type="radio"
-          name="${name}"
-          value="${escapeHTML(value)}"
-          ${value === selected || (!selected && index === 0) ? "checked" : ""}
-          ${required ? "required" : ""}
-        >
-        ${escapeHTML(value)}
-      </label>
-    `).join("");
-
+  const choices = (
+  items,
+  name,
+  required = false,
+  selected = "",
+  selectFirst = true
+) =>
+  items.map((value, index) => `
+    <label>
+      <input
+        type="radio"
+        name="${name}"
+        value="${escapeHTML(value)}"
+        ${value === selected || (!selected && index === 0 && selectFirst) ? "checked" : ""}
+        ${required ? "required" : ""}
+      >
+      ${escapeHTML(value)}
+    </label>
+  `).join("");
   let options = "";
 
-  if (type === "handroll_combo") {
-    options = `
-      <h3>Personaliza tu Handroll</h3>
+ if (type === "handroll_combo") {
+  options = `
+    <div id="weeklyHandrollConfigs">
+      <h3>Personaliza tus Handroll</h3>
+      <p>Podrás elegir los ingredientes de cada handroll por separado.</p>
+    </div>
 
-      <strong>Elige tu proteína</strong>
-      ${choices(handrollProteins, "weeklyProtein", true, savedProtein)}
-
-      <strong>Elige tu vegetal</strong>
-      ${choices(handrollVegetables, "weeklyVegetable", true, savedVegetables[0] || "")}
-
-      ${components.handroll_cheese ? `
-        <strong>Queso crema</strong>
-        <label>
-  <input type="radio" name="weeklyCheese" value="Con queso crema"
-    ${savedCheese === "Con queso crema" || !savedCheese ? "checked" : ""}>
-  Con queso crema
-</label>
-        <label>
-  <input type="radio" name="weeklyCheese" value="Sin queso crema"
-    ${savedCheese === "Sin queso crema" ? "checked" : ""}>
-  Sin queso crema
-</label>
-      ` : ""}
-      
-      
-    `;
-  }
+  `;
+}
 
 
 if (type === "sushi_burger_combo") {
@@ -1353,6 +1344,139 @@ let weeklyGohanDrafts = (savedConfig.gohans || []).map(gohan => ({
   ...gohan,
   vegetables: [...(gohan.vegetables || [])]
 }));
+let weeklyHandrollDrafts = (savedConfig.handrolls || []).map(handroll => ({
+  ...handroll
+}));
+
+
+const renderWeeklyHandrollConfigs = () => {
+  const container = form.querySelector("#weeklyHandrollConfigs");
+  if (!container) return;
+
+  const currentHandrolls = Array.from(
+    container.querySelectorAll(".weekly-handroll-config")
+  ).map((card, index) => ({
+    protein: card.querySelector(
+      `[name="weeklyHandrollProtein-${index}"]:checked`
+    )?.value || "",
+    vegetable: card.querySelector(
+      `[name="weeklyHandrollVegetable-${index}"]:checked`
+    )?.value || "",
+    cheese: card.querySelector(
+      `[name="weeklyHandrollCheese-${index}"]:checked`
+    )?.value || "",
+    nori: card.querySelector(
+      `[name="weeklyHandrollNori-${index}"]:checked`
+    )?.value || "Con nori",
+    sauce: card.querySelector(
+      `[name="weeklyHandrollSauce-${index}"]:checked`
+    )?.value || "Sin salsa"
+  }));
+
+  currentHandrolls.forEach((handroll, index) => {
+    weeklyHandrollDrafts[index] = handroll;
+  });
+
+  const proteins = components.handroll_proteins || [];
+  const vegetables = components.handroll_vegetables || [];
+
+  const handrollQuantity = Math.max(
+    1,
+    Number(components.handroll_quantity || 1)
+  );
+
+  const totalHandrolls = quantity * handrollQuantity;
+
+  container.innerHTML = `
+    <h3>Personaliza tus Handroll</h3>
+    <p>Configura cada unidad por separado.</p>
+
+    ${Array.from({ length: totalHandrolls }, (_, index) => {
+      const saved = weeklyHandrollDrafts[index] || {};
+
+      return `
+        <div class="weekly-handroll-config">
+          <h3>Handroll ${index + 1}</h3>
+
+          <strong>Proteína</strong>
+          ${choices(
+            proteins,
+            `weeklyHandrollProtein-${index}`,
+            true,
+           saved.protein || "",
+false
+          )}
+
+          <strong>Vegetal</strong>
+          ${choices(
+            vegetables,
+            `weeklyHandrollVegetable-${index}`,
+            true,
+           saved.vegetable || "",
+false
+          )}
+
+          ${components.handroll_cheese ? `
+            <strong>Queso crema</strong>
+            <label>
+              <input type="radio"
+                name="weeklyHandrollCheese-${index}"
+                value="Con queso crema"
+                ${saved.cheese !== "Sin queso crema" ? "checked" : ""}>
+              Con queso crema
+            </label>
+            <label>
+              <input type="radio"
+                name="weeklyHandrollCheese-${index}"
+                value="Sin queso crema"
+                ${saved.cheese === "Sin queso crema" ? "checked" : ""}>
+              Sin queso crema
+            </label>
+          ` : ""}
+
+          <strong>Nori</strong>
+          <label>
+            <input type="radio"
+              name="weeklyHandrollNori-${index}"
+              value="Con nori"
+              ${saved.nori !== "Sin nori" ? "checked" : ""}>
+            Con nori
+          </label>
+          <label>
+            <input type="radio"
+              name="weeklyHandrollNori-${index}"
+              value="Sin nori"
+              ${saved.nori === "Sin nori" ? "checked" : ""}>
+            Sin nori
+          </label>
+
+          <strong>Salsa de cortesía</strong>
+          <label>
+            <input type="radio"
+              name="weeklyHandrollSauce-${index}"
+              value="Soya"
+              ${saved.sauce === "Soya" ? "checked" : ""}>
+            Soya
+          </label>
+          <label>
+            <input type="radio"
+              name="weeklyHandrollSauce-${index}"
+              value="Teriyaki"
+              ${saved.sauce === "Teriyaki" ? "checked" : ""}>
+            Teriyaki
+          </label>
+          <label>
+            <input type="radio"
+              name="weeklyHandrollSauce-${index}"
+              value="Sin salsa"
+              ${!saved.sauce || saved.sauce === "Sin salsa" ? "checked" : ""}>
+            Sin salsa
+          </label>
+        </div>
+      `;
+    }).join("")}
+  `;
+};
 
 const renderWeeklyGohanConfigs = () => {
   const container = form.querySelector("#weeklyGohanConfigs");
@@ -1449,6 +1573,9 @@ const renderWeeklyGohanConfigs = () => {
 
   const form = $("#ichibanDialogContent");
 
+  if (type === "handroll_combo") {
+    renderWeeklyHandrollConfigs();
+  }
   const getProtein = () =>
     form.querySelector('[name="weeklyProtein"]:checked')?.value || "";
 
@@ -1469,20 +1596,29 @@ const renderWeeklyGohanConfigs = () => {
   if (quantity > 1) quantity--;
 
   updatePrice();
-
+    
   if (type === "gohan_combo") {
-    renderWeeklyGohanConfigs();
-  }
+  renderWeeklyGohanConfigs();
+}
+
+if (type === "handroll_combo") {
+  renderWeeklyHandrollConfigs();
+}
 });
 
 $("#weeklyPlus").addEventListener("click", () => {
   quantity++;
 
   updatePrice();
+  
 
-  if (type === "gohan_combo") {
-    renderWeeklyGohanConfigs();
-  }
+ if (type === "gohan_combo") {
+  renderWeeklyGohanConfigs();
+}
+
+if (type === "handroll_combo") {
+  renderWeeklyHandrollConfigs();
+}
 });
 
   form.addEventListener("change", event => {
@@ -1522,20 +1658,57 @@ $("#weeklyPlus").addEventListener("click", () => {
     const protein = getProtein();
 
     const vegetables = type === "handroll_combo"
-      ? [form.querySelector('[name="weeklyVegetable"]:checked')?.value].filter(Boolean)
-      : [...form.querySelectorAll('[name="weeklyVegetable"]:checked')].map(el => el.value);
+      ? []
+      : [...form.querySelectorAll('[name="weeklyVegetable"]:checked')]
+          .map(el => el.value);
 
-   if (
-  type !== "simple" &&
-  type !== "gohan_combo" &&
-  !protein
-) {
-  alert("Selecciona una proteína.");
-  return;
-}
+   const handrolls = type === "handroll_combo"
+  ? Array.from(
+      {
+        length: quantity * Math.max(
+          1,
+          Number(components.handroll_quantity || 1)
+        )
+      },
+      (_, index) => ({
+        protein: form.querySelector(
+          `[name="weeklyHandrollProtein-${index}"]:checked`
+        )?.value || "",
 
-    if (type === "handroll_combo" && !vegetables.length) {
-      alert("Selecciona un vegetal.");
+        vegetable: form.querySelector(
+          `[name="weeklyHandrollVegetable-${index}"]:checked`
+        )?.value || "",
+
+        cheese: form.querySelector(
+          `[name="weeklyHandrollCheese-${index}"]:checked`
+        )?.value || "",
+
+        nori: form.querySelector(
+          `[name="weeklyHandrollNori-${index}"]:checked`
+        )?.value || "Con nori",
+
+        sauce: form.querySelector(
+          `[name="weeklyHandrollSauce-${index}"]:checked`
+        )?.value || "Sin salsa"
+      })
+    )
+  : [];
+
+    if (
+      type !== "simple" &&
+      type !== "gohan_combo" &&
+      type !== "handroll_combo" &&
+      !protein
+    ) {
+      alert("Selecciona una proteína.");
+      return;
+    }
+
+    if (
+      type === "handroll_combo" &&
+      handrolls.some(handroll => !handroll.protein || !handroll.vegetable)
+    ) {
+      alert("Selecciona proteína y vegetal para cada Handroll.");
       return;
     }
 
@@ -1554,28 +1727,30 @@ $("#weeklyPlus").addEventListener("click", () => {
 
     const extra = getExtra();
 
-const gohans = type === "gohan_combo"
-  ? Array.from({ length: quantity }, (_, index) => ({
-      protein: form.querySelector(
-        `[name="weeklyGohanProtein-${index}"]:checked`
-      )?.value || "",
-      vegetables: Array.from(
-        form.querySelectorAll(
-          `.weeklyGohanVegetable[data-gohan="${index}"]:checked`
-        )
-      ).map(input => input.value),
-      cheese: form.querySelector(
-        `[name="weeklyGohanCheese-${index}"]:checked`
-      )?.value || ""
-    }))
-  : [];
+    const gohans = type === "gohan_combo"
+      ? Array.from({ length: quantity }, (_, index) => ({
+          protein: form.querySelector(
+            `[name="weeklyGohanProtein-${index}"]:checked`
+          )?.value || "",
+          vegetables: Array.from(
+            form.querySelectorAll(
+              `.weeklyGohanVegetable[data-gohan="${index}"]:checked`
+            )
+          ).map(input => input.value),
+          cheese: form.querySelector(
+            `[name="weeklyGohanCheese-${index}"]:checked`
+          )?.value || ""
+        }))
+      : [];
+
     if (
-  type === "gohan_combo" &&
-  gohans.some(gohan => !gohan.protein)
-) {
-  alert("Selecciona una proteína para cada Gohan.");
-  return;
-}
+      type === "gohan_combo" &&
+      gohans.some(gohan => !gohan.protein)
+    ) {
+      alert("Selecciona una proteína para cada Gohan.");
+      return;
+    }
+   
 
    const updatedItem = {
   key: editingItem?.key || "weekly-" + promo.id + "-" + Date.now(),
@@ -1592,10 +1767,13 @@ const gohans = type === "gohan_combo"
 vegetables,
 cheese,
 gohans,
+handrolls,              
 shrimpExtra: extra,
 basePrice,
-accompaniment
-        }
+          accompaniment
+        },
+
+    
   }
 };
 
@@ -2398,7 +2576,9 @@ const unitPrice =
         <button type="button" data-cart-minus="${item.key}" aria-label="Disminuir cantidad">−</button>
         <strong>${item.quantity}</strong>
         <button type="button" data-cart-plus="${item.key}" aria-label="Aumentar cantidad">+</button>
-        <button type="button" data-cart-edit="${item.key}">Editar</button>
+        <button type="button" data-cart-edit="${item.key}">
+  Personalizar / Editar
+</button>
         <button type="button" data-cart-remove="${item.key}">Eliminar</button>
       </div>
     </div>
@@ -2452,13 +2632,20 @@ function updateCartQuantity(key, change) {
     cart = cart.filter(entry => entry.key !== key);
   } else {
     const hasFreeSauces =
-      item.config &&
-      (item.config.soy !== undefined ||
-       item.config.teriyaki !== undefined);
+  item.config &&
+  (
+    item.config.soy !== undefined ||
+    item.config.teriyaki !== undefined 
+    
+  );
 
     let editSauces = false;
 
-    if (change > 0 && hasFreeSauces) {
+    if (
+  change > 0 &&
+  hasFreeSauces &&
+  item.config?.weeklyPromo?.offerType !== "handroll_combo"
+) {
       editSauces = window.confirm(
         "Has aumentado la cantidad de productos.\n\n" +
         "¿Deseas redistribuir las salsas de cortesía?\n\n" +
@@ -2468,7 +2655,31 @@ function updateCartQuantity(key, change) {
     }
 
     item.quantity = Math.min(20, next);
+if (
+  item.config?.weeklyPromo?.offerType === "handroll_combo" &&
+  Array.isArray(item.config.weeklyPromo.handrolls)
+) {
+  const handrolls = item.config.weeklyPromo.handrolls;
 
+  const handrollsPerPromo = Math.max(
+    1,
+    Math.round(handrolls.length / previousQuantity)
+  );
+
+  const totalHandrolls = handrollsPerPromo * item.quantity;
+
+ while (handrolls.length < totalHandrolls) {
+  handrolls.push({
+    protein: "",
+    vegetable: "",
+    cheese: "",
+    nori: "Con nori",
+    sauce: "Sin salsa"
+  });
+}
+
+handrolls.length = totalHandrolls;
+}
     if (item.config?.vegetables && item.product_type === "promotion") {
       const product = products.find(
         p => String(p.id) === String(item.id)
@@ -2488,7 +2699,11 @@ function updateCartQuantity(key, change) {
         item.config.vegetables.slice(0, totalRolls);
     }
 
-    if (hasFreeSauces && !editSauces) {
+   if (
+  hasFreeSauces &&
+  !editSauces &&
+  item.config?.weeklyPromo?.offerType !== "handroll_combo"
+) {
       const totalSauces =
         getFreeSaucesPerUnit(item) * item.quantity;
 
@@ -2527,7 +2742,21 @@ function updateCartQuantity(key, change) {
   openCart();
 }
 
+
 function getFreeSaucesPerUnit(item) {
+  if (item.product_type === "weekly_promo") {
+    const weekly = item.config?.weeklyPromo;
+
+    if (
+      weekly?.offerType === "handroll_combo" &&
+      Array.isArray(weekly.handrolls)
+    ) {
+      return weekly.handrolls.length / Math.max(1, Number(item.quantity || 1));
+    }
+
+    return 0;
+  }
+
   if (item.product_type === "promotion") {
     const product = products.find(p => String(p.id) === String(item.id));
     return Number(parseOptions(product?.options).rolls_count || 1);
@@ -2537,6 +2766,7 @@ function getFreeSaucesPerUnit(item) {
   if (item.product_type === "dish") return 2;
   return 0;
 }
+
 
 function calculateChopsticks() {
   let total = 0;
@@ -2653,30 +2883,19 @@ const itemPrice =
     if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple") {
       const weekly = config.weeklyPromo;
 
-      lines.push("PERSONALIZACIÓN PROMOCIÓN SEMANAL:");
+ 
+lines.push("PERSONALIZACIÓN PROMOCIÓN SEMANAL:");
 
-      if (weekly.protein) {
-        lines.push(`Proteína: ${weekly.protein}`);
-      }
-
-           if (weekly.offerType !== "gohan_combo") {
-        lines.push(
-          `Vegetales: ${
-            weekly.vegetables?.length
-              ? weekly.vegetables.join(", ")
-              : "Sin vegetales"
-          }`
-        );
-      }
-
-      if (weekly.cheese) {
-        lines.push(`Queso crema: ${weekly.cheese}`);
-      }
-
-      if (Number(weekly.shrimpExtra) > 0) {
-        lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
-      }
-      if (Array.isArray(weekly.gohans) && weekly.gohans.length) {
+if (weekly.offerType === "handroll_combo" && Array.isArray(weekly.handrolls)) {
+  weekly.handrolls.forEach((handroll, index) => {
+    lines.push(`Handroll ${index + 1}:`);
+    lines.push(`Proteína: ${handroll.protein || "Sin proteína"}`);
+    lines.push(`Vegetal: ${handroll.vegetable || "Sin vegetal"}`);
+    lines.push(`Queso crema: ${handroll.cheese || "Sin selección"}`);
+    lines.push(`Nori: ${handroll.nori || "Con nori"}`);
+    lines.push(`Salsa: ${handroll.sauce || "Sin salsa"}`);
+  });
+} else if (Array.isArray(weekly.gohans) && weekly.gohans.length) {
   weekly.gohans.forEach((gohan, index) => {
     lines.push(`Gohan ${index + 1}:`);
     lines.push(`Proteína: ${gohan.protein || "Sin proteína"}`);
@@ -2690,12 +2909,36 @@ const itemPrice =
       lines.push(`Queso crema: ${gohan.cheese}`);
     }
   });
+} else {
+  if (weekly.protein) {
+    lines.push(`Proteína: ${weekly.protein}`);
+  }
+
+  if (weekly.offerType !== "gohan_combo") {
+    lines.push(
+      `Vegetales: ${
+        weekly.vegetables?.length
+          ? weekly.vegetables.join(", ")
+          : "Sin vegetales"
+      }`
+    );
+  }
+
+  if (weekly.cheese) {
+    lines.push(`Queso crema: ${weekly.cheese}`);
+  }
 }
-            if (weekly.accompaniment) {
-        lines.push(
-          `Acompañamiento incluido: ${weekly.accompaniment} × ${quantity}`
-        );
-      }
+
+if (Number(weekly.shrimpExtra) > 0) {
+  lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
+}
+
+if (weekly.accompaniment) {
+  lines.push(
+    `Acompañamiento incluido: ${weekly.accompaniment} × ${quantity}`
+  );
+}
+
     }
     if (config.customRoll) {
       const roll = config.customRoll;
