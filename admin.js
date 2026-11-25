@@ -1428,6 +1428,13 @@ $("#loginBtn").onclick = async () => {
   }
 };
 
+$("#password").addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    $("#loginBtn").click();
+  }
+});
+
 // GUARDAR IDENTIDAD
 
 $("#settingsForm").onsubmit = async event => {
