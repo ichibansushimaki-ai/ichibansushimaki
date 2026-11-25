@@ -2096,35 +2096,40 @@ const isGohan = isDish && options.gohan_customizable === true;
         const cheese = initialConfig.cheeses?.[i] || "Con queso crema";
         const nori = initialConfig.noris?.[i] || "Con nori";
 
-        return `
-          <div class="veg-row">
-            <strong>Roll ${i + 1}</strong>
+       return `
+  <div class="promo-roll">
+    <h3>Roll ${i + 1}</h3>
 
-            <label for="veg${i}">Vegetal</label>
-            <select id="veg${i}" class="veg-choice">
-              ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
-                `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
-              ).join("")}
-            </select>
+    <div class="form">
+      <label>
+        Vegetales
+        <select id="veg${i}" class="veg-choice">
+          ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
+            `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
+          ).join("")}
+        </select>
+      </label>
 
-            <label for="cheese${i}">Queso crema</label>
-            <select id="cheese${i}" class="cheese-choice">
-              ${["Con queso crema", "Sin queso crema"].map(value =>
-                `<option ${cheese === value ? "selected" : ""}>${value}</option>`
-              ).join("")}
-            </select>
+      <label>
+        Queso crema
+        <select id="cheese${i}" class="cheese-choice">
+          ${["Con queso crema", "Sin queso crema"].map(value =>
+            `<option ${cheese === value ? "selected" : ""}>${value}</option>`
+          ).join("")}
+        </select>
+      </label>
 
-            <label for="nori${i}">Nori</label>
-            <select id="nori${i}" class="nori-choice">
-              ${["Con nori", "Sin nori"].map(value =>
-                `<option ${nori === value ? "selected" : ""}>${value}</option>`
-              ).join("")}
-            </select>
-          </div>
-        `;
-      }).join("")}
+      <label>
+        Nori
+        <select id="nori${i}" class="nori-choice">
+          ${["Con nori", "Sin nori"].map(value =>
+            `<option ${nori === value ? "selected" : ""}>${value}</option>`
+          ).join("")}
+        </select>
+      </label>
     </div>
-  `;
+  </div>
+`;
  } else if (isCustomRoll) {
  const customConfig = parseOptions(settings.custom_roll_config);
   const customSelection = initialConfig.customRoll || {};
@@ -2479,32 +2484,40 @@ const isGohan = isDish && options.gohan_customizable === true;
         "Con nori"
     );
 
-    container.innerHTML = vegetables.map((vegetable, i) => `
-      <div class="veg-row">
-        <strong>Roll ${i + 1}</strong>
+   container.innerHTML = vegetables.map((vegetable, i) => `
+  <div class="promo-roll">
+    <h3>Roll ${i + 1}</h3>
 
-        <label for="veg${i}">Vegetal</label>
+    <div class="form">
+      <label>
+        Vegetales
         <select id="veg${i}" class="veg-choice">
           ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
             `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
           ).join("")}
         </select>
+      </label>
 
-        <label for="cheese${i}">Queso crema</label>
+      <label>
+        Queso crema
         <select id="cheese${i}" class="cheese-choice">
           ${["Con queso crema", "Sin queso crema"].map(value =>
             `<option ${cheeses[i] === value ? "selected" : ""}>${value}</option>`
           ).join("")}
         </select>
+      </label>
 
-        <label for="nori${i}">Nori</label>
+      <label>
+        Nori
         <select id="nori${i}" class="nori-choice">
           ${["Con nori", "Sin nori"].map(value =>
             `<option ${noris[i] === value ? "selected" : ""}>${value}</option>`
           ).join("")}
         </select>
-      </div>
-    `).join("");
+      </label>
+    </div>
+  </div>
+`).join("");
   });
 }
   function validateSauces() {
