@@ -1197,3 +1197,82 @@ button:disabled {
     font-size: 14px;
   }
 }
+/* =====================================
+   PROMOCIONES ICHIBAN - SELECTORES POR ROLL
+===================================== */
+
+#vegetableChoices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+#vegetableChoices .veg-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 13px;
+  background: #f5efe4;
+  border: 1px solid #d8c5a5;
+  border-radius: 9px;
+  color: #25211d;
+}
+
+#vegetableChoices .veg-row > strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #9e2028;
+  font-size: 16px;
+}
+
+#vegetableChoices .veg-row label {
+  margin-top: 5px;
+  color: #51483e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#vegetableChoices .veg-row select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 43px;
+  padding: 9px 32px 9px 11px;
+  border: 1px solid #c9b99f;
+  border-radius: 6px;
+  background: #fff;
+  color: #25211d;
+  font-family: var(--font-general);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#vegetableChoices .veg-row select:focus {
+  outline: 2px solid #c9a56a;
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  #vegetableChoices {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  #vegetableChoices .veg-row {
+    padding: 13px;
+  }
+
+  #vegetableChoices .veg-row select {
+    min-height: 47px;
+    font-size: 15px;
+  }
+
+  #vegetableChoices .veg-row label {
+    font-size: 14px;
+  }
+}
