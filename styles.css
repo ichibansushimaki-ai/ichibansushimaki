@@ -1198,13 +1198,13 @@ button:disabled {
   }
 }
 /* =====================================
-   PROMOCIONES ICHIBAN - SELECTORES POR ROLL
+   PROMOCIONES ICHIBAN - SELECTORES VERTICALES
 ===================================== */
 
 #vegetableChoices {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
   margin-top: 16px;
 }
@@ -1213,10 +1213,10 @@ button:disabled {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 7px;
   width: 100%;
+  gap: 5px;
   margin: 0;
-  padding: 16px;
+  padding: 14px;
   background: #f5efe4;
   border: 1px solid #d8c5a5;
   border-radius: 9px;
@@ -1225,7 +1225,8 @@ button:disabled {
 
 #vegetableChoices .veg-row > strong {
   display: block;
-  margin: 0 0 7px;
+  width: 100%;
+  margin: 0 0 8px;
   padding-bottom: 9px;
   border-bottom: 1px solid #d8c5a5;
   color: #9e2028;
@@ -1234,7 +1235,8 @@ button:disabled {
 
 #vegetableChoices .veg-row label {
   display: block;
-  margin-top: 5px;
+  width: 100%;
+  margin: 7px 0 2px;
   color: #51483e;
   font-size: 14px;
   font-weight: 700;
@@ -1243,19 +1245,15 @@ button:disabled {
 #vegetableChoices .veg-row select {
   display: block;
   width: 100%;
-  min-width: 100%;
-  height: 46px;
-  padding: 10px 12px;
+  max-width: 100%;
+  height: 44px;
+  margin: 0;
+  padding: 8px 12px;
   border: 1px solid #c9b99f;
   border-radius: 6px;
   background: #fff;
   color: #25211d;
-  font-family: var(--font-general);
   font-size: 15px;
   font-weight: 600;
-}
-
-#vegetableChoices .veg-row select:focus {
-  outline: 2px solid #c9a56a;
-  outline-offset: 2px;
+  box-sizing: border-box;
 }
