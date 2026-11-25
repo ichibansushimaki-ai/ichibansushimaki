@@ -825,6 +825,94 @@ document.addEventListener("click", (event) => {
 });
 
 
+function renderCustomComboBuilder() {
+  const container = document.querySelector("#customComboComponents");
+  const addButton = document.querySelector("#addCustomComboComponent");
+
+  if (!container || !addButton) return;
+
+    let componentCount = 0;
+
+  const newAddButton = addButton.cloneNode(true);
+  addButton.parentNode.replaceChild(newAddButton, addButton);
+
+  function addComponent() {
+    componentCount++;
+
+    const card = document.createElement("div");
+    card.className = "custom-combo-component";
+    card.style.cssText =
+      "border:1px solid #ccc;padding:15px;margin:12px 0;border-radius:8px;";
+
+    card.innerHTML = `
+      <h4>Producto del combo ${componentCount}</h4>
+
+      <label>Tipo de producto</label>
+      <select data-field="product_type">
+        <option value="handroll">Handroll</option>
+        <option value="gohan">Gohan</option>
+        <option value="roll">Roll</option>
+        <option value="sushi_burger">Sushi Burger</option>
+        <option value="other">Otro producto</option>
+      </select>
+
+      <label>Cantidad de productos</label>
+      <input data-field="quantity" type="number" min="1" value="1">
+
+      <hr>
+
+      <label>¿Cómo se elegirán las proteínas?</label>
+      <select data-field="protein_mode">
+        <option value="fixed">Proteína fija</option>
+        <option value="choose_unique">Cliente elige sin repetir</option>
+      </select>
+
+      <label>Proteína fija (si corresponde)</label>
+      <input data-field="fixed_protein" type="text"
+        placeholder="Ej: Pollo">
+
+      <label>Proteínas disponibles para elegir</label>
+      <p>Escribe una proteína por línea.</p>
+      <textarea data-field="proteins" rows="4"
+        placeholder="Pollo&#10;Camarón&#10;Kanikama"></textarea>
+
+      <hr>
+
+      <label>Vegetales disponibles</label>
+      <p>Escribe un vegetal por línea.</p>
+      <textarea data-field="vegetables" rows="4"
+        placeholder="Cebollín&#10;Palta&#10;Pimentón&#10;Sin vegetal"></textarea>
+
+      <label>
+        <input data-field="cheese" type="checkbox">
+        Permitir elegir con o sin queso crema
+      </label>
+
+      <label>
+        <input data-field="nori" type="checkbox">
+        Permitir elegir con o sin nori
+      </label>
+
+      <button type="button" data-remove-component>
+        Eliminar este producto
+      </button>
+    `;
+
+    container.appendChild(card);
+  }
+
+    newAddButton.addEventListener("click", addComponent);
+
+  container.addEventListener("click", event => {
+    const button = event.target.closest("[data-remove-component]");
+    if (!button) return;
+
+    button.closest(".custom-combo-component").remove();
+  });
+
+  addComponent();
+}
+
 function renderWeeklyPromoComponents(type) {
   const container = $("#weeklyPromoComponents");
   if (!container) return;
@@ -940,41 +1028,44 @@ function renderWeeklyPromoComponents(type) {
       <label><input type="checkbox" name="gohan_cheese"> Permitir elegir con o sin queso crema</label>
     `,
 
-    custom_combo: `
-      <h4>Configuración del combo personalizado</h4>
+ 
+custom_combo: `
+  <h4>Configuración del combo personalizado</h4>
 
-      <label>Tipo interno del producto</label>
-      <select name="custom_product_type">
-        <option value="roll">Roll</option>
-        <option value="handroll">Handroll</option>
-        <option value="gohan">Gohan</option>
-        <option value="sushi_burger">Sushi Burger</option>
-        <option value="other">Otro producto</option>
-      </select>
+  <p>
+    Agrega los productos que formarán parte de esta promoción.
+    Cada componente tendrá sus propias cantidades y opciones.
+  </p>
 
-      <label>Cantidad de unidades o rolls</label>
-      <input type="number" name="custom_quantity" min="1" value="2" required>
+  <div id="customComboComponents"></div>
 
-      <h4>Proteínas disponibles</h4>
-      <p>Escribe una proteína por línea.</p>
-      <textarea name="custom_protein_options" rows="5" placeholder="Pollo&#10;Camarón&#10;Kanikama&#10;Salmón"></textarea>
+  <button type="button" id="addCustomComboComponent">
+    + Agregar producto al combo
+  </button>
 
-      <h4>Vegetales disponibles</h4>
-      <p>Escribe un vegetal por línea.</p>
-      <textarea name="custom_vegetable_options" rows="5" placeholder="Cebollín&#10;Pimentón&#10;Palta&#10;Sin vegetal"></textarea>
+  <hr>
 
-      <h4>Queso crema</h4>
-      <label><input type="checkbox" name="custom_cheese"> Permitir elegir con o sin queso crema</label>
+  <h4>Acompañamientos incluidos</h4>
 
-      <h4>Acompañamientos incluidos</h4>
-      <label><input type="checkbox" name="custom_fries"> Papas fritas individuales</label>
-      <label><input type="checkbox" name="custom_drink"> Bebida mini</label>
+  <label>
+    <input type="checkbox" name="custom_fries">
+    Papas fritas individuales
+  </label>
 
-      <p>Solo se incluirán los acompañamientos que marques.</p>
-    `
+  <label>
+    <input type="checkbox" name="custom_drink">
+    Bebida mini
+  </label>
+
+  <p>Marca solamente los acompañamientos que incluirá la promoción.</p>
+`
+
   };
 
   container.innerHTML = configurations[type] || configurations.simple;
+    if (type === "custom_combo") {
+    renderCustomComboBuilder();
+  }
 
    if (type === "simple") {
     renderSimpleOfferOptions();
@@ -1078,7 +1169,7 @@ if (offerTypeSelect) {
       if (previousType === "simple") {
         componentDrafts.simple = readSimpleOfferOptions();
 
-      } else if (previousType === "handroll_combo") {
+            } else if (previousType === "handroll_combo") {
         componentDrafts.handroll_combo = {
           options: readHandrollOfferOptions(),
           fields: [
@@ -1090,6 +1181,35 @@ if (offerTypeSelect) {
             checked: el.checked
           }))
         };
+
+     } else if (previousType === "custom_combo") {
+  componentDrafts.custom_combo = {
+    cards: [
+      ...container.querySelectorAll(
+        "#customComboComponents .custom-combo-component"
+      )
+    ].map(card => ({
+      product_type: card.querySelector('[data-field="product_type"]').value,
+      quantity: card.querySelector('[data-field="quantity"]').value,
+      protein_mode: card.querySelector('[data-field="protein_mode"]').value,
+      fixed_protein: card.querySelector('[data-field="fixed_protein"]').value,
+      proteins: card.querySelector('[data-field="proteins"]').value,
+      vegetables: card.querySelector('[data-field="vegetables"]').value,
+      cheese: card.querySelector('[data-field="cheese"]').checked,
+      nori: card.querySelector('[data-field="nori"]').checked
+    })),
+
+    fields: [
+      ...container.querySelectorAll("input, select, textarea")
+    ]
+      .filter(el => !el.closest(".custom-combo-component"))
+      .map(el => ({
+        name: el.name,
+        type: el.type,
+        value: el.value,
+        checked: el.checked
+      }))
+  };
 
       } else {
         componentDrafts[previousType] = [
@@ -1106,7 +1226,48 @@ if (offerTypeSelect) {
     const newType = offerTypeSelect.value;
 
     renderWeeklyPromoComponents(newType);
+    if (newType === "custom_combo") {
+      const savedComponents = componentDrafts.custom_combo?.cards || [];
+      const customContainer = $("#customComboComponents");
 
+      if (customContainer) {
+        customContainer.innerHTML = "";
+
+        savedComponents.forEach(saved => {
+          $("#addCustomComboComponent").click();
+
+          const cards = customContainer.querySelectorAll(
+            ".custom-combo-component"
+          );
+
+          const card = cards[cards.length - 1];
+
+          card.querySelector('[data-field="product_type"]').value =
+            saved.product_type || "handroll";
+
+          card.querySelector('[data-field="quantity"]').value =
+            saved.quantity || 1;
+
+          card.querySelector('[data-field="protein_mode"]').value =
+            saved.protein_mode || "fixed";
+
+          card.querySelector('[data-field="fixed_protein"]').value =
+            saved.fixed_protein || "";
+
+          card.querySelector('[data-field="proteins"]').value =
+            saved.proteins || "";
+
+          card.querySelector('[data-field="vegetables"]').value =
+            saved.vegetables || "";
+
+          card.querySelector('[data-field="cheese"]').checked =
+            saved.cheese || false;
+
+          card.querySelector('[data-field="nori"]').checked =
+            saved.nori || false;
+        });
+      }
+    }
     if (newType === "simple") {
       if (componentDrafts.simple) {
         renderSimpleOfferOptions(componentDrafts.simple);
@@ -1119,9 +1280,12 @@ if (offerTypeSelect) {
         renderHandrollOfferOptions(draft.options);
       }
 
-      const savedFields = newType === "handroll_combo"
-        ? (draft?.fields || [])
-        : (draft || []);
+      const savedFields = (
+  newType === "handroll_combo" ||
+  newType === "custom_combo"
+)
+  ? (draft?.fields || [])
+  : (draft || []);
 
       const newContainer = $("#weeklyPromoComponents");
 
@@ -1210,7 +1374,45 @@ $("#weeklyPromoForm").onsubmit = async event => {
 }
 
 const previousComponents = existingPromo?.components || {};
+    if (form.elements.offer_type.value === "custom_combo") {
+      const comboCards = form.querySelectorAll(
+        "#customComboComponents .custom-combo-component"
+      );
 
+      if (!comboCards.length) {
+        throw new Error("Agrega al menos un producto al combo.");
+      }
+
+      for (const card of comboCards) {
+        const quantity = Number(
+          card.querySelector('[data-field="quantity"]').value
+        );
+
+        if (!Number.isInteger(quantity) || quantity < 1) {
+          throw new Error("Cada producto del combo debe tener una cantidad válida.");
+        }
+
+        const proteinMode =
+          card.querySelector('[data-field="protein_mode"]').value;
+
+        const fixedProtein =
+          card.querySelector('[data-field="fixed_protein"]').value.trim();
+
+        const proteins =
+          card.querySelector('[data-field="proteins"]').value
+            .split("\n").map(item => item.trim()).filter(item => item !== "");
+
+        if (proteinMode === "fixed" && !fixedProtein) {
+          throw new Error("Indica la proteína fija de cada producto.");
+        }
+
+        if (proteinMode === "choose_unique" && proteins.length < quantity) {
+          throw new Error(
+            "Debes ingresar al menos tantas proteínas como productos para poder elegir sin repetir."
+          );
+        }
+      }
+    }
 const simpleConfig = form.elements.offer_type.value === "simple"
   ? readSimpleOfferOptions()
   : {
@@ -1301,7 +1503,25 @@ simple_nori: simpleConfig.nori,
   custom_cheese: form.querySelector('[name="custom_cheese"]')?.checked ?? false,
   custom_fries: form.querySelector('[name="custom_fries"]')?.checked ?? false,
   custom_drink: form.querySelector('[name="custom_drink"]')?.checked ?? false,
+  custom_combo_components: [
+    ...form.querySelectorAll(
+      "#customComboComponents .custom-combo-component"
+    )
+  ].map(card => ({
+    product_type: card.querySelector('[data-field="product_type"]').value,
+    quantity: Number(card.querySelector('[data-field="quantity"]').value || 1),
+    protein_mode: card.querySelector('[data-field="protein_mode"]').value,
+    fixed_protein: card.querySelector('[data-field="fixed_protein"]').value.trim(),
 
+    proteins: card.querySelector('[data-field="proteins"]').value
+      .split("\n").map(item => item.trim()).filter(item => item !== ""),
+
+    vegetables: card.querySelector('[data-field="vegetables"]').value
+      .split("\n").map(item => item.trim()).filter(item => item !== ""),
+
+    cheese: card.querySelector('[data-field="cheese"]').checked,
+    nori: card.querySelector('[data-field="nori"]').checked
+  })),
   weekly_accompaniments: (form.querySelector('[name="weekly_accompaniments"]')?.value || "")
     .split("\n").map(item => item.trim()).filter(item => item !== "")
 },
@@ -1551,32 +1771,51 @@ form.querySelectorAll('[name="gohan_protein"]').forEach(el => {
 
   
 
-  // Cargar opciones del Combo personalizado
-  const customProductType = form.querySelector('[name="custom_product_type"]');
-  if (customProductType) {
-    customProductType.value = components.custom_product_type || "handroll";
-  }
+  // Recuperar componentes del Combo personalizado
+  if (promo.offer_type === "custom_combo") {
+    const customContainer = form.querySelector("#customComboComponents");
 
-  const customQuantity = form.querySelector('[name="custom_quantity"]');
-  if (customQuantity) {
-    customQuantity.value = components.custom_quantity ?? 2;
-  }
+    if (customContainer) {
+      customContainer.innerHTML = "";
 
-  const customProteins = form.querySelector('[name="custom_protein_options"]');
-  if (customProteins) {
-    customProteins.value = (components.custom_proteins || []).join("\n");
-  }
+      const savedComponents = components.custom_combo_components || [];
 
-  const customVegetables = form.querySelector('[name="custom_vegetable_options"]');
-  if (customVegetables) {
-    customVegetables.value = (components.custom_vegetables || []).join("\n");
-  }
+      savedComponents.forEach(saved => {
+        $("#addCustomComboComponent").click();
 
-  const customCheese = form.querySelector('[name="custom_cheese"]');
-  if (customCheese) {
-    customCheese.checked = components.custom_cheese ?? false;
-  }
+        const cards = customContainer.querySelectorAll(
+          ".custom-combo-component"
+        );
 
+        const card = cards[cards.length - 1];
+
+        card.querySelector('[data-field="product_type"]').value =
+          saved.product_type || "handroll";
+
+        card.querySelector('[data-field="quantity"]').value =
+          saved.quantity ?? 1;
+
+        card.querySelector('[data-field="protein_mode"]').value =
+          saved.protein_mode || "fixed";
+
+        card.querySelector('[data-field="fixed_protein"]').value =
+          saved.fixed_protein || "";
+
+        card.querySelector('[data-field="proteins"]').value =
+          (saved.proteins || []).join("\n");
+
+        card.querySelector('[data-field="vegetables"]').value =
+          (saved.vegetables || []).join("\n");
+
+        card.querySelector('[data-field="cheese"]').checked =
+          saved.cheese ?? false;
+
+        card.querySelector('[data-field="nori"]').checked =
+          saved.nori ?? false;
+      });
+    }
+  }
+  // Recuperar acompañamientos del Combo personalizado
   const customFries = form.querySelector('[name="custom_fries"]');
   if (customFries) {
     customFries.checked = components.custom_fries ?? false;
@@ -1586,7 +1825,6 @@ form.querySelectorAll('[name="gohan_protein"]').forEach(el => {
   if (customDrink) {
     customDrink.checked = components.custom_drink ?? false;
   }
-
   // Identificar la promoción que estamos editando
   form.dataset.editingId = promo.id;
 const submitButton = form.querySelector('button[type="submit"]');
