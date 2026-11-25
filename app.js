@@ -1282,11 +1282,12 @@ function openWeeklyPromo(promo, editingItem = null) {
             ${simpleVegetables.map(item => `
               <label>
                 <input
-                  type="checkbox"
-                  class="simpleVegetable"
-                  value="${escapeHTML(item.name)}"
-                  ${saved.vegetables?.includes(item.name) ? "checked" : ""}
-                >
+  type="radio"
+  class="simpleVegetable"
+  name="simpleVegetable-${index}"
+  value="${escapeHTML(item.name)}"
+  ${saved.vegetables?.includes(item.name) ? "checked" : ""}
+>
                 ${escapeHTML(item.name)}
               </label>
             `).join("")}
@@ -2831,7 +2832,7 @@ const unitPrice =
 
 
 
-function updateCartQuantity(key, change) {
+function updateCartQuantity(key, change, keepIngredientsConfirmed = false) {
   const item = cart.find(entry => entry.key === key);
   if (!item) return;
 
@@ -2849,20 +2850,73 @@ function updateCartQuantity(key, change) {
     
   );
 
-    let editSauces = false;
+    if (change > 0 && !keepIngredientsConfirmed) {
+  openDialog(`
+    <h2>Estás agregando otro producto a tu compra</h2>
 
-    if (
-  change > 0 &&
-  hasFreeSauces &&
-  item.config?.weeklyPromo?.offerType !== "handroll_combo"
-) {
-      editSauces = window.confirm(
-        "Has aumentado la cantidad de productos.\n\n" +
-        "¿Deseas redistribuir las salsas de cortesía?\n\n" +
-        "Aceptar: Editar las salsas.\n" +
-        "Cancelar: Continuar con la distribución anterior."
+    <p>
+      ¿Deseas mantener tu siguiente producto igual que el anterior
+      o quieres modificar sus ingredientes y componentes?
+    </p>
+
+    <button type="button" class="dialog-primary" id="keepSameProduct">
+      SÍ, mantener igual
+    </button>
+
+    <button type="button" class="dialog-secondary" id="modifyNewProduct">
+      NO, quiero modificarlo
+    </button>
+  `);
+
+  $("#keepSameProduct").addEventListener("click", () => {
+    closeDialog();
+    updateCartQuantity(key, change, true);
+  });
+
+  $("#modifyNewProduct").addEventListener("click", () => {
+    closeDialog();
+
+    if (item.product_type === "weekly_promo") {
+      let weeklyPromos = [];
+
+      try {
+        const data = settings.weekly_promos;
+        weeklyPromos = typeof data === "string"
+          ? JSON.parse(data || "[]")
+          : data || [];
+      } catch {
+        weeklyPromos = [];
+      }
+
+      const promoId = item.config?.weeklyPromo?.promoId;
+
+      const promo = weeklyPromos.find(
+        p => String(p.id) === String(promoId)
       );
+
+      if (!promo) {
+        alert("No se encontró esta promoción semanal.");
+        return;
+      }
+
+      openWeeklyPromo(promo);
+      return;
     }
+
+    const product = products.find(
+      p => String(p.id) === String(item.id)
+    );
+
+    if (!product) {
+      alert("No se encontró este producto en la carta.");
+      return;
+    }
+
+    openProduct(product);
+  });
+
+  return;
+}
 
     item.quantity = Math.min(20, next);
 if (
@@ -2878,14 +2932,21 @@ if (
 
   const totalHandrolls = handrollsPerPromo * item.quantity;
 
- while (handrolls.length < totalHandrolls) {
-  handrolls.push({
-    protein: "",
-    vegetable: "",
-    cheese: "",
-    nori: "Con nori",
-    sauce: "Sin salsa"
-  });
+while (handrolls.length < totalHandrolls) {
+  const sourceIndex = handrolls.length - handrollsPerPromo;
+  const previousHandroll = handrolls[sourceIndex];
+
+  handrolls.push(
+    previousHandroll
+      ? { ...previousHandroll }
+      : {
+          protein: "",
+          vegetable: "",
+          cheese: "",
+          nori: "Con nori",
+          sauce: "Sin salsa"
+        }
+  );
 }
 
 handrolls.length = totalHandrolls;
@@ -2916,6 +2977,31 @@ handrolls.length = totalHandrolls;
 
   simpleOffers.length = item.quantity;
 }
+    if (
+  item.config?.weeklyPromo?.offerType === "gohan_combo" &&
+  Array.isArray(item.config.weeklyPromo.gohans)
+) {
+  const gohans = item.config.weeklyPromo.gohans;
+
+  while (gohans.length < item.quantity) {
+    const previousGohan = gohans[gohans.length - 1];
+
+    gohans.push(
+      previousGohan
+        ? {
+            ...previousGohan,
+            vegetables: [...(previousGohan.vegetables || [])]
+          }
+        : {
+            protein: "",
+            vegetables: [],
+            cheese: ""
+          }
+    );
+  }
+
+  gohans.length = item.quantity;
+}
     if (item.config?.vegetables && item.product_type === "promotion") {
       const product = products.find(
         p => String(p.id) === String(item.id)
@@ -2927,8 +3013,15 @@ handrolls.length = totalHandrolls;
 
       const totalRolls = rollsPerPromo * item.quantity;
 
-      while (item.config.vegetables.length < totalRolls) {
-        item.config.vegetables.push("Cebollín");
+           while (item.config.vegetables.length < totalRolls) {
+        const previousVegetable =
+          item.config.vegetables[
+            item.config.vegetables.length - rollsPerPromo
+          ];
+
+        item.config.vegetables.push(
+          previousVegetable || "Cebollín"
+        );
       }
 
       item.config.vegetables =
@@ -2937,8 +3030,7 @@ handrolls.length = totalHandrolls;
 
    if (
   hasFreeSauces &&
-  !editSauces &&
-  item.config?.weeklyPromo?.offerType !== "handroll_combo"
+    item.config?.weeklyPromo?.offerType !== "handroll_combo"
 ) {
       const totalSauces =
         getFreeSaucesPerUnit(item) * item.quantity;
@@ -2962,17 +3054,7 @@ handrolls.length = totalHandrolls;
 
     saveCart();
 
-    if (editSauces) {
-      const product = products.find(
-        p => String(p.id) === String(item.id)
-      );
-
-      if (product) {
-        openProduct(product, item);
-        return;
-      }
     }
-  }
 
   saveCart();
   openCart();
