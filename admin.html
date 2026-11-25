@@ -1435,6 +1435,129 @@ button:disabled{
   }
 }
 
+/* Diseño visual: Configuración del Gohan */
+#gohanConfigBox {
+  background: #fff;
+  border: 1px solid #e8e1d8;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+#gohanConfigBox .admin-panel-summary {
+  background: #fff;
+  padding: 20px 23px;
+  cursor: pointer;
+}
+
+#gohanConfigBox .admin-panel-summary:hover {
+  background: #fff;
+}
+
+#gohanConfigBox .admin-panel-content {
+  padding: 24px;
+  background: #fff;
+}
+
+#gohanConfigBox .admin-panel-content > p {
+  color: #6b625b;
+  line-height: 1.6;
+  margin: 0 0 22px;
+}
+
+#gohanConfigBox .form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#gohanConfigBox .form h3 {
+  margin: 12px 0 0;
+  color: #292521;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+#gohanConfigBox .form p {
+  margin: 0 0 8px;
+  color: #777;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#gohanConfigBox #gohanVegetables,
+#gohanConfigBox #gohanProteins {
+  display: grid;
+  gap: 12px;
+  margin: 5px 0 10px;
+}
+
+#gohanConfigBox #gohanVegetables > div,
+#gohanConfigBox #gohanProteins > div {
+  background: #faf8f5;
+  border: 1px solid #e8e1d8;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+#gohanConfigBox input,
+#gohanConfigBox select {
+  min-height: 42px;
+  border: 1px solid #ddd5cb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  color: #292521;
+}
+
+#gohanConfigBox input:focus,
+#gohanConfigBox select:focus {
+  outline: none;
+  border-color: #b51f2b;
+  box-shadow: 0 0 0 2px rgba(181, 31, 43, .10);
+}
+
+#gohanConfigBox hr {
+  border: 0;
+  border-top: 1px solid #e8e1d8;
+  margin: 14px 0;
+}
+
+#gohanConfigBox .dialog-note {
+  background: #f8f5f0;
+  border: 1px solid #e8e1d8;
+  border-radius: 10px;
+  padding: 14px 16px;
+  color: #655d55;
+  line-height: 1.6;
+  margin: 12px 0;
+}
+
+#gohanConfigBox #saveGohanConfig {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 9px;
+  background: #b51f2b;
+  color: #fff;
+  border: 1px solid #b51f2b;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#gohanConfigBox #saveGohanConfig:hover {
+  background: #a71924;
+  border-color: #a71924;
+}
+
+@media (max-width: 520px) {
+  #gohanConfigBox .admin-panel-summary {
+    padding: 15px;
+  }
+
+  #gohanConfigBox .admin-panel-content {
+    padding: 15px;
+  }
+}
+
 </style>
 </head>
 
