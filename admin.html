@@ -1246,6 +1246,195 @@ button:disabled{
   }
 }
 
+/* =========================================
+   ARMA TU ROLL CLÁSICO - DISEÑO ADMIN
+   Estilos exclusivos de esta sección
+========================================= */
+
+#customRollConfigBox {
+  margin-top: 22px;
+  overflow: hidden;
+  border: 1px solid #e4ddd3;
+  border-radius: 14px;
+  background: #fff;
+}
+
+#customRollConfigBox .admin-panel-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 20px 23px;
+  cursor: pointer;
+  background: #f8f5f0;
+  color: #292521;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+#customRollConfigBox .admin-panel-summary:hover {
+  background: #f1ebe2;
+}
+
+#customRollConfigBox .admin-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+}
+
+#customRollConfigBox .admin-panel-content > p {
+  margin: 0 0 8px;
+  color: #71675d;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+#customRollConfigBox .admin-panel-content h3 {
+  margin: 12px 0 4px;
+  padding-bottom: 11px;
+  border-bottom: 2px solid #c9a45c;
+  color: #8f2028;
+  font-size: 19px;
+}
+
+#customRollConfigBox .admin-panel-content hr {
+  width: 100%;
+  margin: 12px 0;
+  border: 0;
+  border-top: 1px solid #e5ddd2;
+}
+
+/* CONTENEDORES DE INGREDIENTES */
+
+#customRollCoverings,
+#customRollProteins,
+#customRollVegetables {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 15px;
+  background: #f8f5f0;
+  border: 1px solid #e5ddd2;
+  border-radius: 11px;
+}
+
+/* FILAS DINÁMICAS DE INGREDIENTES */
+
+#customRollCoverings > *,
+#customRollProteins > *,
+#customRollVegetables > * {
+  box-sizing: border-box;
+}
+
+#customRollCoverings > div,
+#customRollProteins > div,
+#customRollVegetables > div {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(110px, 150px) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  background: #fff;
+  border: 1px solid #e5ddd2;
+  border-radius: 9px;
+}
+
+#customRollConfigBox input:not([type="checkbox"]):not([type="radio"]),
+#customRollConfigBox select,
+#customRollConfigBox textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #d8d0c6;
+  border-radius: 8px;
+  background: #fff;
+  color: #292521;
+  font: inherit;
+  font-size: 14px;
+}
+
+#customRollConfigBox input:focus,
+#customRollConfigBox select:focus,
+#customRollConfigBox textarea:focus {
+  outline: 2px solid rgba(181,31,43,.15);
+  border-color: #b51f2b;
+}
+
+#customRollConfigBox input[type="checkbox"] {
+  width: 19px;
+  height: 19px;
+  accent-color: #b51f2b;
+}
+
+/* BOTONES */
+
+#customRollConfigBox .admin-panel-content button {
+  min-height: 44px;
+  padding: 11px 17px;
+  border: 1px solid #b51f2b;
+  border-radius: 8px;
+  background: #b51f2b;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+
+#customRollConfigBox .admin-panel-content button:hover {
+  background: #941923;
+  border-color: #941923;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+#customRollConfigBox #saveCustomRollConfig {
+  min-height: 49px;
+  margin-top: 8px;
+  background: #292521;
+  border-color: #292521;
+  font-size: 14px;
+}
+
+#customRollConfigBox #saveCustomRollConfig:hover {
+  background: #494139;
+  border-color: #494139;
+}
+
+/* CELULARES */
+
+@media (max-width: 650px) {
+  #customRollConfigBox .admin-panel-summary {
+    padding: 16px;
+    font-size: 16px;
+  }
+
+  #customRollConfigBox .admin-panel-content {
+    padding: 15px;
+  }
+
+  #customRollCoverings,
+  #customRollProteins,
+  #customRollVegetables {
+    padding: 10px;
+  }
+
+  #customRollCoverings > div,
+  #customRollProteins > div,
+  #customRollVegetables > div {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 11px;
+  }
+
+  #customRollConfigBox .admin-panel-content button {
+    width: 100%;
+  }
+}
+
 </style>
 </head>
 
