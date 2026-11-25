@@ -1230,18 +1230,7 @@ const choices = (
       ${escapeHTML(value)}
     </label>
   `).join("");
-  items.map((value, index) => `
-    <label>
-      <input
-        type="radio"
-        name="${name}"
-        value="${escapeHTML(value)}"
-        ${value === selected || (!selected && index === 0 && selectFirst) ? "checked" : ""}
-        ${required ? "required" : ""}
-      >
-      ${escapeHTML(value)}
-    </label>
-  `).join("");
+  
   let options = "";
   
   const renderSimpleOffers = () => {
