@@ -2096,40 +2096,43 @@ const isGohan = isDish && options.gohan_customizable === true;
         const cheese = initialConfig.cheeses?.[i] || "Con queso crema";
         const nori = initialConfig.noris?.[i] || "Con nori";
 
-       return `
-  <div class="promo-roll">
-    <h3>Roll ${i + 1}</h3>
+        return `
+          <div class="promo-roll">
+            <h3>Roll ${i + 1}</h3>
 
-    <div class="form">
-      <label>
-        Vegetales
-        <select id="veg${i}" class="veg-choice">
-          ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
-            `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
-          ).join("")}
-        </select>
-      </label>
+            <div class="form">
+              <label>
+                Vegetales
+                <select id="veg${i}" class="veg-choice">
+                  ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
+                    `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
+                  ).join("")}
+                </select>
+              </label>
 
-      <label>
-        Queso crema
-        <select id="cheese${i}" class="cheese-choice">
-          ${["Con queso crema", "Sin queso crema"].map(value =>
-            `<option ${cheese === value ? "selected" : ""}>${value}</option>`
-          ).join("")}
-        </select>
-      </label>
+              <label>
+                Queso crema
+                <select id="cheese${i}" class="cheese-choice">
+                  ${["Con queso crema", "Sin queso crema"].map(value =>
+                    `<option ${cheese === value ? "selected" : ""}>${value}</option>`
+                  ).join("")}
+                </select>
+              </label>
 
-      <label>
-        Nori
-        <select id="nori${i}" class="nori-choice">
-          ${["Con nori", "Sin nori"].map(value =>
-            `<option ${nori === value ? "selected" : ""}>${value}</option>`
-          ).join("")}
-        </select>
-      </label>
+              <label>
+                Nori
+                <select id="nori${i}" class="nori-choice">
+                  ${["Con nori", "Sin nori"].map(value =>
+                    `<option ${nori === value ? "selected" : ""}>${value}</option>`
+                  ).join("")}
+                </select>
+              </label>
+            </div>
+          </div>
+        `;
+      }).join("")}
     </div>
-  </div>
-`;
+  `;
  } else if (isCustomRoll) {
  const customConfig = parseOptions(settings.custom_roll_config);
   const customSelection = initialConfig.customRoll || {};
