@@ -1157,26 +1157,27 @@ button:disabled {
   gap: 10px;
   width: 100%;
   margin: 7px 0;
-  padding: 10px 13px;
-  background: #302923;
-  border: 1px solid #574735;
+  padding: 11px 13px;
+  background: #f5efe4;
+  border: 1px solid #d8c5a5;
   border-radius: 7px;
-  color: #f5efe4;
+  color: #25211d;
   font-size: 15px;
+  font-weight: 500;
   line-height: 1.4;
   cursor: pointer;
   transition: background .2s ease, border-color .2s ease;
 }
 
 .weekly-handroll-config .veg-row:hover {
-  background: #3b3027;
+  background: #ffffff;
   border-color: #c9a56a;
 }
 
 .weekly-handroll-config .veg-row input {
   flex: 0 0 auto;
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   margin: 0;
   accent-color: #b9272e;
   cursor: pointer;
