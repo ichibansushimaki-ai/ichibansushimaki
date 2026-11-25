@@ -661,6 +661,169 @@ document.addEventListener("click", event => {
   }
 });
 
+function escapeHandrollOption(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function renderHandrollOfferOptions(config = {}) {
+  const defaultProteins = [
+    "Pollo",
+    "Camarón",
+    "Kanikama"
+  ];
+
+  const defaultVegetables = [
+    "Cebollín",
+    "Palta",
+    "Pimentón",
+    "Sin vegetal"
+  ];
+
+  const normalize = (items, defaults) => {
+    const source = items === undefined ? defaults : items;
+
+    return (Array.isArray(source) ? source : [])
+      .map(item => {
+        if (typeof item === "string") {
+          return { name: item, active: true };
+        }
+
+        return {
+          name: String(item?.name ?? ""),
+          active: item?.active !== false
+        };
+      })
+      .filter(item => item.name.trim() !== "");
+  };
+
+  const proteins = normalize(config.proteins, defaultProteins);
+  const vegetables = normalize(config.vegetables, defaultVegetables);
+
+  const proteinContainer = document.getElementById("handrollProteins");
+  const vegetableContainer = document.getElementById("handrollVegetables");
+
+  if (!proteinContainer || !vegetableContainer) return;
+
+  proteinContainer.innerHTML = proteins.map(item => `
+    <div class="gohan-admin-row">
+      <input
+        type="text"
+        class="handroll-protein-name"
+        value="${escapeHandrollOption(item.name)}"
+        placeholder="Nombre de proteína"
+      >
+      <label>
+        <input
+          type="checkbox"
+          class="handroll-protein-active"
+          ${item.active ? "checked" : ""}
+        >
+        Activa
+      </label>
+      <button type="button" class="btn btn-outline handroll-remove-protein">
+        Eliminar
+      </button>
+    </div>
+  `).join("");
+
+  vegetableContainer.innerHTML = vegetables.map(item => `
+    <div class="gohan-admin-row">
+      <input
+        type="text"
+        class="handroll-vegetable-name"
+        value="${escapeHandrollOption(item.name)}"
+        placeholder="Nombre de vegetal"
+      >
+      <label>
+        <input
+          type="checkbox"
+          class="handroll-vegetable-active"
+          ${item.active ? "checked" : ""}
+        >
+        Activo
+      </label>
+      <button type="button" class="btn btn-outline handroll-remove-vegetable">
+        Eliminar
+      </button>
+    </div>
+  `).join("");
+}
+
+function readHandrollOfferOptions() {
+  const proteinContainer = document.getElementById("handrollProteins");
+  const vegetableContainer = document.getElementById("handrollVegetables");
+
+  return {
+        proteins: proteinContainer
+      ? [...proteinContainer.querySelectorAll(".gohan-admin-row")]
+          .map(row => ({
+            name: row.querySelector(".handroll-protein-name")?.value.trim() || "",
+            active: row.querySelector(".handroll-protein-active")?.checked ?? false
+          }))
+          .filter(item => item.name !== "")
+      : [],
+
+    vegetables: vegetableContainer
+      ? [...vegetableContainer.querySelectorAll(".gohan-admin-row")]
+          .map(row => ({
+            name: row.querySelector(".handroll-vegetable-name")?.value.trim() || "",
+            active: row.querySelector(".handroll-vegetable-active")?.checked ?? false
+          }))
+          .filter(item => item.name !== "")
+      : []
+  };
+}
+
+document.addEventListener("click", (event) => {
+  if (event.target.closest("#addHandrollProtein")) {
+    const container = document.getElementById("handrollProteins");
+
+    if (container) {
+      container.insertAdjacentHTML("beforeend", `
+        <div class="gohan-admin-row">
+          <input type="text" class="handroll-protein-name" placeholder="Nombre de proteína">
+          <label>
+            <input type="checkbox" class="handroll-protein-active" checked>
+            Activa
+          </label>
+          <button type="button" class="btn btn-outline handroll-remove-protein">Eliminar</button>
+        </div>
+      `);
+    }
+  }
+
+  if (event.target.closest("#addHandrollVegetable")) {
+    const container = document.getElementById("handrollVegetables");
+
+    if (container) {
+      container.insertAdjacentHTML("beforeend", `
+        <div class="gohan-admin-row">
+          <input type="text" class="handroll-vegetable-name" placeholder="Nombre de vegetal">
+          <label>
+            <input type="checkbox" class="handroll-vegetable-active" checked>
+            Activo
+          </label>
+          <button type="button" class="btn btn-outline handroll-remove-vegetable">Eliminar</button>
+        </div>
+      `);
+    }
+  }
+
+  if (event.target.closest(".handroll-remove-protein")) {
+    event.target.closest(".gohan-admin-row")?.remove();
+  }
+
+  if (event.target.closest(".handroll-remove-vegetable")) {
+    event.target.closest(".gohan-admin-row")?.remove();
+  }
+});
+
 
 function renderWeeklyPromoComponents(type) {
   const container = $("#weeklyPromoComponents");
@@ -701,30 +864,45 @@ function renderWeeklyPromoComponents(type) {
       </label>
     `,
 
-    handroll_combo: `
-      <h4>Configuración del Handroll</h4>
-      <label>Tipo interno del producto</label>
-      <select name="handroll_product_type">
-        <option value="handroll" selected>Handroll</option>
-      </select>
+   handroll_combo: `
+  <h4>Configuración del Handroll</h4>
 
-      <label>Cantidad de handroll incluidos</label>
-      <input type="number" name="handroll_quantity" min="1" value="2" required>
+  <label>Tipo interno del producto</label>
+  <select name="handroll_product_type">
+    <option value="handroll" selected>Handroll</option>
+  </select>
 
-      <label>Proteínas disponibles</label>
-      <p>Escribe una proteína por línea.</p>
-      <textarea name="handroll_protein_options" rows="5" placeholder="Pollo&#10;Camarón&#10;Kanikama"></textarea>
+  <label>Cantidad de handroll incluidos</label>
+  <input type="number" name="handroll_quantity" min="1" value="2" required>
 
-      <label>Vegetales disponibles</label>
-      <p>Escribe un vegetal por línea.</p>
-      <textarea name="handroll_vegetable_options" rows="5" placeholder="Cebollín&#10;Palta&#10;Pimentón&#10;Sin vegetal"></textarea>
+  <hr>
 
-      <h4>Queso crema</h4>
-      <label>
-        <input type="checkbox" name="handroll_cheese" checked>
-        Permitir elegir con o sin queso crema
-      </label>
-    `,
+  <h4>Proteínas disponibles</h4>
+  <p>Agrega, modifica o desactiva las proteínas.</p>
+  <div id="handrollProteins"></div>
+
+  <button type="button" class="btn btn-outline" id="addHandrollProtein">
+    + Agregar proteína
+  </button>
+
+  <hr>
+
+  <h4>Vegetales disponibles</h4>
+  <p>Agrega, modifica o desactiva los vegetales.</p>
+  <div id="handrollVegetables"></div>
+
+  <button type="button" class="btn btn-outline" id="addHandrollVegetable">
+    + Agregar vegetal
+  </button>
+
+  <hr>
+
+  <h4>Queso crema</h4>
+  <label>
+    <input type="checkbox" name="handroll_cheese" checked>
+    Permitir elegir con o sin queso crema
+  </label>
+`,
 
     sushi_burger_combo: `
       <h4>Configuración de Sushi Burger</h4>
@@ -798,10 +976,13 @@ function renderWeeklyPromoComponents(type) {
 
   container.innerHTML = configurations[type] || configurations.simple;
 
-  if (type === "simple") {
+   if (type === "simple") {
     renderSimpleOfferOptions();
   }
 
+  if (type === "handroll_combo") {
+    renderHandrollOfferOptions();
+  }
   if (type !== "simple") {
     container.insertAdjacentHTML("beforeend", `
       <hr>
@@ -881,6 +1062,7 @@ function renderWeeklyPromosAdmin() {
 
 
 const offerTypeSelect = $("#weeklyPromoForm").elements.offer_type;
+
 const componentDrafts = {};
 
 if (offerTypeSelect) {
@@ -895,6 +1077,20 @@ if (offerTypeSelect) {
     if (container) {
       if (previousType === "simple") {
         componentDrafts.simple = readSimpleOfferOptions();
+
+      } else if (previousType === "handroll_combo") {
+        componentDrafts.handroll_combo = {
+          options: readHandrollOfferOptions(),
+          fields: [
+            ...container.querySelectorAll("input, select, textarea")
+          ].map(el => ({
+            name: el.name,
+            type: el.type,
+            value: el.value,
+            checked: el.checked
+          }))
+        };
+
       } else {
         componentDrafts[previousType] = [
           ...container.querySelectorAll("input, select, textarea")
@@ -915,8 +1111,18 @@ if (offerTypeSelect) {
       if (componentDrafts.simple) {
         renderSimpleOfferOptions(componentDrafts.simple);
       }
+
     } else {
-      const savedFields = componentDrafts[newType] || [];
+      const draft = componentDrafts[newType];
+
+      if (newType === "handroll_combo" && draft?.options) {
+        renderHandrollOfferOptions(draft.options);
+      }
+
+      const savedFields = newType === "handroll_combo"
+        ? (draft?.fields || [])
+        : (draft || []);
+
       const newContainer = $("#weeklyPromoComponents");
 
       if (newContainer) {
@@ -945,6 +1151,7 @@ if (offerTypeSelect) {
 
   offerTypeSelect.dataset.previousType = offerTypeSelect.value;
 }
+
 
 
   const weeklyImageInput = $("#weeklyPromoImageFile");
@@ -1048,16 +1255,25 @@ simple_vegetable_options: simpleConfig.vegetables
 
 simple_cheese: simpleConfig.cheese,
 simple_nori: simpleConfig.nori,
-  handroll_proteins: (form.querySelector('[name="handroll_protein_options"]')?.value || "")
-    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+ 
+  handroll_proteins_config: readHandrollOfferOptions().proteins,
 
-  handroll_vegetables: (form.querySelector('[name="handroll_vegetable_options"]')?.value || "")
-    .split("\n").map(item => item.trim()).filter(item => item !== ""),
+  handroll_vegetables_config: readHandrollOfferOptions().vegetables,
+
+  handroll_proteins: readHandrollOfferOptions().proteins
+    .filter(item => item.active)
+    .map(item => item.name),
+
+  handroll_vegetables: readHandrollOfferOptions().vegetables
+    .filter(item => item.active)
+    .map(item => item.name),
 
   handroll_cheese: form.querySelector('[name="handroll_cheese"]')?.checked ?? false,
-handroll_product_type: form.querySelector('[name="handroll_product_type"]')?.value || "handroll",
 
-handroll_quantity: Number(form.querySelector('[name="handroll_quantity"]')?.value || 2),
+  handroll_product_type: form.querySelector('[name="handroll_product_type"]')?.value || "handroll",
+
+  handroll_quantity: Number(form.querySelector('[name="handroll_quantity"]')?.value || 2),
+
   burger_proteins: [...form.querySelectorAll('input[name="burger_protein"]:checked')].map(el => el.value),
   burger_vegetables: [...form.querySelectorAll('input[name="burger_vegetable"]:checked')].map(el => el.value),
   burger_no_vegetable: form.querySelector('[name="burger_no_vegetable"]')?.checked ?? false,
@@ -1264,30 +1480,40 @@ if (promo.offer_type === "simple") {
   });
 }
 
-  // Cargar opciones del Handroll
-  const handrollProteins = form.querySelector('[name="handroll_protein_options"]');
-  if (handrollProteins) {
-    handrollProteins.value = (components.handroll_proteins || []).join("\n");
-  }
 
-  const handrollVegetables = form.querySelector('[name="handroll_vegetable_options"]');
-  if (handrollVegetables) {
-    handrollVegetables.value = (components.handroll_vegetables || []).join("\n");
-  }
+  // Cargar opciones del Handroll
+  const handrollProteinConfig = components.handroll_proteins_config || components.handroll_proteins || [
+    "Pollo",
+    "Camarón",
+    "Kanikama"
+  ];
+
+  const handrollVegetableConfig = components.handroll_vegetables_config || components.handroll_vegetables || [
+    "Cebollín",
+    "Palta",
+    "Pimentón",
+    "Sin vegetal"
+  ];
+
+  renderHandrollOfferOptions({
+    proteins: handrollProteinConfig,
+    vegetables: handrollVegetableConfig
+  });
 
   const handrollCheese = form.querySelector('[name="handroll_cheese"]');
   if (handrollCheese) {
     handrollCheese.checked = components.handroll_cheese ?? false;
   }
-const handrollProductType = form.querySelector('[name="handroll_product_type"]');
-if (handrollProductType) {
-  handrollProductType.value = components.handroll_product_type || "handroll";
-}
 
-const handrollQuantity = form.querySelector('[name="handroll_quantity"]');
-if (handrollQuantity) {
-  handrollQuantity.value = components.handroll_quantity ?? 2;
-}
+  const handrollProductType = form.querySelector('[name="handroll_product_type"]');
+  if (handrollProductType) {
+    handrollProductType.value = components.handroll_product_type || "handroll";
+  }
+
+  const handrollQuantity = form.querySelector('[name="handroll_quantity"]');
+  if (handrollQuantity) {
+    handrollQuantity.value = components.handroll_quantity ?? 2;
+  }
 
   // Cargar opciones de Sushi Burger
   form.querySelectorAll('[name="burger_protein"]').forEach(el => {
