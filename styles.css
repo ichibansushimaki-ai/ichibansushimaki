@@ -1147,3 +1147,52 @@ button:disabled {
     color: var(--gold);
   }
 }
+/* =====================================
+   OPCIONES HANDROLL - PROMOCIONES SEMANALES
+===================================== */
+
+.weekly-handroll-config .veg-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 7px 0;
+  padding: 10px 13px;
+  background: #302923;
+  border: 1px solid #574735;
+  border-radius: 7px;
+  color: #f5efe4;
+  font-size: 15px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.weekly-handroll-config .veg-row:hover {
+  background: #3b3027;
+  border-color: #c9a56a;
+}
+
+.weekly-handroll-config .veg-row input {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: #b9272e;
+  cursor: pointer;
+}
+
+.weekly-handroll-config > strong {
+  display: block;
+  margin: 17px 0 8px;
+  color: #c9a56a;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .weekly-handroll-config .veg-row {
+    padding: 11px 12px;
+    font-size: 14px;
+  }
+}
