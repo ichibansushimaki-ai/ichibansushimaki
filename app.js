@@ -1130,7 +1130,32 @@ function cartItemDescription(item) {
     `);
   }
    
-  if (config.vegetables?.length) {
+    if (
+    config.cheeses?.length ||
+    config.noris?.length
+  ) {
+    const totalRolls = Math.max(
+      config.vegetables?.length || 0,
+      config.cheeses?.length || 0,
+      config.noris?.length || 0
+    );
+
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Personalización Promoción Ichiban</strong>
+        <div class="cart-options">
+          ${Array.from({ length: totalRolls }, (_, index) => `
+            <span class="cart-option">
+              <strong>Roll ${index + 1}</strong><br>
+              Vegetal: ${escapeHTML(config.vegetables?.[index] || "Sin vegetal")}<br>
+              Queso crema: ${escapeHTML(config.cheeses?.[index] || "Sin selección")}<br>
+              Nori: ${escapeHTML(config.noris?.[index] || "Sin selección")}
+            </span>
+          `).join("")}
+        </div>
+      </div>
+    `);
+  } else if (config.vegetables?.length) {
     sections.push(`
       <div class="cart-config-section">
         <strong class="cart-config-title">Vegetales por roll</strong>
@@ -1141,9 +1166,7 @@ function cartItemDescription(item) {
         </div>
       </div>
     `);
-  }
-
- 
+  } 
 
   if (config.note) {
     sections.push(`<div class="cart-config-section">${escapeHTML(config.note)}</div>`);
@@ -2058,30 +2081,50 @@ const isGohan = isDish && options.gohan_customizable === true;
     </div>
   ` : "";
 
-  if (isPromo) {
-    configuration = `
-      <div class="dialog-note">
-        <strong>Promoción de ${rollCount} rolls.</strong><br>
-        Los rellenos y envolturas son fijos. Puedes elegir el vegetal de cada roll.
-        Incluye una salsa por roll y palitos según las reglas de la tienda.
-      </div>
-      <div id="vegetableChoices">
-        ${Array.from({length: rollCount * Number(editingItem?.quantity || 1)}, (_, i) => {
-          const vegetable = initialConfig.vegetables?.[i] || "Cebollín";
+ if (isPromo) {
+  configuration = `
+    <div class="dialog-note">
+      <strong>Promoción de ${rollCount} rolls.</strong><br>
+      Los rellenos y envolturas son fijos. Puedes elegir el vegetal,
+      queso crema y nori de cada roll.
+      Incluye una salsa por roll y palitos según las reglas de la tienda.
+    </div>
 
-          return `
-            <div class="veg-row">
-              <label for="veg${i}">Roll ${i + 1}</label>
-              <select id="veg${i}" class="veg-choice">
-                ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
-                  `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
-                ).join("")}
-              </select>
-            </div>
-          `;
-        }).join("")}
-      </div>
-    `;
+    <div id="vegetableChoices">
+      ${Array.from({length: rollCount * Number(editingItem?.quantity || 1)}, (_, i) => {
+        const vegetable = initialConfig.vegetables?.[i] || "Cebollín";
+        const cheese = initialConfig.cheeses?.[i] || "Con queso crema";
+        const nori = initialConfig.noris?.[i] || "Con nori";
+
+        return `
+          <div class="veg-row">
+            <strong>Roll ${i + 1}</strong>
+
+            <label for="veg${i}">Vegetal</label>
+            <select id="veg${i}" class="veg-choice">
+              ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
+                `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
+              ).join("")}
+            </select>
+
+            <label for="cheese${i}">Queso crema</label>
+            <select id="cheese${i}" class="cheese-choice">
+              ${["Con queso crema", "Sin queso crema"].map(value =>
+                `<option ${cheese === value ? "selected" : ""}>${value}</option>`
+              ).join("")}
+            </select>
+
+            <label for="nori${i}">Nori</label>
+            <select id="nori${i}" class="nori-choice">
+              ${["Con nori", "Sin nori"].map(value =>
+                `<option ${nori === value ? "selected" : ""}>${value}</option>`
+              ).join("")}
+            </select>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
  } else if (isCustomRoll) {
  const customConfig = parseOptions(settings.custom_roll_config);
   const customSelection = initialConfig.customRoll || {};
@@ -2394,39 +2437,76 @@ const isGohan = isDish && options.gohan_customizable === true;
   }
 
     if (isPromo) {
-    quantity.addEventListener("input", () => {
-      const container = $("#vegetableChoices");
-      if (!container) return;
+  quantity.addEventListener("input", () => {
+    const container = $("#vegetableChoices");
+    if (!container) return;
 
-      const totalRolls = rollCount * Math.max(
-        1,
-        Math.min(20, Number(quantity.value) || 1)
-      );
+    const totalRolls = rollCount * Math.max(
+      1,
+      Math.min(20, Number(quantity.value) || 1)
+    );
 
-      const previousVegetables = Array.from(
-        container.querySelectorAll(".veg-choice")
-      ).map(select => select.value);
+    const previousVegetables = Array.from(
+      container.querySelectorAll(".veg-choice")
+    ).map(select => select.value);
 
-      const vegetables = Array.from(
-        { length: totalRolls },
-        (_, i) => previousVegetables[i] ||
-          initialConfig.vegetables?.[i] ||
-          "Cebollín"
-      );
+    const previousCheeses = Array.from(
+      container.querySelectorAll(".cheese-choice")
+    ).map(select => select.value);
 
-      container.innerHTML = vegetables.map((vegetable, i) => `
-        <div class="veg-row">
-          <label for="veg${i}">Roll ${i + 1}</label>
-          <select id="veg${i}" class="veg-choice">
-            ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
-              `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
-            ).join("")}
-          </select>
-        </div>
-      `).join("");
-    });
-  }
+    const previousNoris = Array.from(
+      container.querySelectorAll(".nori-choice")
+    ).map(select => select.value);
 
+    const vegetables = Array.from(
+      { length: totalRolls },
+      (_, i) => previousVegetables[i] ||
+        initialConfig.vegetables?.[i] ||
+        "Cebollín"
+    );
+
+    const cheeses = Array.from(
+      { length: totalRolls },
+      (_, i) => previousCheeses[i] ||
+        initialConfig.cheeses?.[i] ||
+        "Con queso crema"
+    );
+
+    const noris = Array.from(
+      { length: totalRolls },
+      (_, i) => previousNoris[i] ||
+        initialConfig.noris?.[i] ||
+        "Con nori"
+    );
+
+    container.innerHTML = vegetables.map((vegetable, i) => `
+      <div class="veg-row">
+        <strong>Roll ${i + 1}</strong>
+
+        <label for="veg${i}">Vegetal</label>
+        <select id="veg${i}" class="veg-choice">
+          ${["Cebollín", "Pimentón", "Palta", "Sin vegetal"].map(value =>
+            `<option ${vegetable === value ? "selected" : ""}>${value}</option>`
+          ).join("")}
+        </select>
+
+        <label for="cheese${i}">Queso crema</label>
+        <select id="cheese${i}" class="cheese-choice">
+          ${["Con queso crema", "Sin queso crema"].map(value =>
+            `<option ${cheeses[i] === value ? "selected" : ""}>${value}</option>`
+          ).join("")}
+        </select>
+
+        <label for="nori${i}">Nori</label>
+        <select id="nori${i}" class="nori-choice">
+          ${["Con nori", "Sin nori"].map(value =>
+            `<option ${noris[i] === value ? "selected" : ""}>${value}</option>`
+          ).join("")}
+        </select>
+      </div>
+    `).join("");
+  });
+}
   function validateSauces() {
     if (!soy || !teriyaki) return true;
 
@@ -2508,11 +2588,21 @@ if (isCustomRoll) {
       config.teriyaki = teriyakiValue;
     }
 
-    if (isPromo) {
-      config.vegetables = Array.from(
-        document.querySelectorAll(".veg-choice")
-      ).map(select => select.value);
-    }
+    
+if (isPromo) {
+  config.vegetables = Array.from(
+    document.querySelectorAll(".veg-choice")
+  ).map(select => select.value);
+
+  config.cheeses = Array.from(
+    document.querySelectorAll(".cheese-choice")
+  ).map(select => select.value);
+
+  config.noris = Array.from(
+    document.querySelectorAll(".nori-choice")
+  ).map(select => select.value);
+}
+
 
     if (isGohan) {
       const selectedVegetables = Array.from(
@@ -3331,9 +3421,26 @@ if (weekly.accompaniment) {
       );
     }
 
-    if (config.vegetables?.length) {
-      lines.push("Vegetales por roll: " + config.vegetables.join(", "));
-    }
+  
+if (config.cheeses?.length || config.noris?.length) {
+  lines.push("PERSONALIZACIÓN PROMOCIÓN ICHIBAN:");
+
+  const totalRolls = Math.max(
+    config.vegetables?.length || 0,
+    config.cheeses?.length || 0,
+    config.noris?.length || 0
+  );
+
+  for (let i = 0; i < totalRolls; i++) {
+    lines.push(`Roll ${i + 1}:`);
+    lines.push(`Vegetal: ${config.vegetables?.[i] || "Sin vegetal"}`);
+    lines.push(`Queso crema: ${config.cheeses?.[i] || "Sin selección"}`);
+    lines.push(`Nori: ${config.noris?.[i] || "Sin selección"}`);
+  }
+} else if (config.vegetables?.length) {
+  lines.push("Vegetales por roll: " + config.vegetables.join(", "));
+}
+
 
     if (config.soy !== undefined || config.teriyaki !== undefined) {
       lines.push(
