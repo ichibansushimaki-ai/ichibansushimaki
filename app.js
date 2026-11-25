@@ -1210,13 +1210,26 @@ function openWeeklyPromo(promo, editingItem = null) {
   const savedProtein = savedConfig.protein || "";
   const savedVegetables = savedConfig.vegetables || [];
   const savedCheese = savedConfig.cheese || "";
-  const choices = (
+const choices = (
   items,
   name,
   required = false,
   selected = "",
-  selectFirst = true
+  selectFirst = true,
+  className = ""
 ) =>
+  items.map((value, index) => `
+    <label class="${className}">
+      <input
+        type="radio"
+        name="${name}"
+        value="${escapeHTML(value)}"
+        ${value === selected || (!selected && index === 0 && selectFirst) ? "checked" : ""}
+        ${required ? "required" : ""}
+      >
+      ${escapeHTML(value)}
+    </label>
+  `).join("");
   items.map((value, index) => `
     <label>
       <input
@@ -1563,79 +1576,81 @@ const renderWeeklyHandrollConfigs = () => {
           <h3>Handroll ${index + 1}</h3>
 
           <strong>Proteína</strong>
-          ${choices(
-            proteins,
-            `weeklyHandrollProtein-${index}`,
-            true,
-           saved.protein || "",
-false
-          )}
+         ${choices(
+  proteins,
+  `weeklyHandrollProtein-${index}`,
+  true,
+  saved.protein || "",
+  false,
+  "veg-row"
+)}
 
           <strong>Vegetal</strong>
           ${choices(
-            vegetables,
-            `weeklyHandrollVegetable-${index}`,
-            true,
-           saved.vegetable || "",
-false
-          )}
+  vegetables,
+  `weeklyHandrollVegetable-${index}`,
+  true,
+  saved.vegetable || "",
+  false,
+  "veg-row"
+)}
 
           ${components.handroll_cheese ? `
-            <strong>Queso crema</strong>
-            <label>
-              <input type="radio"
-                name="weeklyHandrollCheese-${index}"
-                value="Con queso crema"
-                ${saved.cheese !== "Sin queso crema" ? "checked" : ""}>
-              Con queso crema
-            </label>
-            <label>
-              <input type="radio"
-                name="weeklyHandrollCheese-${index}"
-                value="Sin queso crema"
-                ${saved.cheese === "Sin queso crema" ? "checked" : ""}>
-              Sin queso crema
-            </label>
+           <strong>Queso crema</strong>
+<label class="veg-row">
+  <input type="radio"
+    name="weeklyHandrollCheese-${index}"
+    value="Con queso crema"
+    ${saved.cheese !== "Sin queso crema" ? "checked" : ""}>
+  Con queso crema
+</label>
+<label class="veg-row">
+  <input type="radio"
+    name="weeklyHandrollCheese-${index}"
+    value="Sin queso crema"
+    ${saved.cheese === "Sin queso crema" ? "checked" : ""}>
+  Sin queso crema
+</label>
           ` : ""}
 
-          <strong>Nori</strong>
-          <label>
-            <input type="radio"
-              name="weeklyHandrollNori-${index}"
-              value="Con nori"
-              ${saved.nori !== "Sin nori" ? "checked" : ""}>
-            Con nori
-          </label>
-          <label>
-            <input type="radio"
-              name="weeklyHandrollNori-${index}"
-              value="Sin nori"
-              ${saved.nori === "Sin nori" ? "checked" : ""}>
-            Sin nori
-          </label>
+        <strong>Nori</strong>
+<label class="veg-row">
+  <input type="radio"
+    name="weeklyHandrollNori-${index}"
+    value="Con nori"
+    ${saved.nori !== "Sin nori" ? "checked" : ""}>
+  Con nori
+</label>
+<label class="veg-row">
+  <input type="radio"
+    name="weeklyHandrollNori-${index}"
+    value="Sin nori"
+    ${saved.nori === "Sin nori" ? "checked" : ""}>
+  Sin nori
+</label>
 
-          <strong>Salsa de cortesía</strong>
-          <label>
-            <input type="radio"
-              name="weeklyHandrollSauce-${index}"
-              value="Soya"
-              ${saved.sauce === "Soya" ? "checked" : ""}>
-            Soya
-          </label>
-          <label>
-            <input type="radio"
-              name="weeklyHandrollSauce-${index}"
-              value="Teriyaki"
-              ${saved.sauce === "Teriyaki" ? "checked" : ""}>
-            Teriyaki
-          </label>
-          <label>
-            <input type="radio"
-              name="weeklyHandrollSauce-${index}"
-              value="Sin salsa"
-              ${!saved.sauce || saved.sauce === "Sin salsa" ? "checked" : ""}>
-            Sin salsa
-          </label>
+         <strong>Salsa de cortesía</strong>
+<label class="veg-row">
+  <input type="radio"
+    name="weeklyHandrollSauce-${index}"
+    value="Soya"
+    ${saved.sauce === "Soya" ? "checked" : ""}>
+  Soya
+</label>
+<label class="veg-row">
+  <input type="radio"
+    name="weeklyHandrollSauce-${index}"
+    value="Teriyaki"
+    ${saved.sauce === "Teriyaki" ? "checked" : ""}>
+  Teriyaki
+</label>
+<label class="veg-row">
+  <input type="radio"
+    name="weeklyHandrollSauce-${index}"
+    value="Sin salsa"
+    ${!saved.sauce || saved.sauce === "Sin salsa" ? "checked" : ""}>
+  Sin salsa
+</label>
         </div>
       `;
     }).join("")}
