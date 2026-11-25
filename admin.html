@@ -1672,68 +1672,123 @@ button:disabled{
     grid-template-columns: 1fr;
   }
 }
-  /* Cuatro columnas: Crear promoción semanal */
-#weeklyPromosPanel #weeklyPromoComponents {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  align-items: start;
-  margin: 12px 0;
-}
-  gap: 12px;
-  align-items: start;
-  margin: 12px 0;
-}
 
-#weeklyPromosPanel #weeklyPromoComponents > h4,
-#weeklyPromosPanel #weeklyPromoComponents > p,
-#weeklyPromosPanel #weeklyPromoComponents > hr {
-  grid-column: 1 / -1;
-}
+/* =========================================
+   PROMOCIONES SEMANALES: DISTRIBUCIÓN ORDENADA
+   ========================================= */
 
-#weeklyPromosPanel #weeklyPromoComponents label {
+/* Formulario principal: una sola columna */
+#weeklyPromosPanel #weeklyPromoForm {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 14px;
   min-width: 0;
-  padding: 10px;
-  background: #faf8f5;
-  border: 1px solid #e8e1d8;
-  border-radius: 10px;
 }
 
+#weeklyPromosPanel #weeklyPromoForm > h3,
+#weeklyPromosPanel #weeklyPromoForm > label,
+#weeklyPromosPanel #weeklyPromoForm > input,
+#weeklyPromosPanel #weeklyPromoForm > select,
+#weeklyPromosPanel #weeklyPromoForm > textarea,
+#weeklyPromosPanel #weeklyPromoForm > button,
+#weeklyPromosPanel #weeklyPromoForm > img {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Panel de personalización */
+#weeklyPromosPanel #weeklyPromoComponents {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 18px;
+  margin: 4px 0 12px;
+  background: #f8f5f0;
+  border: 1px solid #e8e1d8;
+  border-radius: 12px;
+}
+
+/* Títulos e instrucciones */
+#weeklyPromosPanel #weeklyPromoComponents h4,
+#weeklyPromosPanel #weeklyPromoComponents p,
+#weeklyPromosPanel #weeklyPromoComponents hr {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 4px 0;
+}
+
+#weeklyPromosPanel #weeklyPromoComponents h4 {
+  color: #b51f2b;
+  font-size: 15px;
+}
+
+#weeklyPromosPanel #weeklyPromoComponents p {
+  color: #786f65;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Campos de texto y selección */
 #weeklyPromosPanel #weeklyPromoComponents input:not([type="checkbox"]),
 #weeklyPromosPanel #weeklyPromoComponents select,
 #weeklyPromosPanel #weeklyPromoComponents textarea {
   width: 100%;
+  max-width: 100%;
   min-width: 0;
-  padding: 9px;
+  box-sizing: border-box;
+  padding: 10px;
   border: 1px solid #ddd5cb;
   border-radius: 8px;
   background: #fff;
 }
 
-#weeklyPromosPanel #weeklyPromoComponents textarea {
-  grid-column: 1 / -1;
+/* Opciones con casillas */
+#weeklyPromosPanel #weeklyPromoComponents label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  margin: 0;
+  background: #fff;
+  border: 1px solid #e8e1d8;
+  border-radius: 8px;
 }
 
-@media (max-width: 1000px) {
+#weeklyPromosPanel #weeklyPromoComponents input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: #b51f2b;
+}
+
+/* Separadores */
+#weeklyPromosPanel #weeklyPromoComponents hr {
+  border: 0;
+  border-top: 1px solid #e4dbd0;
+}
+
+/* Evitar desbordamientos */
+#weeklyPromosPanel,
+#weeklyPromosPanel *,
+#weeklyPromosPanel *::before,
+#weeklyPromosPanel *::after {
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
   #weeklyPromosPanel #weeklyPromoComponents {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 12px;
   }
 }
 
-@media (max-width: 700px) {
-  #weeklyPromosPanel #weeklyPromoComponents {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 450px) {
-  #weeklyPromosPanel #weeklyPromoComponents {
-    grid-template-columns: 1fr;
-  }
-}
 </style>
 </head>
 
