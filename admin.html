@@ -1605,6 +1605,131 @@ button:disabled{
     grid-template-columns: 1fr;
   }
 }
+  /* Cuatro columnas: Arma tu Roll clásico */
+#customRollConfigBox {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+#customRollConfigBox .admin-panel-content {
+  background: #fff;
+  padding: 24px;
+}
+
+#customRollConfigBox #customRollCoverings,
+#customRollConfigBox #customRollProteins,
+#customRollConfigBox #customRollVegetables {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+  margin: 10px 0 15px;
+}
+
+#customRollConfigBox #customRollCoverings > div,
+#customRollConfigBox #customRollProteins > div,
+#customRollConfigBox #customRollVegetables > div {
+  min-width: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #faf8f5;
+  border: 1px solid #e8e1d8;
+  border-radius: 10px;
+}
+
+#customRollConfigBox input,
+#customRollConfigBox select {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  padding: 8px;
+  font-size: 13px;
+}
+
+@media (max-width: 1000px) {
+  #customRollConfigBox #customRollCoverings,
+  #customRollConfigBox #customRollProteins,
+  #customRollConfigBox #customRollVegetables {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  #customRollConfigBox #customRollCoverings,
+  #customRollConfigBox #customRollProteins,
+  #customRollConfigBox #customRollVegetables {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 450px) {
+  #customRollConfigBox #customRollCoverings,
+  #customRollConfigBox #customRollProteins,
+  #customRollConfigBox #customRollVegetables {
+    grid-template-columns: 1fr;
+  }
+}
+  /* Cuatro columnas: Crear promoción semanal */
+#weeklyPromosPanel #weeklyPromoComponents {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+  margin: 12px 0;
+}
+
+#weeklyPromosPanel #weeklyPromoComponents > h4,
+#weeklyPromosPanel #weeklyPromoComponents > p,
+#weeklyPromosPanel #weeklyPromoComponents > hr {
+  grid-column: 1 / -1;
+}
+
+#weeklyPromosPanel #weeklyPromoComponents label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px;
+  background: #faf8f5;
+  border: 1px solid #e8e1d8;
+  border-radius: 10px;
+}
+
+#weeklyPromosPanel #weeklyPromoComponents input:not([type="checkbox"]),
+#weeklyPromosPanel #weeklyPromoComponents select,
+#weeklyPromosPanel #weeklyPromoComponents textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid #ddd5cb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+#weeklyPromosPanel #weeklyPromoComponents textarea {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1000px) {
+  #weeklyPromosPanel #weeklyPromoComponents {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  #weeklyPromosPanel #weeklyPromoComponents {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 450px) {
+  #weeklyPromosPanel #weeklyPromoComponents {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
 </head>
 
