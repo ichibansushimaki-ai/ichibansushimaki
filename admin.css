@@ -308,3 +308,43 @@ hr { border: 0; border-top: 1px solid var(--admin-line); }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Separadores de áreas administrativas */
+.admin-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 34px 0 12px;
+  padding: 0 2px;
+}
+.admin-section-heading > span {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(201,164,92,.55);
+  border-radius: 12px;
+  color: var(--admin-red);
+  background: #fffaf1;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .04em;
+}
+.admin-section-heading div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.admin-section-heading strong {
+  color: var(--admin-ink);
+  font-size: 15px;
+  font-weight: 850;
+  letter-spacing: -.01em;
+}
+.admin-section-heading small {
+  color: var(--admin-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.admin-section-heading + .box { margin-top: 0; }
