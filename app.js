@@ -1869,6 +1869,17 @@ const renderCustomComboConfigs = () => {
               item.componentIndex === componentIndex &&
               item.unitIndex === unitIndex
             ) || {};
+            const usedProteins = weeklyCustomComboDrafts
+  .filter(item =>
+    item.componentIndex === componentIndex &&
+    item.unitIndex < unitIndex &&
+    item.protein
+  )
+  .map(item => item.protein);
+
+const availableProteins = proteins.filter(
+  protein => !usedProteins.includes(protein)
+);
 
             return `
               <div
@@ -1882,7 +1893,7 @@ const renderCustomComboConfigs = () => {
 
                 ${component.protein_mode === "fixed" ? `
                   <p>${escapeHTML(component.fixed_protein || "Proteína fija")}</p>
-                ` : proteins.map(protein => `
+                availableProteins.map
                   <label>
                     <input
                       type="radio"
@@ -2066,7 +2077,12 @@ if (type === "handroll_combo") {
         alert("Puedes elegir máximo 3 vegetales por cada Gohan.");
       }
     }
-
+if (
+  type === "custom_combo" &&
+  event.target.name?.startsWith("customProtein-")
+) {
+  renderCustomComboConfigs();
+}
     updatePrice();
   });
 
