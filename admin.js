@@ -2127,19 +2127,75 @@ function productTypeLabel(type) {
   return productTypes.find(item => item[0] === type)?.[1] || "Otro";
 }
 
+let catalogSearchTerm = "";
+let catalogCategory = "";
+let catalogStatus = "all";
+
+function getFilteredProducts() {
+  const term = catalogSearchTerm.trim().toLocaleLowerCase("es-CL");
+  return products.filter(product => {
+    const searchable = [
+      product.name,
+      product.category,
+      product.description,
+      productTypeLabel(product.product_type)
+    ].join(" ").toLocaleLowerCase("es-CL");
+    if (term && !searchable.includes(term)) return false;
+    if (catalogCategory && product.category !== catalogCategory) return false;
+    if (catalogStatus === "available" && !isTrue(product.available)) return false;
+    if (catalogStatus === "unavailable" && isTrue(product.available)) return false;
+    if (catalogStatus === "featured" && !isTrue(product.featured)) return false;
+    return true;
+  });
+}
+
+function syncCatalogFilters() {
+  const categorySelect = $("#catalogCategoryFilter");
+  if (!categorySelect) return;
+  const categories = [...new Set(products.map(product => product.category).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "es-CL"));
+  const current = catalogCategory;
+  categorySelect.innerHTML = '<option value="">Todas las categorías</option>' +
+    categories.map(category =>
+      `<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`
+    ).join("");
+  categorySelect.value = categories.includes(current) ? current : "";
+  catalogCategory = categorySelect.value;
+}
+
 function renderProducts() {
   const container = $("#items");
+  const visibleProducts = getFilteredProducts();
+  const count = $("#catalogCount");
+
+  if (count) {
+    count.textContent = visibleProducts.length === products.length
+      ? `${products.length} producto${products.length === 1 ? "" : "s"} en el catálogo`
+      : `${visibleProducts.length} de ${products.length} productos`;
+  }
 
   if (!products.length) {
     container.innerHTML = `
-      <div class="rowitem">
-        <span>No hay productos registrados todavía.</span>
+      <div class="catalog-empty">
+        <span class="catalog-empty-icon">＋</span>
+        <strong>Tu catálogo todavía está vacío</strong>
+        <p>Agrega tu primer producto usando el formulario de arriba.</p>
       </div>
     `;
     return;
   }
 
-  container.innerHTML = products.map(product => {
+  if (!visibleProducts.length) {
+    container.innerHTML = `
+      <div class="catalog-empty">
+        <strong>No encontramos productos</strong>
+        <p>Prueba con otra búsqueda o cambia los filtros.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = visibleProducts.map(product => {
     const id = escapeHTML(product.id);
     const name = escapeHTML(product.name);
     const category = escapeHTML(product.category);
@@ -2151,60 +2207,63 @@ function renderProducts() {
 
     return `
       <div class="rowitem product-admin-card">
-
         <div class="product-admin-photo">
-          ${
-            image
-              ? `<img src="${escapeHTML(image)}"
-                    alt="${name}"
-                    loading="lazy"
-                    onerror="this.style.display='none'">`
-              : `<div class="product-no-photo">🍣</div>`
+          ${image
+            ? `<img src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none'">`
+            : `<div class="product-no-photo">🍣</div>`
           }
         </div>
-
         <div class="product-admin-info">
           <b>${name}</b>
           <small>${category}</small>
           <small>Tipo: ${type}</small>
-
           <strong class="product-admin-price">${price}</strong>
-
           <div class="product-admin-status">
             <span class="${available ? "status-available" : "status-unavailable"}">
               ${available ? "● Disponible" : "● Agotado"}
             </span>
-
-            ${
-              featured
-                ? `<span class="status-featured">★ Destacado</span>`
-                : ""
-            }
+            ${featured ? '<span class="status-featured">★ Destacado</span>' : ""}
           </div>
         </div>
-
         <div class="product-admin-actions">
           <button type="button" data-toggle-available="${id}">
             ${available ? "Marcar agotado" : "Activar"}
           </button>
-
           <button type="button" data-toggle-featured="${id}">
             ${featured ? "Quitar destacado" : "Destacar"}
           </button>
-
-          <button type="button" data-edit="${id}">
-            Editar
-          </button>
-
-          <button type="button" data-del="${id}">
-            Eliminar
-          </button>
+          <button type="button" data-edit="${id}">Editar</button>
+          <button type="button" data-del="${id}">Eliminar</button>
         </div>
-
       </div>
     `;
   }).join("");
 }
+
+$("#catalogSearch")?.addEventListener("input", event => {
+  catalogSearchTerm = event.target.value;
+  renderProducts();
+});
+
+$("#catalogCategoryFilter")?.addEventListener("change", event => {
+  catalogCategory = event.target.value;
+  renderProducts();
+});
+
+$("#catalogStatusFilter")?.addEventListener("change", event => {
+  catalogStatus = event.target.value;
+  renderProducts();
+});
+
+$("#catalogClearFilters")?.addEventListener("click", () => {
+  catalogSearchTerm = "";
+  catalogCategory = "";
+  catalogStatus = "all";
+  $("#catalogSearch").value = "";
+  $("#catalogStatusFilter").value = "all";
+  syncCatalogFilters();
+  renderProducts();
+});
 
 async function load() {
   const response = await api("/api/products");
@@ -2214,6 +2273,7 @@ async function load() {
   }
 
   products = await response.json();
+  syncCatalogFilters();
   renderProducts();
 }
 
@@ -2330,7 +2390,8 @@ form.elements.gohan_customizable.checked =
   $("#imageFile").value = "";
 
   $("#uploadMsg").textContent = "Editando producto existente.";
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  $("#productEditorPanel").open = true;
+  $("#productEditorPanel").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 // ACCIONES DEL CATÁLOGO

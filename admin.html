@@ -2359,6 +2359,34 @@ Configura los estilos de texto para computador y celular. Los cambios se guardan
     <span class="admin-panel-toggle">Abrir sección</span>
   </summary>
   <div class="admin-panel-content">
+    <div class="catalog-toolbar">
+      <div class="catalog-toolbar-heading">
+        <strong>Productos registrados</strong>
+        <span id="catalogCount" aria-live="polite">Cargando productos…</span>
+      </div>
+      <div class="catalog-filters">
+        <label class="catalog-search">
+          <span>Buscar producto</span>
+          <input id="catalogSearch" type="search" placeholder="Nombre, categoría o descripción…" autocomplete="off">
+        </label>
+        <label>
+          <span>Categoría</span>
+          <select id="catalogCategoryFilter">
+            <option value="">Todas las categorías</option>
+          </select>
+        </label>
+        <label>
+          <span>Mostrar</span>
+          <select id="catalogStatusFilter">
+            <option value="all">Todos los productos</option>
+            <option value="available">Disponibles</option>
+            <option value="unavailable">Agotados</option>
+            <option value="featured">Destacados</option>
+          </select>
+        </label>
+      </div>
+      <button type="button" class="btn btn-outline catalog-clear" id="catalogClearFilters">Limpiar filtros</button>
+    </div>
     <div id="items"></div>
   </div>
 </details>
