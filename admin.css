@@ -539,3 +539,149 @@ hr { border: 0; border-top: 1px solid var(--admin-line); }
   .product-form-actions { flex-direction: column; }
   .product-form-actions button { width: 100%; }
 }
+
+/* Tarjetas renovadas del catálogo */
+#items { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-items: stretch; }
+#items .product-admin-card {
+  display: grid;
+  grid-template-columns: 112px minmax(0,1fr);
+  gap: 15px;
+  align-content: start;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--admin-line);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(41,37,33,.035);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+#items .product-admin-card:hover {
+  border-color: rgba(201,164,92,.85);
+  box-shadow: 0 10px 26px rgba(41,37,33,.08);
+  transform: translateY(-2px);
+}
+#items .product-admin-photo {
+  width: 112px;
+  height: 112px;
+  overflow: hidden;
+  border: 1px solid #eee7df;
+  border-radius: 13px;
+  background: #f5f0e8;
+}
+#items .product-admin-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+#items .product-no-photo {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: #9b8c7a;
+  background: linear-gradient(145deg,#faf6ef,#eee5d9);
+}
+#items .product-no-photo span { font-size: 30px; }
+#items .product-no-photo small { font-size: 10px; font-weight: 700; }
+#items .product-admin-info { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+#items .product-admin-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+#items .product-admin-title-row h3 {
+  min-width: 0;
+  margin: 1px 0 0;
+  color: var(--admin-ink);
+  font-size: 15px;
+  font-weight: 850;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+#items .product-admin-price {
+  flex: 0 0 auto;
+  color: var(--admin-red);
+  font-size: 16px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+#items .product-admin-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+#items .product-admin-category,
+#items .product-admin-type {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 750;
+}
+#items .product-admin-category { color: #76571f; background: #f8f0df; }
+#items .product-admin-type { color: #62594f; background: #f1eee9; }
+#items .product-admin-description {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #6f665d;
+  font-size: 11px;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+#items .product-admin-no-description { color: #a49a8e; font-style: italic; }
+#items .product-admin-status { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+#items .product-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 23px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+#items .product-status-pill.is-available { color: #256345; background: #eaf5ee; }
+#items .product-status-pill.is-unavailable { color: #9d3030; background: #faeaea; }
+#items .product-status-pill.is-featured { color: #85621e; background: #fbf2dc; }
+#items .product-admin-actions {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #eee8e0;
+}
+#items .product-admin-actions button {
+  min-width: 0;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid #e3dbd1;
+  border-radius: 9px;
+  color: #51483f;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+#items .product-admin-actions button:hover { border-color: var(--admin-red); color: var(--admin-red); background: #fff8f7; }
+#items .product-admin-actions button.product-action-primary {
+  grid-column: 1 / -1;
+  border-color: var(--admin-red);
+  color: #fff;
+  background: var(--admin-red);
+}
+#items .product-admin-actions button.product-action-primary:hover { background: var(--admin-red-dark); color: #fff; }
+#items .product-admin-actions button.product-action-delete { color: #9d3030; }
+#items .product-admin-actions button:disabled { opacity: .55; cursor: wait; }
+@media (max-width: 900px) {
+  #items { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 600px) {
+  #items .product-admin-card { grid-template-columns: 88px minmax(0,1fr); gap: 11px; padding: 12px; }
+  #items .product-admin-photo { width: 88px; height: 88px; }
+  #items .product-admin-title-row { flex-direction: column; gap: 3px; }
+  #items .product-admin-title-row h3 { font-size: 14px; }
+  #items .product-admin-price { font-size: 15px; }
+  #items .product-admin-actions { gap: 7px; }
+  #items .product-admin-actions button { font-size: 10px; padding: 8px 6px; }
+}

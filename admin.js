@@ -2194,42 +2194,48 @@ function renderProducts() {
     const name = escapeHTML(product.name);
     const category = escapeHTML(product.category);
     const type = escapeHTML(productTypeLabel(product.product_type));
+    const description = escapeHTML(product.description || "");
     const price = money(product.price);
     const available = isTrue(product.available);
     const featured = isTrue(product.featured);
     const image = safeImageURL(product.image);
 
     return `
-      <div class="rowitem product-admin-card">
+      <article class="rowitem product-admin-card">
         <div class="product-admin-photo">
           ${image
             ? `<img src="${escapeHTML(image)}" alt="${name}" loading="lazy" onerror="this.style.display='none'">`
-            : `<div class="product-no-photo">🍣</div>`
+            : `<div class="product-no-photo"><span>🍣</span><small>Sin fotografía</small></div>`
           }
         </div>
         <div class="product-admin-info">
-          <b>${name}</b>
-          <small>${category}</small>
-          <small>Tipo: ${type}</small>
-          <strong class="product-admin-price">${price}</strong>
+          <div class="product-admin-title-row">
+            <h3>${name}</h3>
+            <strong class="product-admin-price">${price}</strong>
+          </div>
+          <div class="product-admin-meta">
+            <span class="product-admin-category">${category}</span>
+            <span class="product-admin-type">Tipo: ${type}</span>
+          </div>
+          ${description ? `<p class="product-admin-description">${description}</p>` : '<p class="product-admin-description product-admin-no-description">Sin descripción agregada.</p>'}
           <div class="product-admin-status">
-            <span class="${available ? "status-available" : "status-unavailable"}">
-              ${available ? "● Disponible" : "● Agotado"}
+            <span class="product-status-pill ${available ? "is-available" : "is-unavailable"}">
+              <span aria-hidden="true">●</span> ${available ? "Disponible" : "Agotado"}
             </span>
-            ${featured ? '<span class="status-featured">★ Destacado</span>' : ""}
+            ${featured ? '<span class="product-status-pill is-featured">★ Destacado</span>' : ""}
           </div>
         </div>
         <div class="product-admin-actions">
+          <button type="button" class="product-action-primary" data-edit="${id}">Editar producto</button>
           <button type="button" data-toggle-available="${id}">
-            ${available ? "Marcar agotado" : "Activar"}
+            ${available ? "Marcar agotado" : "Activar producto"}
           </button>
           <button type="button" data-toggle-featured="${id}">
             ${featured ? "Quitar destacado" : "Destacar"}
           </button>
-          <button type="button" data-edit="${id}">Editar</button>
-          <button type="button" data-del="${id}">Eliminar</button>
+          <button type="button" class="product-action-delete" data-del="${id}">Eliminar</button>
         </div>
-      </div>
+      </article>
     `;
   }).join("");
 }
