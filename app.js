@@ -1033,6 +1033,21 @@ function cartItemDescription(item) {
             </span>
           </div>
         ` : ""}
+        ${Array.isArray(weekly.customCombo) && weekly.customCombo.length ? `
+  <div class="cart-config-row">
+    <span class="cart-config-label">Productos del combo</span>
+    <span class="cart-option">
+      ${weekly.customCombo.map((unit, index) => `
+        Producto ${index + 1}:
+        ${escapeHTML(unit.productType || "Producto")}
+        ${unit.protein ? ` · Proteína: ${escapeHTML(unit.protein)}` : ""}
+        ${unit.vegetable ? ` · Vegetal: ${escapeHTML(unit.vegetable)}` : ""}
+        ${unit.cheese ? ` · ${escapeHTML(unit.cheese)}` : ""}
+        ${unit.nori ? ` · ${escapeHTML(unit.nori)}` : ""}
+      `).join("<br>")}
+    </span>
+  </div>
+` : ""}
         ${weekly.accompaniment ? `
           <div class="cart-config-row">
             <span class="cart-config-label">Acompañamiento incluido</span>
@@ -1206,6 +1221,18 @@ function openWeeklyPromo(promo, editingItem = null) {
   const burgerProteins = components.burger_proteins || [];
   const burgerVegetables = components.burger_vegetables || [];
   const savedConfig = editingItem?.config?.weeklyPromo || {};
+    const customComboComponents = Array.isArray(
+    components.custom_combo_components
+  )
+    ? components.custom_combo_components
+    : [];
+
+  const savedCustomCombo = Array.isArray(savedConfig.customCombo)
+    ? savedConfig.customCombo
+    : [];
+
+  const customFriesIncluded = components.custom_fries === true;
+  const customDrinkIncluded = components.custom_drink === true;
   
   // Opciones dinámicas de Oferta simple
   const simpleProteins = (
@@ -1487,6 +1514,14 @@ options = `
         </div>
   `;
 }
+  else if (type === "custom_combo") {
+  options = `
+    <div id="weeklyCustomComboConfigs">
+      <h3>Personaliza tu promoción</h3>
+      <p>Configura cada producto de tu combo según las opciones disponibles.</p>
+    </div>
+  `;
+}
 
   // Mostrar el acompañamiento fijo incluido en la promoción
   const accompaniment = (
@@ -1758,11 +1793,351 @@ const renderWeeklyGohanConfigs = () => {
     }).join("")}
   `;
 };
+  let weeklyCustomComboDrafts = savedCustomCombo.map(item => ({
+  ...item
+}));
+
+const renderCustomComboConfigs = () => {
+  const container = form.querySelector("#weeklyCustomComboConfigs");
+  if (!container) return;
+
+  // Guardar las selecciones actuales antes de volver a dibujar
+  const currentConfigs = Array.from(
+    container.querySelectorAll(".weekly-custom-unit")
+  ).map(card => ({
+    componentIndex: Number(card.dataset.component),
+    unitIndex: Number(card.dataset.unit),
+    protein: card.querySelector(
+      'input[name^="customProtein-"]:checked'
+    )?.value || "",
+    vegetable: card.querySelector(
+      'input[name^="customVegetable-"]:checked'
+    )?.value || "",
+    cheese: card.querySelector(
+      'input[name^="customCheese-"]:checked'
+    )?.value || "",
+    nori: card.querySelector(
+      'input[name^="customNori-"]:checked'
+    )?.value || ""
+  }));
+
+  currentConfigs.forEach(item => {
+    const index = weeklyCustomComboDrafts.findIndex(saved =>
+      saved.componentIndex === item.componentIndex &&
+      saved.unitIndex === item.unitIndex
+    );
+
+    if (index >= 0) {
+      weeklyCustomComboDrafts[index] = item;
+    } else {
+      weeklyCustomComboDrafts.push(item);
+    }
+  });
+
+  container.innerHTML = `
+    <h3>Personaliza tu promoción</h3>
+
+    ${customComboComponents.map((component, componentIndex) => {
+      const productNames = {
+        handroll: "Handroll",
+        gohan: "Gohan",
+        roll: "Roll",
+        sushi_burger: "Sushi Burger",
+        other: "Producto"
+      };
+
+      const productName =
+        productNames[component.product_type] || "Producto";
+
+      const totalUnits =
+        Math.max(1, Number(component.quantity || 1)) * quantity;
+
+      const proteins = Array.isArray(component.proteins)
+        ? component.proteins
+        : [];
+
+      const vegetables = Array.isArray(component.vegetables)
+        ? component.vegetables
+        : [];
+
+      return `
+        <div class="weekly-custom-component">
+          <h3>${escapeHTML(productName)} (${totalUnits})</h3>
+
+          ${Array.from({ length: totalUnits }, (_, unitIndex) => {
+            const saved = weeklyCustomComboDrafts.find(item =>
+              item.componentIndex === componentIndex &&
+              item.unitIndex === unitIndex
+            ) || {};
+
+            return `
+              <div
+                class="weekly-custom-unit"
+                data-component="${componentIndex}"
+                data-unit="${unitIndex}"
+              >
+                <h4>${escapeHTML(productName)} ${unitIndex + 1}</h4>
+
+                <strong>Proteína</strong>
+
+                ${component.protein_mode === "fixed" ? `
+                  <p>${escapeHTML(component.fixed_protein || "Proteína fija")}</p>
+                ` : proteins.map(protein => `
+                  <label>
+                    <input
+                      type="radio"
+                      name="customProtein-${componentIndex}-${unitIndex}"
+                      value="${escapeHTML(protein)}"
+                      ${saved.protein === protein ? "checked" : ""}
+                      required
+                    >
+                    ${escapeHTML(protein)}
+                  </label>
+                `).join("")}
+
+                ${vegetables.length ? `
+                  <strong>Vegetal</strong>
+                  ${vegetables.map(vegetable => `
+                    <label>
+                      <input
+                        type="radio"
+                        name="customVegetable-${componentIndex}-${unitIndex}"
+                        value="${escapeHTML(vegetable)}"
+                        ${saved.vegetable === vegetable ? "checked" : ""}
+                      >
+                      ${escapeHTML(vegetable)}
+                    </label>
+                  `).join("")}
+                ` : ""}
+
+                ${component.cheese ? `
+                  <strong>Queso crema</strong>
+                  <label>
+                    <input
+                      type="radio"
+                      name="customCheese-${componentIndex}-${unitIndex}"
+                      value="Con queso crema"
+                      ${saved.cheese !== "Sin queso crema" ? "checked" : ""}
+                    >
+                    Con queso crema
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="customCheese-${componentIndex}-${unitIndex}"
+                      value="Sin queso crema"
+                      ${saved.cheese === "Sin queso crema" ? "checked" : ""}
+                    >
+                    Sin queso crema
+                  </label>
+                ` : ""}
+
+                ${component.nori ? `
+                  <strong>Nori</strong>
+                  <label>
+                    <input
+                      type="radio"
+                      name="customNori-${componentIndex}-${unitIndex}"
+                      value="Con nori"
+                      ${saved.nori !== "Sin nori" ? "checked" : ""}
+                    >
+                    Con nori
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="customNori-${componentIndex}-${unitIndex}"
+                      value="Sin nori"
+                      ${saved.nori === "Sin nori" ? "checked" : ""}
+                    >
+                    Sin nori
+                  </label>
+                ` : ""}
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }).join("")}
+
+    ${customFriesIncluded ? "<p><strong>Incluye:</strong> Papas fritas individuales.</p>" : ""}
+    ${customDrinkIncluded ? "<p><strong>Incluye:</strong> Bebida mini.</p>" : ""}
+  `;
+};
 
   const basePrice = Number(savedConfig.basePrice ?? promo.price ?? 0);
   const shrimpExtra = Number(components.burger_shrimp_extra || 0);
 
  const form = $("#ichibanDialogContent");
+  let weeklyCustomComboDrafts = savedCustomCombo.map(item => ({
+  ...item
+}));
+
+const renderWeeklyCustomComboConfigs = () => {
+  const container = form.querySelector("#weeklyCustomComboConfigs");
+  if (!container) return;
+
+  // Guardar las elecciones actuales antes de volver a dibujar
+  container.querySelectorAll(".weekly-custom-unit").forEach(card => {
+    const componentIndex = Number(card.dataset.component);
+    const unitIndex = Number(card.dataset.unit);
+
+    weeklyCustomComboDrafts[componentIndex] =
+      weeklyCustomComboDrafts[componentIndex] || [];
+
+    weeklyCustomComboDrafts[componentIndex][unitIndex] = {
+      protein: card.querySelector(
+        `[name="customProtein-${componentIndex}-${unitIndex}"]:checked`
+      )?.value || "",
+      vegetable: card.querySelector(
+        `[name="customVegetable-${componentIndex}-${unitIndex}"]:checked`
+      )?.value || "",
+      cheese: card.querySelector(
+        `[name="customCheese-${componentIndex}-${unitIndex}"]:checked`
+      )?.value || "",
+      nori: card.querySelector(
+        `[name="customNori-${componentIndex}-${unitIndex}"]:checked`
+      )?.value || ""
+    };
+  });
+
+  container.innerHTML = `
+    ${customComboComponents.map((component, componentIndex) => {
+      const componentQuantity = Math.max(
+        1,
+        Number(component.quantity || 1)
+      );
+
+      const productNames = {
+        handroll: "Handroll",
+        gohan: "Gohan",
+        roll: "Roll",
+        sushi_burger: "Sushi Burger",
+        other: "Producto"
+      };
+
+      const productName =
+        productNames[component.product_type] || "Producto";
+
+      const proteins = Array.isArray(component.proteins)
+        ? component.proteins
+        : [];
+
+      const vegetables = Array.isArray(component.vegetables)
+        ? component.vegetables
+        : [];
+
+      return `
+        <div class="weekly-custom-component">
+          <h3>${escapeHTML(productName)} × ${componentQuantity}</h3>
+
+          ${Array.from({ length: componentQuantity }, (_, unitIndex) => {
+            const saved =
+              weeklyCustomComboDrafts[componentIndex]?.[unitIndex] || {};
+
+            const proteinOptions =
+              component.protein_mode === "fixed"
+                ? [component.fixed_protein].filter(Boolean)
+                : proteins;
+
+            return `
+              <div class="weekly-custom-unit"
+                data-component="${componentIndex}"
+                data-unit="${unitIndex}">
+
+                <h4>${escapeHTML(productName)} ${unitIndex + 1}</h4>
+
+                <strong>Proteína</strong>
+
+                ${
+                  component.protein_mode === "fixed"
+                    ? `<p>${escapeHTML(component.fixed_protein || "Sin proteína")}</p>`
+                    : proteinOptions.map(protein => `
+                        <label>
+                          <input
+                            type="radio"
+                            name="customProtein-${componentIndex}-${unitIndex}"
+                            value="${escapeHTML(protein)}"
+                            ${saved.protein === protein ? "checked" : ""}
+                          >
+                          ${escapeHTML(protein)}
+                        </label>
+                      `).join("")
+                }
+
+                ${
+                  vegetables.length
+                    ? `
+                      <strong>Vegetal</strong>
+                      ${vegetables.map(vegetable => `
+                        <label>
+                          <input
+                            type="radio"
+                            name="customVegetable-${componentIndex}-${unitIndex}"
+                            value="${escapeHTML(vegetable)}"
+                            ${saved.vegetable === vegetable ? "checked" : ""}
+                          >
+                          ${escapeHTML(vegetable)}
+                        </label>
+                      `).join("")}
+                    `
+                    : ""
+                }
+
+                ${component.cheese ? `
+                  <strong>Queso crema</strong>
+                  <label>
+                    <input type="radio"
+                      name="customCheese-${componentIndex}-${unitIndex}"
+                      value="Con queso crema"
+                      ${saved.cheese !== "Sin queso crema" ? "checked" : ""}>
+                    Con queso crema
+                  </label>
+                  <label>
+                    <input type="radio"
+                      name="customCheese-${componentIndex}-${unitIndex}"
+                      value="Sin queso crema"
+                      ${saved.cheese === "Sin queso crema" ? "checked" : ""}>
+                    Sin queso crema
+                  </label>
+                ` : ""}
+
+                ${component.nori ? `
+                  <strong>Nori</strong>
+                  <label>
+                    <input type="radio"
+                      name="customNori-${componentIndex}-${unitIndex}"
+                      value="Con nori"
+                      ${saved.nori !== "Sin nori" ? "checked" : ""}>
+                    Con nori
+                  </label>
+                  <label>
+                    <input type="radio"
+                      name="customNori-${componentIndex}-${unitIndex}"
+                      value="Sin nori"
+                      ${saved.nori === "Sin nori" ? "checked" : ""}>
+                    Sin nori
+                  </label>
+                ` : ""}
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }).join("")}
+  `;
+};
+
+if (type === "custom_combo") {
+  options = `
+    <div id="weeklyCustomComboConfigs">
+      <h3>Personaliza tu promoción</h3>
+      <p>Elige los ingredientes de cada producto incluido en el combo.</p>
+    </div>
+  `;
+
+  renderWeeklyCustomComboConfigs();
+}
 
 if (type === "simple") {
   renderSimpleOffers();
@@ -1770,6 +2145,9 @@ if (type === "simple") {
 
 if (type === "handroll_combo") {
   renderWeeklyHandrollConfigs();
+}
+  if (type === "custom_combo") {
+  renderCustomComboConfigs();
 }
   const getProtein = () =>
     form.querySelector('[name="weeklyProtein"]:checked')?.value || "";
@@ -1802,6 +2180,9 @@ if (type === "handroll_combo") {
 if (type === "handroll_combo") {
   renderWeeklyHandrollConfigs();
 }
+   if (type === "custom_combo") {
+  renderCustomComboConfigs();
+}
 });
 
 $("#weeklyPlus").addEventListener("click", () => {
@@ -1818,6 +2199,9 @@ $("#weeklyPlus").addEventListener("click", () => {
 
 if (type === "handroll_combo") {
   renderWeeklyHandrollConfigs();
+}
+  if (type === "custom_combo") {
+  renderCustomComboConfigs();
 }
 });
 
@@ -1914,7 +2298,41 @@ const simpleOffers = type === "simple"
       )?.value || "Con nori"
     }))
   : [];
+const customCombo = type === "custom_combo"
+  ? customComboComponents.flatMap((component, componentIndex) => {
+      const totalUnits =
+        Math.max(1, Number(component.quantity || 1)) * quantity;
 
+      return Array.from({ length: totalUnits }, (_, unitIndex) => {
+        const saved = weeklyCustomComboDrafts.find(item =>
+          item.componentIndex === componentIndex &&
+          item.unitIndex === unitIndex
+        ) || {};
+
+        const protein = component.protein_mode === "fixed"
+          ? component.fixed_protein || ""
+          : form.querySelector(
+              `[name="customProtein-${componentIndex}-${unitIndex}"]:checked`
+            )?.value || "";
+
+        return {
+          componentIndex,
+          unitIndex,
+          productType: component.product_type || "other",
+          protein,
+          vegetable: form.querySelector(
+            `[name="customVegetable-${componentIndex}-${unitIndex}"]:checked`
+          )?.value || "",
+          cheese: form.querySelector(
+            `[name="customCheese-${componentIndex}-${unitIndex}"]:checked`
+          )?.value || "",
+          nori: form.querySelector(
+            `[name="customNori-${componentIndex}-${unitIndex}"]:checked`
+          )?.value || ""
+        };
+      });
+    })
+  : [];
 if (
   type === "simple" &&
   (
@@ -1932,15 +2350,25 @@ if (
 
 
     if (
-      type !== "simple" &&
-      type !== "gohan_combo" &&
-      type !== "handroll_combo" &&
-      !protein
-    ) {
-      alert("Selecciona una proteína.");
-      return;
-    }
-
+  type !== "simple" &&
+  type !== "gohan_combo" &&
+  type !== "handroll_combo" &&
+  type !== "custom_combo" &&
+  !protein
+) {
+  alert("Selecciona una proteína.");
+  return;
+}
+    if (
+  type === "custom_combo" &&
+  customCombo.some(item => {
+    const component = customComboComponents[item.componentIndex];
+    return component?.protein_mode === "choose_unique" && !item.protein;
+  })
+) {
+  alert("Selecciona una proteína para cada producto del combo.");
+  return;
+}
     if (
       type === "handroll_combo" &&
       handrolls.some(handroll => !handroll.protein || !handroll.vegetable)
@@ -2006,6 +2434,7 @@ cheese,
 gohans,
 handrolls,
 simpleOffers,
+customCombo,
 shrimpExtra: extra,
 basePrice,
           accompaniment
@@ -3331,7 +3760,32 @@ lines.push("PERSONALIZACIÓN PROMOCIÓN SEMANAL:");
     lines.push(`Nori: ${offer.nori || "Sin selección"}`);
   });
 }
+if (
+  weekly.offerType === "custom_combo" &&
+  Array.isArray(weekly.customCombo)
+) {
+  lines.push("PRODUCTOS DEL COMBO:");
 
+  weekly.customCombo.forEach((unit, index) => {
+    lines.push(`Producto ${index + 1}: ${unit.productType || "Producto"}`);
+
+    if (unit.protein) {
+      lines.push(`Proteína: ${unit.protein}`);
+    }
+
+    if (unit.vegetable) {
+      lines.push(`Vegetal: ${unit.vegetable}`);
+    }
+
+    if (unit.cheese) {
+      lines.push(`Queso crema: ${unit.cheese}`);
+    }
+
+    if (unit.nori) {
+      lines.push(`Nori: ${unit.nori}`);
+    }
+  });
+}
 if (weekly.offerType === "handroll_combo" && Array.isArray(weekly.handrolls)) {
   weekly.handrolls.forEach((handroll, index) => {
     lines.push(`Handroll ${index + 1}:`);
