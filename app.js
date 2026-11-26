@@ -1801,24 +1801,16 @@ const renderCustomComboConfigs = () => {
   const container = form.querySelector("#weeklyCustomComboConfigs");
   if (!container) return;
 
-  // Guardar las selecciones actuales antes de volver a dibujar
+  // Guardar selecciones actuales
   const currentConfigs = Array.from(
     container.querySelectorAll(".weekly-custom-unit")
   ).map(card => ({
     componentIndex: Number(card.dataset.component),
     unitIndex: Number(card.dataset.unit),
-    protein: card.querySelector(
-      'input[name^="customProtein-"]:checked'
-    )?.value || "",
-    vegetable: card.querySelector(
-      'input[name^="customVegetable-"]:checked'
-    )?.value || "",
-    cheese: card.querySelector(
-      'input[name^="customCheese-"]:checked'
-    )?.value || "",
-    nori: card.querySelector(
-      'input[name^="customNori-"]:checked'
-    )?.value || ""
+    protein: card.querySelector('[name^="customProtein-"]')?.value || "",
+    vegetable: card.querySelector('[name^="customVegetable-"]')?.value || "",
+    cheese: card.querySelector('[name^="customCheese-"]')?.value || "",
+    nori: card.querySelector('[name^="customNori-"]')?.value || ""
   }));
 
   currentConfigs.forEach(item => {
@@ -1862,107 +1854,108 @@ const renderCustomComboConfigs = () => {
 
       return `
         <div class="weekly-custom-component">
-          <h3>${escapeHTML(productName)} (${totalUnits})</h3>
+          <div class="dialog-note">
+            <strong>${escapeHTML(productName)} (${totalUnits})</strong>
+          </div>
 
           ${Array.from({ length: totalUnits }, (_, unitIndex) => {
             const saved = weeklyCustomComboDrafts.find(item =>
               item.componentIndex === componentIndex &&
               item.unitIndex === unitIndex
             ) || {};
-            const usedProteins = weeklyCustomComboDrafts
-  .filter(item =>
-    item.componentIndex === componentIndex &&
-    item.unitIndex < unitIndex &&
-    item.protein
-  )
-  .map(item => item.protein);
 
-const availableProteins = proteins.filter(
-  protein => !usedProteins.includes(protein)
-);
+            const usedProteins = weeklyCustomComboDrafts
+              .filter(item =>
+                item.componentIndex === componentIndex &&
+                item.unitIndex < unitIndex &&
+                item.protein
+              )
+              .map(item => item.protein);
+
+            const availableProteins = proteins.filter(
+              protein =>
+                !usedProteins.includes(protein) ||
+                protein === saved.protein
+            );
 
             return `
               <div
-                class="weekly-custom-unit"
+                class="promo-roll weekly-custom-unit"
                 data-component="${componentIndex}"
                 data-unit="${unitIndex}"
               >
-                <h4>${escapeHTML(productName)} ${unitIndex + 1}</h4>
+                <h3>${escapeHTML(productName)} ${unitIndex + 1}</h3>
 
-                <strong>Proteína</strong>
+                <div class="form">
 
-                ${component.protein_mode === "fixed" ? `
-  <p>${escapeHTML(component.fixed_protein || "Proteína fija")}</p>
-` : availableProteins.map(protein => `
-  <label>
-    <input
-      type="radio"
-      name="customProtein-${componentIndex}-${unitIndex}"
-      value="${escapeHTML(protein)}"
-      ${saved.protein === protein ? "checked" : ""}
-      required
-    >
-    ${escapeHTML(protein)}
-  </label>
-`).join("")}
-                ${vegetables.length ? `
-                  <strong>Vegetal</strong>
-                  ${vegetables.map(vegetable => `
+                  ${component.protein_mode === "fixed" ? `
                     <label>
-                      <input
-                        type="radio"
-                        name="customVegetable-${componentIndex}-${unitIndex}"
-                        value="${escapeHTML(vegetable)}"
-                        ${saved.vegetable === vegetable ? "checked" : ""}
-                      >
-                      ${escapeHTML(vegetable)}
+                      Proteína
+                      <p>${escapeHTML(component.fixed_protein || "Proteína fija")}</p>
                     </label>
-                  `).join("")}
-                ` : ""}
+                  ` : `
+                    <label>
+                      Proteína
+                      <select name="customProtein-${componentIndex}-${unitIndex}" required>
+                        <option value="">Selecciona una proteína</option>
+                        ${availableProteins.map(protein => `
+                          <option
+                            value="${escapeHTML(protein)}"
+                            ${saved.protein === protein ? "selected" : ""}
+                          >
+                            ${escapeHTML(protein)}
+                          </option>
+                        `).join("")}
+                      </select>
+                    </label>
+                  `}
 
-                ${component.cheese ? `
-                  <strong>Queso crema</strong>
-                  <label>
-                    <input
-                      type="radio"
-                      name="customCheese-${componentIndex}-${unitIndex}"
-                      value="Con queso crema"
-                      ${saved.cheese !== "Sin queso crema" ? "checked" : ""}
-                    >
-                    Con queso crema
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="customCheese-${componentIndex}-${unitIndex}"
-                      value="Sin queso crema"
-                      ${saved.cheese === "Sin queso crema" ? "checked" : ""}
-                    >
-                    Sin queso crema
-                  </label>
-                ` : ""}
+                  ${vegetables.length ? `
+                    <label>
+                      Vegetal
+                      <select name="customVegetable-${componentIndex}-${unitIndex}">
+                        <option value="">Selecciona un vegetal</option>
+                        ${vegetables.map(vegetable => `
+                          <option
+                            value="${escapeHTML(vegetable)}"
+                            ${saved.vegetable === vegetable ? "selected" : ""}
+                          >
+                            ${escapeHTML(vegetable)}
+                          </option>
+                        `).join("")}
+                      </select>
+                    </label>
+                  ` : ""}
 
-                ${component.nori ? `
-                  <strong>Nori</strong>
-                  <label>
-                    <input
-                      type="radio"
-                      name="customNori-${componentIndex}-${unitIndex}"
-                      value="Con nori"
-                      ${saved.nori !== "Sin nori" ? "checked" : ""}
-                    >
-                    Con nori
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="customNori-${componentIndex}-${unitIndex}"
-                      value="Sin nori"
-                      ${saved.nori === "Sin nori" ? "checked" : ""}
-                    >
-                    Sin nori
-                  </label>
-                ` : ""}
+                  ${component.cheese ? `
+                    <label>
+                      Queso crema
+                      <select name="customCheese-${componentIndex}-${unitIndex}">
+                        <option value="Con queso crema" ${saved.cheese !== "Sin queso crema" ? "selected" : ""}>
+                          Con queso crema
+                        </option>
+                        <option value="Sin queso crema" ${saved.cheese === "Sin queso crema" ? "selected" : ""}>
+                          Sin queso crema
+                        </option>
+                      </select>
+                    </label>
+                  ` : ""}
+
+                  ${component.nori ? `
+                    <label>
+                      Nori
+                      <select name="customNori-${componentIndex}-${unitIndex}">
+                        <option value="Con nori" ${saved.nori !== "Sin nori" ? "selected" : ""}>
+                          Con nori
+                        </option>
+                        <option value="Sin nori" ${saved.nori === "Sin nori" ? "selected" : ""}>
+                          Sin nori
+                        </option>
+                      </select>
+                    </label>
+                  ` : ""}
+
+                </div>
               </div>
             `;
           }).join("")}
@@ -2157,25 +2150,25 @@ const customCombo = type === "custom_combo"
         ) || {};
 
         const protein = component.protein_mode === "fixed"
-          ? component.fixed_protein || ""
-          : form.querySelector(
-              `[name="customProtein-${componentIndex}-${unitIndex}"]:checked`
-            )?.value || "";
+  ? component.fixed_protein || ""
+  : form.querySelector(
+      `[name="customProtein-${componentIndex}-${unitIndex}"]`
+    )?.value || "";
 
         return {
           componentIndex,
           unitIndex,
           productType: component.product_type || "other",
           protein,
-          vegetable: form.querySelector(
-            `[name="customVegetable-${componentIndex}-${unitIndex}"]:checked`
-          )?.value || "",
-          cheese: form.querySelector(
-            `[name="customCheese-${componentIndex}-${unitIndex}"]:checked`
-          )?.value || "",
-          nori: form.querySelector(
-            `[name="customNori-${componentIndex}-${unitIndex}"]:checked`
-          )?.value || ""
+         vegetable: form.querySelector(
+  `[name="customVegetable-${componentIndex}-${unitIndex}"]`
+)?.value || "",
+cheese: form.querySelector(
+  `[name="customCheese-${componentIndex}-${unitIndex}"]`
+)?.value || "",
+nori: form.querySelector(
+  `[name="customNori-${componentIndex}-${unitIndex}"]`
+)?.value || ""
         };
       });
     })
