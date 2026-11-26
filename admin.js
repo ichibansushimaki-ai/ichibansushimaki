@@ -130,7 +130,7 @@ function ensureProductFields() {
     </label>
 
 
-    <div id="productRules" class="product-rules-box">
+        <div id="productRules" class="product-rules-box">
       <label for="rollsCount">Cantidad de rolls que incluye</label>
       <input
         type="number"
@@ -142,6 +142,37 @@ function ensureProductFields() {
       <p id="productRulesHelp">
         Las reglas de salsas y palitos se aplicarán según el tipo de producto.
       </p>
+    </div>
+
+    <div id="handrollProductOptions" class="product-rules-box" style="display:none;">
+      <h4>Personalización del Handroll</h4>
+
+      <label>Vegetales disponibles</label>
+      <p>Agrega, modifica o desactiva los vegetales que podrá elegir el cliente.</p>
+
+      <div id="productHandrollVegetables"></div>
+
+      <button
+        type="button"
+        class="btn btn-outline"
+        id="addProductHandrollVegetable"
+      >
+        + Agregar vegetal
+      </button>
+
+      <hr>
+
+      <h4>Queso crema</h4>
+      <label>
+        <input type="checkbox" id="productHandrollCheese">
+        Permitir elegir con o sin queso crema
+      </label>
+
+      <h4>Nori</h4>
+      <label>
+        <input type="checkbox" id="productHandrollNori">
+        Permitir elegir con o sin nori
+      </label>
     </div>
   `;
 
@@ -168,6 +199,12 @@ function updateProductRules() {
   const count = $("#rollsCount");
   const help = $("#productRulesHelp");
 const customRollLabel = $("#customRollProductLabel");
+    const handrollOptions = $("#handrollProductOptions");
+
+  if (handrollOptions) {
+    handrollOptions.style.display =
+      type === "handroll" ? "block" : "none";
+  }
 
 if (customRollLabel) {
   customRollLabel.style.display = type === "roll" ? "block" : "none";
@@ -247,7 +284,61 @@ function buildProductOptions(type, rollsCount) {
     chopsticks_per_unit: 0
   };
 }
+function renderProductHandrollVegetables(vegetables = []) {
+  const container = $("#productHandrollVegetables");
+  if (!container) return;
 
+  container.innerHTML = vegetables.map(item => `
+    <div class="gohan-admin-row">
+      <input
+        type="text"
+        class="product-handroll-vegetable-name"
+        value="${escapeHandrollOption(item.name)}"
+        placeholder="Nombre de vegetal"
+      >
+
+      <label>
+        <input
+          type="checkbox"
+          class="product-handroll-vegetable-active"
+          ${item.active !== false ? "checked" : ""}
+        >
+        Activo
+      </label>
+
+      <button
+        type="button"
+        class="btn btn-outline product-handroll-remove-vegetable"
+      >
+        Eliminar
+      </button>
+    </div>
+  `).join("");
+}
+
+function readProductHandrollVegetables() {
+  const container = $("#productHandrollVegetables");
+  if (!container) return [];
+
+  return [...container.querySelectorAll(".gohan-admin-row")]
+    .map(row => ({
+      name: row.querySelector(".product-handroll-vegetable-name")?.value.trim() || "",
+      active: row.querySelector(".product-handroll-vegetable-active")?.checked ?? false
+    }))
+    .filter(item => item.name !== "");
+}
+
+document.addEventListener("click", event => {
+  if (event.target.closest("#addProductHandrollVegetable")) {
+    const vegetables = readProductHandrollVegetables();
+    vegetables.push({ name: "", active: true });
+    renderProductHandrollVegetables(vegetables);
+  }
+
+  if (event.target.closest(".product-handroll-remove-vegetable")) {
+    event.target.closest(".gohan-admin-row")?.remove();
+  }
+});
 function parseOptions(value) {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     return value;
@@ -2207,6 +2298,21 @@ form.elements.gohan_customizable.checked =
   form.elements.product_type.value = type;
 
   const options = parseOptions(product.options);
+    if (type === "handroll") {
+    renderProductHandrollVegetables(
+      options.handroll_vegetables || []
+    );
+
+    $("#productHandrollCheese").checked =
+      options.handroll_cheese ?? false;
+
+    $("#productHandrollNori").checked =
+      options.handroll_nori ?? false;
+  } else {
+    renderProductHandrollVegetables([]);
+    $("#productHandrollCheese").checked = false;
+    $("#productHandrollNori").checked = false;
+  }
 
   if (type === "promotion") {
     $("#rollsCount").value = Math.max(
@@ -2313,6 +2419,16 @@ $("#productForm").onsubmit = async event => {
   data.product_type,
   rollsCount
 );
+    if (data.product_type === "handroll") {
+  data.options.handroll_vegetables =
+    readProductHandrollVegetables();
+
+  data.options.handroll_cheese =
+    $("#productHandrollCheese").checked;
+
+  data.options.handroll_nori =
+    $("#productHandrollNori").checked;
+}
 data.options.custom_roll = !!form.elements.custom_roll?.checked;
 // Guardar selección de promociones semanales
 data.options.weekly_promotion =
