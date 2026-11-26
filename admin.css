@@ -1,0 +1,310 @@
+/* Ichiban Sushi Maki — panel administrativo
+   Capa visual independiente. No modifica la lógica del panel. */
+:root {
+  --admin-ink: #292521;
+  --admin-muted: #786f65;
+  --admin-paper: #f4f0e9;
+  --admin-card: #ffffff;
+  --admin-line: #e5ddd2;
+  --admin-red: #b51f2b;
+  --admin-red-dark: #941923;
+  --admin-gold: #c9a45c;
+  --admin-radius: 18px;
+  --admin-shadow: 0 8px 28px rgba(41, 37, 33, .055);
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: 130px; }
+body {
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(201,164,92,.10), transparent 34rem),
+    var(--admin-paper);
+  color: var(--admin-ink);
+  min-height: 100vh;
+}
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  min-height: 72px;
+  padding: 12px max(22px, calc((100vw - 1320px)/2));
+  background: rgba(23,23,23,.97);
+  border-bottom: 1px solid rgba(201,164,92,.35);
+  box-shadow: 0 5px 22px rgba(0,0,0,.13);
+  backdrop-filter: blur(14px);
+}
+.top .brand { color: #f5efe4; text-decoration: none; letter-spacing: .08em; }
+.top .brand small { color: #c9a45c; letter-spacing: .18em; }
+.top .mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(201,164,92,.65);
+  border-radius: 12px;
+  color: #e4c27d;
+  background: rgba(181,31,43,.18);
+}
+.top .btn { border-color: rgba(245,239,228,.28); color: #f5efe4; }
+.top .btn:hover { background: rgba(255,255,255,.08); }
+.admin {
+  width: min(1320px, 100%);
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 38px 30px 72px;
+}
+.admin > .eyebrow {
+  margin: 0 0 8px;
+  color: var(--admin-red);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .2em;
+}
+.admin > h1 {
+  margin: 0 0 26px;
+  color: var(--admin-ink);
+  font-size: clamp(27px, 3vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -.035em;
+}
+#login {
+  max-width: 540px;
+  margin: 32px auto;
+  padding: 34px;
+  border: 1px solid var(--admin-line);
+  border-top: 4px solid var(--admin-red);
+  border-radius: 20px;
+  background: var(--admin-card);
+  box-shadow: var(--admin-shadow);
+}
+#login h2 { margin: 0 0 8px; font-size: 23px; }
+#login p { color: var(--admin-muted); line-height: 1.6; }
+#password { display: block; max-width: none; min-height: 48px; margin: 18px 0 12px; }
+#loginBtn { min-height: 46px; min-width: 140px; }
+#loginMsg { min-height: 20px; }
+.admin-shortcuts {
+  position: sticky;
+  top: 72px;
+  z-index: 40;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 -30px 24px;
+  padding: 12px 30px;
+  border-top: 1px solid rgba(229,221,210,.8);
+  border-bottom: 1px solid var(--admin-line);
+  background: rgba(244,240,233,.94);
+  backdrop-filter: blur(12px);
+  scrollbar-width: thin;
+}
+.admin-shortcuts a {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 37px;
+  padding: 8px 13px;
+  border: 1px solid #ded5c9;
+  border-radius: 999px;
+  color: #51483f;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+  transition: .18s ease;
+}
+.admin-shortcuts a:hover,
+.admin-shortcuts a:focus-visible {
+  border-color: var(--admin-red);
+  color: var(--admin-red);
+  background: #fff8f7;
+  outline: none;
+}
+.box {
+  margin: 18px 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius);
+  background: var(--admin-card);
+  box-shadow: var(--admin-shadow);
+}
+.admin-panel > summary,
+.orders-dashboard > summary {
+  min-height: 82px;
+  padding: 20px 24px;
+  transition: background .18s ease;
+}
+.admin-panel > summary:hover,
+.orders-dashboard > summary:hover { background: #fcfaf7; }
+.admin-panel-summary strong,
+.orders-dashboard-summary strong {
+  font-size: 17px;
+  letter-spacing: -.01em;
+}
+.admin-panel-summary small,
+.orders-dashboard-summary small {
+  color: var(--admin-muted);
+  line-height: 1.5;
+}
+.admin-panel-toggle,
+.orders-dashboard-toggle {
+  color: var(--admin-red);
+  font-size: 12px;
+  font-weight: 800;
+}
+.admin-panel[open] > .admin-panel-summary,
+.orders-dashboard[open] > summary { background: #fbf7f0; }
+.admin-panel-content,
+.orders-dashboard-content { padding: 24px; }
+.admin-panel-content > p,
+.orders-dashboard-content > p {
+  color: var(--admin-muted);
+  line-height: 1.65;
+}
+.admin-panel-content h3,
+.admin-panel-content h4 { color: var(--admin-ink); }
+.form { gap: 17px; }
+.form label,
+.orders-filters label,
+.order-actions label {
+  color: #50483f;
+  line-height: 1.5;
+}
+.form input:not([type="checkbox"]):not([type="file"]),
+.form textarea,
+.form select,
+.orders-filters input,
+.orders-filters select,
+.order-actions select,
+.order-actions input,
+#password {
+  min-height: 44px;
+  border: 1px solid #d9d0c5;
+  border-radius: 10px;
+  color: var(--admin-ink);
+  background: #fff;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.form input:focus,
+.form textarea:focus,
+.form select:focus,
+.orders-filters input:focus,
+.orders-filters select:focus,
+.order-actions select:focus,
+.order-actions input:focus,
+#password:focus {
+  outline: none;
+  border-color: var(--admin-red);
+  box-shadow: 0 0 0 3px rgba(181,31,43,.10);
+}
+.form textarea { min-height: 104px; }
+.btn,
+button {
+  border-radius: 10px;
+  font-weight: 750;
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+.btn-red,
+#loginBtn {
+  border: 1px solid var(--admin-red);
+  background: var(--admin-red);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(181,31,43,.14);
+}
+.btn-red:hover,
+#loginBtn:hover {
+  background: var(--admin-red-dark);
+  box-shadow: 0 6px 16px rgba(181,31,43,.2);
+  transform: translateY(-1px);
+}
+.btn-outline { border: 1px solid #d8cec2; background: #fff; color: #51483f; }
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 3px solid rgba(201,164,92,.65);
+  outline-offset: 3px;
+}
+.photo-upload,
+.typography-group,
+.typography-note {
+  border-radius: 13px;
+}
+.photo-upload { background: #faf8f4; }
+.typography-group { border-color: var(--admin-line); background: #faf8f4; }
+.typography-note { color: var(--admin-muted); }
+.orders-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 22px 0;
+}
+.order-stat {
+  min-height: 104px;
+  justify-content: space-between;
+  border: 1px solid var(--admin-line);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff, #faf8f4);
+}
+.order-stat strong { color: var(--admin-red); font-size: clamp(20px, 2vw, 27px); }
+.orders-filters { gap: 14px; }
+.orders-toolbar { align-items: center; }
+.order-card { border-color: var(--admin-line); border-radius: 14px; }
+.order-card > summary { padding: 18px 20px; }
+.order-badge { border: 1px solid #e6ddd1; }
+#items { gap: 12px; }
+.rowitem.product-admin-card {
+  border-color: var(--admin-line);
+  border-radius: 15px;
+  background: #fff;
+}
+.rowitem.product-admin-card:hover {
+  border-color: var(--admin-gold);
+  box-shadow: 0 8px 22px rgba(41,37,33,.07);
+}
+.product-admin-photo { border: 1px solid #eee7df; }
+.product-admin-actions button { min-height: 38px; border-radius: 9px; }
+#weeklyPromoForm { border-radius: 15px; box-shadow: none; }
+#weeklyPromoForm h3 { font-size: 20px; }
+#weeklyPromosAdmin button,
+#customRollConfigBox button,
+#gohanConfigBox button { min-height: 40px; }
+hr { border: 0; border-top: 1px solid var(--admin-line); }
+[hidden] { display: none !important; }
+
+@media (max-width: 900px) {
+  .admin { padding: 28px 20px 56px; }
+  .admin-shortcuts { margin-right: -20px; margin-left: -20px; padding-right: 20px; padding-left: 20px; }
+  .orders-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-panel-content,
+  .orders-dashboard-content { padding: 20px; }
+}
+@media (max-width: 600px) {
+  .top { min-height: 62px; padding: 10px 14px; }
+  .top .brand { font-size: 14px; }
+  .top .mark { width: 36px; height: 36px; }
+  .top .btn { padding: 9px 11px; font-size: 12px; }
+  .admin { padding: 24px 13px 44px; }
+  .admin > h1 { margin-bottom: 20px; font-size: 28px; }
+  .admin-shortcuts {
+    top: 62px;
+    margin-right: -13px;
+    margin-left: -13px;
+    padding: 10px 13px;
+  }
+  .admin-shortcuts a { min-height: 35px; padding: 7px 11px; font-size: 11px; }
+  #login { padding: 24px 20px; }
+  .box { margin: 13px 0; border-radius: 15px; }
+  .admin-panel > summary,
+  .orders-dashboard > summary { min-height: 74px; padding: 16px; }
+  .admin-panel-content,
+  .orders-dashboard-content { padding: 16px; }
+  .orders-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .order-stat { min-height: 88px; padding: 11px; }
+  .order-stat small { font-size: 11px; }
+  .order-stat strong { font-size: 19px; }
+  .rowitem.product-admin-card { grid-template-columns: 72px minmax(0,1fr); gap: 11px; }
+  .product-admin-photo { width: 72px; height: 72px; }
+  .product-admin-actions { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
