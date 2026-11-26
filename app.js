@@ -1892,20 +1892,19 @@ const availableProteins = proteins.filter(
                 <strong>Proteína</strong>
 
                 ${component.protein_mode === "fixed" ? `
-                  <p>${escapeHTML(component.fixed_protein || "Proteína fija")}</p>
-                availableProteins.map
-                  <label>
-                    <input
-                      type="radio"
-                      name="customProtein-${componentIndex}-${unitIndex}"
-                      value="${escapeHTML(protein)}"
-                      ${saved.protein === protein ? "checked" : ""}
-                      required
-                    >
-                    ${escapeHTML(protein)}
-                  </label>
-                `).join("")}
-
+  <p>${escapeHTML(component.fixed_protein || "Proteína fija")}</p>
+` : availableProteins.map(protein => `
+  <label>
+    <input
+      type="radio"
+      name="customProtein-${componentIndex}-${unitIndex}"
+      value="${escapeHTML(protein)}"
+      ${saved.protein === protein ? "checked" : ""}
+      required
+    >
+    ${escapeHTML(protein)}
+  </label>
+`).join("")}
                 ${vegetables.length ? `
                   <strong>Vegetal</strong>
                   ${vegetables.map(vegetable => `
