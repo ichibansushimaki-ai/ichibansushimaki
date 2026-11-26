@@ -176,15 +176,9 @@ function ensureProductFields() {
     </div>
   `;
 
-  const priceField = form.elements.price;
-
-  if (priceField) {
-    const priceContainer = priceField.parentElement;
-    if (priceContainer && priceContainer !== form) {
-      priceContainer.before(typeField);
-    } else {
-      priceField.before(typeField);
-    }
+  const typeSection = $("#productTypeSection");
+  if (typeSection) {
+    typeSection.replaceChildren(typeField);
   } else {
     form.appendChild(typeField);
   }
