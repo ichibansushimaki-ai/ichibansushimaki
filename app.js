@@ -1059,7 +1059,36 @@ function cartItemDescription(item) {
       </div>
     `);
   }
+if (config.handroll) {
+  const handroll = config.handroll;
 
+  sections.push(`
+    <div class="cart-config-section">
+      <strong class="cart-config-title">Personalización Handroll</strong>
+
+      ${handroll.vegetable ? `
+        <div class="cart-config-row">
+          <span class="cart-config-label">Vegetal</span>
+          <span class="cart-option">${escapeHTML(handroll.vegetable)}</span>
+        </div>
+      ` : ""}
+
+      ${handroll.cheese ? `
+        <div class="cart-config-row">
+          <span class="cart-config-label">Queso crema</span>
+          <span class="cart-option">${escapeHTML(handroll.cheese)}</span>
+        </div>
+      ` : ""}
+
+      ${handroll.nori ? `
+        <div class="cart-config-row">
+          <span class="cart-config-label">Nori</span>
+          <span class="cart-option">${escapeHTML(handroll.nori)}</span>
+        </div>
+      ` : ""}
+    </div>
+  `);
+}
   if (config.customRoll) {
     const roll = config.customRoll;
 
@@ -2487,8 +2516,64 @@ const isGohan = isDish && options.gohan_customizable === true;
   `;
 } else if (isRoll) {
   configuration = `<div class="dialog-note">Incluye una salsa de cortesía y un par de palitos por roll. Máximo 6 pares de palitos por pedido.</div>`;
-}else if (isHandroll) {
-    configuration = `<div class="dialog-note">Incluye una salsa de cortesía por handroll. No incluye palitos.</div>`;
+} else if (isHandroll) {
+  const handrollVegetables = (
+    Array.isArray(options.handroll_vegetables)
+      ? options.handroll_vegetables
+      : []
+  ).filter(item => item && item.active !== false && item.name);
+
+  const savedHandroll = initialConfig.handroll || {};
+
+  configuration = `
+    <div class="dialog-note">
+      <strong>Personaliza tu Handroll</strong><br>
+      Elige las opciones disponibles para tu preparación.
+      Incluye una salsa de cortesía por handroll. No incluye palitos.
+    </div>
+
+    ${handrollVegetables.length ? `
+      <h3>Elige tu vegetal</h3>
+      <select id="handrollVegetable">
+        ${handrollVegetables.map(item => `
+          <option
+            value="${escapeHTML(item.name)}"
+            ${savedHandroll.vegetable === item.name ? "selected" : ""}
+          >
+            ${escapeHTML(item.name)}
+          </option>
+        `).join("")}
+      </select>
+    ` : ""}
+
+    ${options.handroll_cheese === true ? `
+      <h3>Queso crema</h3>
+      <select id="handrollCheese">
+        <option value="Con queso crema"
+          ${savedHandroll.cheese !== "Sin queso crema" ? "selected" : ""}>
+          Con queso crema
+        </option>
+        <option value="Sin queso crema"
+          ${savedHandroll.cheese === "Sin queso crema" ? "selected" : ""}>
+          Sin queso crema
+        </option>
+      </select>
+    ` : ""}
+
+    ${options.handroll_nori === true ? `
+      <h3>Nori</h3>
+      <select id="handrollNori">
+        <option value="Con nori"
+          ${savedHandroll.nori !== "Sin nori" ? "selected" : ""}>
+          Con nori
+        </option>
+        <option value="Sin nori"
+          ${savedHandroll.nori === "Sin nori" ? "selected" : ""}>
+          Sin nori
+        </option>
+      </select>
+    ` : ""}
+  `;
   
 } else if (isGohan) {
   const gohanSettings = parseOptions(settings.gohan_config);
@@ -2887,7 +2972,13 @@ if (isPromo) {
     document.querySelectorAll(".nori-choice")
   ).map(select => select.value);
 }
-
+if (isHandroll) {
+  config.handroll = {
+    vegetable: $("#handrollVegetable")?.value || "",
+    cheese: $("#handrollCheese")?.value || "Con queso crema",
+    nori: $("#handrollNori")?.value || "Con nori"
+  };
+}
 
     if (isGohan) {
       const selectedVegetables = Array.from(
@@ -3701,7 +3792,23 @@ if (weekly.accompaniment) {
       );
       lines.push(`Vegetales: ${roll.vegetable}`);
     }
+if (config.handroll) {
+  const handroll = config.handroll;
 
+  lines.push("PERSONALIZACIÓN HANDROLL:");
+
+  if (handroll.vegetable) {
+    lines.push(`Vegetal: ${handroll.vegetable}`);
+  }
+
+  if (handroll.cheese) {
+    lines.push(`Queso crema: ${handroll.cheese}`);
+  }
+
+  if (handroll.nori) {
+    lines.push(`Nori: ${handroll.nori}`);
+  }
+}
     if (config.gohan) {
       const gohan = config.gohan;
 
