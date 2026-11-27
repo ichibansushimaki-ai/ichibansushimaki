@@ -328,6 +328,14 @@ function parseOptions(value) {
   }
 }
 
+function isSauceProduct(product) {
+  const type = String(product?.product_type || "").toLowerCase();
+  const category = String(product?.category || "").toLowerCase();
+  const name = String(product?.name || "").toLowerCase();
+  return type === "sauce" || type === "salsa" ||
+    category.includes("salsa") || name.includes("salsa");
+}
+
 function getType(product) {
   if (product.product_type && product.product_type !== "other") {
     return product.product_type;
@@ -1570,7 +1578,7 @@ function openWeeklyPromo(promo, editingItem = null) {
   const gohanProteins = sharedProteins.map(item => item.name);
   const gohanVegetables = sharedVegetables.map(item => item.name);
   const savedConfig = editingItem?.config?.weeklyPromo || {};
-  const weeklyPaidSauces = products.filter(p => isEnabled(p.available) && getType(p) === "sauce");
+  const weeklyPaidSauces = products.filter(p => isEnabled(p.available) && isSauceProduct(p));
     const customComboComponents = Array.isArray(
     components.custom_combo_components
   )
@@ -1906,7 +1914,7 @@ options = `
         <div class="weekly-complimentary-sauces">
           <h3>Salsas de cortesía</h3>
           <p>Incluye exactamente 2 salsas por producto. Distribúyelas entre soya y teriyaki.</p>
-          <label>Soya <input id="weeklySoyCount" type="number" min="0" value="${Number(editingItem?.config?.soy ?? savedConfig.soy ?? initialWeeklySauceCount)}"></label>
+          <label>Soya <input id="weeklySoyCount" type="number" min="0" value="${Number(editingItem?.config?.soy ?? savedConfig.soy ?? 0)}"></label>
           <label>Teriyaki <input id="weeklyTeriyakiCount" type="number" min="0" value="${Number(editingItem?.config?.teriyaki ?? savedConfig.teriyaki ?? 0)}"></label>
           <p id="weeklySauceValidation" class="dialog-note">Debes seleccionar exactamente ${initialWeeklySauceCount} salsas.</p>
         </div>
@@ -1936,8 +1944,6 @@ options = `
     const teriyakiInput = $("#weeklyTeriyakiCount");
     if (!soyInput || !teriyakiInput) return;
     const total = 2 * quantity;
-    const teriyaki = Math.max(0, Math.min(total, Number(teriyakiInput.value) || 0));
-    soyInput.value = total - teriyaki;
     $("#weeklySauceValidation").textContent = `Debes distribuir exactamente ${total} salsas entre soya y teriyaki.`;
   };
 let weeklyGohanDrafts = (savedConfig.gohans || []).map(gohan => ({
@@ -2724,7 +2730,7 @@ function openProduct(product, editingItem = null) {
         ? 2
         : 0;
 
-  const paidSauceProducts = products.filter(p => isEnabled(p.available) && getType(p) === "sauce");
+  const paidSauceProducts = products.filter(p => isEnabled(p.available) && isSauceProduct(p));
 
   let configuration = "";
 
@@ -2974,7 +2980,7 @@ function openProduct(product, editingItem = null) {
 
   const initialSoy = editingItem
     ? Number(initialConfig.soy || 0)
-    : freePerUnit;
+    : 0;
 
   const initialTeriyaki = Number(initialConfig.teriyaki || 0);
 
