@@ -913,6 +913,8 @@ function cartTotal() {
 
     const gohanSurcharge =
       Number(item.config?.gohan?.proteinSurcharge || 0) * quantity;
+    const sushiBurgerSurcharge =
+      Number(item.config?.sushiBurger?.proteinSurcharge || 0) * quantity;
 const customRollSurcharge =
   (
     Number(item.config?.customRoll?.coveringSurcharge || 0) +
@@ -921,6 +923,7 @@ const customRollSurcharge =
 return sum +
   productsTotal +
   gohanSurcharge +
+  sushiBurgerSurcharge +
   customRollSurcharge +
   getPaidSaucesTotal(item);
   }, 0);
