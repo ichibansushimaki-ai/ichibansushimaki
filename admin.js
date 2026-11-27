@@ -223,7 +223,7 @@ if (customRollLabel) {
   } else if (type === "dish") {
     rules.style.display = "none";
     help.textContent =
-      "Plato, Gohan, Bowl o Sushi Burger: hasta 2 salsas de cortesía por unidad. No incluye palitos.";
+      "Gohan, Bowl, Plato o Sushi Burger: exactamente 2 salsas de cortesía por unidad. No incluye palitos.";
   } else {
     rules.style.display = "none";
     help.textContent =
