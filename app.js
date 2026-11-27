@@ -1078,7 +1078,7 @@ function enhanceSauceSteppers() {
   if (!root) return;
   if (!$("#ichibanSauceStepperStyles")) {
     const style = document.createElement("style"); style.id = "ichibanSauceStepperStyles";
-    style.textContent = ".sauce-choice-list{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0 16px}.sauce-choice-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;background:#fff;border:1px solid #e8dfd4;border-radius:12px;min-height:54px}.sauce-choice-row label{font-weight:700;color:#29231f;margin:0}.sauce-choice-row .sauce-stepper{margin-left:auto}.sauce-choice-row input{display:none}.weekly-complimentary-sauces{padding:14px;border:1px solid #e8dfd4;border-radius:14px;background:#fbf8f3;margin:12px 0}.weekly-complimentary-sauces h3{margin:0 0 6px}.paid-sauce-row{background:#fff;border:1px solid #e8dfd4;border-radius:12px;padding:11px 14px;margin:8px 0}.cart-config-section{margin-top:14px}.sauce-stepper{display:inline-flex;align-items:center;justify-content:flex-end;gap:10px;min-width:112px}.sauce-stepper-btn{width:31px;height:31px;min-width:31px;border:2px solid #292929;border-radius:50%;background:#fff;color:#292929;font-size:22px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer}.sauce-stepper-btn:hover{background:#b51f2b;border-color:#b51f2b;color:#fff}.sauce-stepper-value{min-width:18px;text-align:center;font-size:16px;font-weight:800;color:#292929;font-variant-numeric:tabular-nums}.paid-sauce-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eadfce}.paid-sauce-name{font-weight:700;color:#29231f;line-height:1.35}.paid-sauce-price{display:block;color:#8a7664;font-size:12px;margin-top:3px}.sauce-stepper input{display:none}@media(max-width:520px){.sauce-stepper{gap:8px;min-width:104px}.sauce-stepper-btn{width:29px;height:29px;min-width:29px}.paid-sauce-row{gap:8px}}";
+    style.textContent = ".sauce-validation-note{margin:10px 0 14px;padding:11px 14px;border:1px solid #d9e5d8;border-radius:12px;background:#f3f8f1;color:#426044;font-size:13px;line-height:1.45;font-weight:600}.sauce-validation-note.is-error{border-color:#efb6b6;background:#fff1f1;color:#a32626}.sauce-validation-note.is-ok{border-color:#d9e5d8;background:#f3f8f1;color:#426044}.sauce-choice-list{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0 16px}.sauce-choice-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;background:#fff;border:1px solid #e8dfd4;border-radius:12px;min-height:54px}.sauce-choice-row label{font-weight:700;color:#29231f;margin:0}.sauce-choice-row .sauce-stepper{margin-left:auto}.sauce-choice-row input{display:none}.weekly-complimentary-sauces{padding:14px;border:1px solid #e8dfd4;border-radius:14px;background:#fbf8f3;margin:12px 0}.weekly-complimentary-sauces h3{margin:0 0 6px}.paid-sauce-row{background:#fff;border:1px solid #e8dfd4;border-radius:12px;padding:11px 14px;margin:8px 0}.cart-config-section{margin-top:14px}.sauce-stepper{display:inline-flex;align-items:center;justify-content:flex-end;gap:10px;min-width:112px}.sauce-stepper-btn{width:31px;height:31px;min-width:31px;border:2px solid #292929;border-radius:50%;background:#fff;color:#292929;font-size:22px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer}.sauce-stepper-btn:hover{background:#b51f2b;border-color:#b51f2b;color:#fff}.sauce-stepper-value{min-width:18px;text-align:center;font-size:16px;font-weight:800;color:#292929;font-variant-numeric:tabular-nums}.paid-sauce-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eadfce}.paid-sauce-name{font-weight:700;color:#29231f;line-height:1.35}.paid-sauce-price{display:block;color:#8a7664;font-size:12px;margin-top:3px}.sauce-stepper input{display:none}@media(max-width:520px){.sauce-stepper{gap:8px;min-width:104px}.sauce-stepper-btn{width:29px;height:29px;min-width:29px}.paid-sauce-row{gap:8px}}";
     document.head.appendChild(style);
   }
   root.querySelectorAll("#soyCount,#teriyakiCount,#weeklySoyCount,#weeklyTeriyakiCount,.paid-sauce-quantity").forEach(input => {
@@ -1923,7 +1923,7 @@ options = `
             <div class="sauce-choice-row"><label for="weeklySoyCount">Soya</label><input id="weeklySoyCount" type="number" min="0" value="${Number(editingItem?.config?.soy ?? savedConfig.soy ?? 0)}"></div>
             <div class="sauce-choice-row"><label for="weeklyTeriyakiCount">Teriyaki</label><input id="weeklyTeriyakiCount" type="number" min="0" value="${Number(editingItem?.config?.teriyaki ?? savedConfig.teriyaki ?? 0)}"></div>
           </div>
-          <p id="weeklySauceValidation" class="dialog-note">Debes seleccionar exactamente ${initialWeeklySauceCount} salsas.</p>
+          <p id="weeklySauceValidation" class="sauce-validation-note">Las salsas de cortesía son opcionales. Puedes elegir hasta ${initialWeeklySauceCount}.</p>
         </div>
       ` : ""}
 
@@ -1950,8 +1950,17 @@ options = `
     const soyInput = $("#weeklySoyCount");
     const teriyakiInput = $("#weeklyTeriyakiCount");
     if (!soyInput || !teriyakiInput) return;
-    const total = 2 * quantity;
-    $("#weeklySauceValidation").textContent = `Debes distribuir exactamente ${total} salsas entre soya y teriyaki.`;
+    const total = Number(soyInput.value || 0) + Number(teriyakiInput.value || 0);
+    const maximum = 2 * quantity;
+    const note = $("#weeklySauceValidation");
+    if (note) {
+      const valid = total <= maximum;
+      note.classList.toggle("is-error", !valid);
+      note.classList.toggle("is-ok", valid);
+      note.textContent = valid
+        ? (total === 0 ? "No deseas salsas de cortesía. Puedes continuar." : `Seleccionaste ${total} de ${maximum} salsas de cortesía.`)
+        : `Excediste el máximo: puedes elegir hasta ${maximum} salsas de cortesía.`;
+    }
   };
 let weeklyGohanDrafts = (savedConfig.gohans || []).map(gohan => ({
   ...gohan,
@@ -2484,8 +2493,8 @@ if (
     const weeklySauceSoy = Math.max(0, Number($("#weeklySoyCount")?.value || 0));
     const weeklySauceTeriyaki = Math.max(0, Number($("#weeklyTeriyakiCount")?.value || 0));
     const expectedWeeklySauces = ["gohan_combo", "sushi_burger_combo"].includes(type) ? 2 * quantity : 0;
-    if (expectedWeeklySauces && weeklySauceSoy + weeklySauceTeriyaki !== expectedWeeklySauces) {
-      alert(`Debes distribuir exactamente ${expectedWeeklySauces} salsas entre soya y teriyaki.`);
+    if (expectedWeeklySauces && weeklySauceSoy + weeklySauceTeriyaki > expectedWeeklySauces) {
+      updateWeeklySauceCounts();
       return;
     }
 
@@ -3004,8 +3013,8 @@ function openProduct(product, editingItem = null) {
         <input id="teriyakiCount" type="number" min="0" value="${initialTeriyaki}">
       </div>
     </div>
-    <p id="sauceValidation" class="dialog-note">
-      Total de cortesía: ${freePerUnit}. No se pueden superar las unidades incluidas.
+    <p id="sauceValidation" class="sauce-validation-note">
+      Puedes elegir hasta ${freePerUnit * initialQuantity} salsas de cortesía. Si no deseas ninguna, puedes continuar sin seleccionar.
     </p>
   ` : `<div class="dialog-note">Este producto no incluye salsas de cortesía.</div>`;
 
@@ -3175,15 +3184,19 @@ function openProduct(product, editingItem = null) {
 }
   function validateSauces() {
     if (!soy || !teriyaki) return true;
-
     const total = Number(soy.value || 0) + Number(teriyaki.value || 0);
     const maximum = freePerUnit * Number(quantity.value || 1);
-    const valid = total === maximum;
-
-    $("#sauceValidation").textContent = valid
-      ? `Correcto: ${total} salsas de cortesía seleccionadas.`
-      : `Debes distribuir exactamente ${maximum} salsas entre soya y teriyaki.`;
-
+    const note = $("#sauceValidation");
+    const valid = total <= maximum;
+    if (note) {
+      note.classList.toggle("is-error", !valid);
+      note.classList.toggle("is-ok", valid);
+      note.textContent = valid
+        ? (total === 0
+            ? "No deseas salsas de cortesía. Puedes continuar."
+            : `Seleccionaste ${total} de ${maximum} salsas de cortesía.`)
+        : `Excediste el máximo: puedes elegir hasta ${maximum} salsas de cortesía.`;
+    }
     return valid;
   }
 
@@ -3246,8 +3259,8 @@ if (isCustomRoll) {
       const soyValue = Math.max(0, Number(soy.value) || 0);
       const teriyakiValue = Math.max(0, Number(teriyaki.value) || 0);
 
-      if (soyValue + teriyakiValue !== freePerUnit * qty) {
-        alert("Distribuye todas las salsas de cortesía entre soya y teriyaki.");
+      if (soyValue + teriyakiValue > freePerUnit * qty) {
+        validateSauces();
         return;
       }
 
