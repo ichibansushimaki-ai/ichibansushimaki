@@ -330,11 +330,11 @@ function parseOptions(value) {
 
 function isSauceProduct(product) {
   const normalize = value => String(value || "")
-    .normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase().trim();
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
   const type = normalize(product?.product_type);
   const category = normalize(product?.category);
   const name = normalize(product?.name);
-  const sauceNames = /\\b(soya|soy|teriyaki|acevichada|maracuya|mango|spicy|ponzu|unagi|tartara|ajo|sesamo)\\b/;
+  const sauceNames = /\b(soya|soy|teriyaki|acevichada|maracuya|mango|spicy|ponzu|unagi|tartara|ajo|sesamo)\b/;
   return ["sauce", "salsa"].includes(type) ||
     category.includes("salsa") ||
     name.includes("salsa") ||
