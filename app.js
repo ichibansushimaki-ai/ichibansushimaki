@@ -329,11 +329,16 @@ function parseOptions(value) {
 }
 
 function isSauceProduct(product) {
-  const type = String(product?.product_type || "").toLowerCase();
-  const category = String(product?.category || "").toLowerCase();
-  const name = String(product?.name || "").toLowerCase();
-  return type === "sauce" || type === "salsa" ||
-    category.includes("salsa") || name.includes("salsa");
+  const normalize = value => String(value || "")
+    .normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase().trim();
+  const type = normalize(product?.product_type);
+  const category = normalize(product?.category);
+  const name = normalize(product?.name);
+  const sauceNames = /\\b(soya|soy|teriyaki|acevichada|maracuya|mango|spicy|ponzu|unagi|tartara|ajo|sesamo)\\b/;
+  return ["sauce", "salsa"].includes(type) ||
+    category.includes("salsa") ||
+    name.includes("salsa") ||
+    sauceNames.test(name);
 }
 
 function getType(product) {
@@ -1073,7 +1078,7 @@ function enhanceSauceSteppers() {
   if (!root) return;
   if (!$("#ichibanSauceStepperStyles")) {
     const style = document.createElement("style"); style.id = "ichibanSauceStepperStyles";
-    style.textContent = ".sauce-stepper{display:inline-flex;align-items:center;justify-content:flex-end;gap:10px;min-width:112px}.sauce-stepper-btn{width:31px;height:31px;min-width:31px;border:2px solid #292929;border-radius:50%;background:#fff;color:#292929;font-size:22px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer}.sauce-stepper-btn:hover{background:#b51f2b;border-color:#b51f2b;color:#fff}.sauce-stepper-value{min-width:18px;text-align:center;font-size:16px;font-weight:800;color:#292929;font-variant-numeric:tabular-nums}.paid-sauce-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eadfce}.paid-sauce-name{font-weight:700;color:#29231f;line-height:1.35}.paid-sauce-price{display:block;color:#8a7664;font-size:12px;margin-top:3px}.sauce-stepper input{display:none}@media(max-width:520px){.sauce-stepper{gap:8px;min-width:104px}.sauce-stepper-btn{width:29px;height:29px;min-width:29px}.paid-sauce-row{gap:8px}}";
+    style.textContent = ".sauce-choice-list{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0 16px}.sauce-choice-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;background:#fff;border:1px solid #e8dfd4;border-radius:12px;min-height:54px}.sauce-choice-row label{font-weight:700;color:#29231f;margin:0}.sauce-choice-row .sauce-stepper{margin-left:auto}.sauce-choice-row input{display:none}.weekly-complimentary-sauces{padding:14px;border:1px solid #e8dfd4;border-radius:14px;background:#fbf8f3;margin:12px 0}.weekly-complimentary-sauces h3{margin:0 0 6px}.paid-sauce-row{background:#fff;border:1px solid #e8dfd4;border-radius:12px;padding:11px 14px;margin:8px 0}.cart-config-section{margin-top:14px}.sauce-stepper{display:inline-flex;align-items:center;justify-content:flex-end;gap:10px;min-width:112px}.sauce-stepper-btn{width:31px;height:31px;min-width:31px;border:2px solid #292929;border-radius:50%;background:#fff;color:#292929;font-size:22px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer}.sauce-stepper-btn:hover{background:#b51f2b;border-color:#b51f2b;color:#fff}.sauce-stepper-value{min-width:18px;text-align:center;font-size:16px;font-weight:800;color:#292929;font-variant-numeric:tabular-nums}.paid-sauce-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eadfce}.paid-sauce-name{font-weight:700;color:#29231f;line-height:1.35}.paid-sauce-price{display:block;color:#8a7664;font-size:12px;margin-top:3px}.sauce-stepper input{display:none}@media(max-width:520px){.sauce-stepper{gap:8px;min-width:104px}.sauce-stepper-btn{width:29px;height:29px;min-width:29px}.paid-sauce-row{gap:8px}}";
     document.head.appendChild(style);
   }
   root.querySelectorAll("#soyCount,#teriyakiCount,#weeklySoyCount,#weeklyTeriyakiCount,.paid-sauce-quantity").forEach(input => {
@@ -1578,7 +1583,7 @@ function openWeeklyPromo(promo, editingItem = null) {
   const gohanProteins = sharedProteins.map(item => item.name);
   const gohanVegetables = sharedVegetables.map(item => item.name);
   const savedConfig = editingItem?.config?.weeklyPromo || {};
-  const weeklyPaidSauces = products.filter(p => isEnabled(p.available) && isSauceProduct(p));
+  const weeklyPaidSauces = products.filter(isSauceProduct);
     const customComboComponents = Array.isArray(
     components.custom_combo_components
   )
@@ -1914,8 +1919,10 @@ options = `
         <div class="weekly-complimentary-sauces">
           <h3>Salsas de cortesía</h3>
           <p>Incluye exactamente 2 salsas por producto. Distribúyelas entre soya y teriyaki.</p>
-          <label>Soya <input id="weeklySoyCount" type="number" min="0" value="${Number(editingItem?.config?.soy ?? savedConfig.soy ?? 0)}"></label>
-          <label>Teriyaki <input id="weeklyTeriyakiCount" type="number" min="0" value="${Number(editingItem?.config?.teriyaki ?? savedConfig.teriyaki ?? 0)}"></label>
+          <div class="sauce-choice-list">
+            <div class="sauce-choice-row"><label for="weeklySoyCount">Soya</label><input id="weeklySoyCount" type="number" min="0" value="${Number(editingItem?.config?.soy ?? savedConfig.soy ?? 0)}"></div>
+            <div class="sauce-choice-row"><label for="weeklyTeriyakiCount">Teriyaki</label><input id="weeklyTeriyakiCount" type="number" min="0" value="${Number(editingItem?.config?.teriyaki ?? savedConfig.teriyaki ?? 0)}"></div>
+          </div>
           <p id="weeklySauceValidation" class="dialog-note">Debes seleccionar exactamente ${initialWeeklySauceCount} salsas.</p>
         </div>
       ` : ""}
@@ -2730,7 +2737,7 @@ function openProduct(product, editingItem = null) {
         ? 2
         : 0;
 
-  const paidSauceProducts = products.filter(p => isEnabled(p.available) && isSauceProduct(p));
+  const paidSauceProducts = products.filter(isSauceProduct);
 
   let configuration = "";
 
@@ -2987,12 +2994,12 @@ function openProduct(product, editingItem = null) {
   const sauceFields = freePerUnit > 0 ? `
     <h3>Salsas de cortesía</h3>
     <p>Elige cómo distribuir las ${freePerUnit} salsas incluidas por unidad.</p>
-    <div class="dialog-grid">
-      <div>
+    <div class="sauce-choice-list">
+      <div class="sauce-choice-row">
         <label for="soyCount">Soya</label>
         <input id="soyCount" type="number" min="0" value="${initialSoy}">
       </div>
-      <div>
+      <div class="sauce-choice-row">
         <label for="teriyakiCount">Teriyaki</label>
         <input id="teriyakiCount" type="number" min="0" value="${initialTeriyaki}">
       </div>
