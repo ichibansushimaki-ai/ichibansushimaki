@@ -1791,8 +1791,8 @@ const renderWeeklyGohanConfigs = () => {
     weeklyGohanDrafts[index] = gohan;
   });
 
-  const proteins = components.gohan_proteins || [];
-  const vegetables = components.gohan_vegetable_options || [];
+  const proteins = gohanProteins;
+  const vegetables = gohanVegetables;
 
   container.innerHTML = `
     <h3>Personaliza tus Gohan</h3>
