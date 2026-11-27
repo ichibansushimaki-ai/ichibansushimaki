@@ -971,7 +971,48 @@ function cartItemDescription(item) {
       </div>
     `);
   }
-  if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple") {
+  if (config.weeklyPromo && config.weeklyPromo.offerType === "sushi_burger_combo") {
+    const weekly = config.weeklyPromo;
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Personalización Sushi Burger</strong>
+        <div class="cart-config-row">
+          <span class="cart-config-label">Proteína</span>
+          <span class="cart-option">${escapeHTML(weekly.protein || "Sin proteína")}</span>
+        </div>
+        <div class="cart-config-row">
+          <span class="cart-config-label">Queso crema</span>
+          <span class="cart-option">${escapeHTML(weekly.cheese || "Sin selección")}</span>
+        </div>
+        <div class="cart-config-row">
+          <span class="cart-config-label">Vegetales</span>
+          <span class="cart-option">${weekly.vegetables?.length ? weekly.vegetables.map(escapeHTML).join(", ") : "Sin vegetales"}</span>
+        </div>
+        ${Number(weekly.proteinSurcharge ?? weekly.shrimpExtra) > 0 ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Recargo por proteína</span>
+            <span class="cart-option">+${money(weekly.proteinSurcharge ?? weekly.shrimpExtra)}</span>
+          </div>
+        ` : ""}
+      </div>
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Detalles de la promoción semanal</strong>
+        ${weekly.day ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Día</span>
+            <span class="cart-option">${escapeHTML(weekly.day)}</span>
+          </div>
+        ` : ""}
+        ${weekly.accompaniment ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Acompañamiento incluido</span>
+            <span class="cart-option">${escapeHTML(weekly.accompaniment)} × ${Number(item.quantity || 1)}</span>
+          </div>
+        ` : ""}
+      </div>
+    `);
+  }
+  if (config.weeklyPromo && config.weeklyPromo.offerType !== "simple" && config.weeklyPromo.offerType !== "sushi_burger_combo") {
     const weekly = config.weeklyPromo;
 
     sections.push(`
