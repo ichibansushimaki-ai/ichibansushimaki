@@ -1513,48 +1513,38 @@ if (type === "simple") {
 
 
 if (type === "sushi_burger_combo") {
-  options = `
-    <h3>Personaliza tu Sushi Burger</h3>
-
-    <strong>Elige tu proteína</strong>
-    ${sharedProteins.map(item => `
-      <label>
-        <input type="radio" name="weeklyProtein" value="${escapeHTML(item.name)}"
-          ${item.name === savedProtein || (!savedProtein && sharedProteins[0] === item) ? "checked" : ""}>
-        ${escapeHTML(item.name)}${Number(item.surcharge) > 0 ? ` (+${money(item.surcharge)})` : ""}
-      </label>
-    `).join("")}
-
-    <strong>Elige hasta 2 vegetales</strong>
-    ${burgerVegetables.map(value => `
-      <label>
-        <input
-          type="checkbox"
-          name="weeklyVegetable"
-          value="${escapeHTML(value)}"
-          ${savedVegetables.includes(value) ? "checked" : ""}
-        >
-        ${escapeHTML(value)}
-      </label>
-    `).join("")}
-
-    <p>Puedes elegir hasta 2 vegetales o dejarlo sin vegetales.</p>
-
-    ${true ? `
-      <strong>Queso crema</strong>
-      <label>
-        <input type="radio" name="weeklyCheese" value="Con queso crema"
-          ${savedCheese === "Con queso crema" || !savedCheese ? "checked" : ""}>
-        Con queso crema
-      </label>
-      <label>
-        <input type="radio" name="weeklyCheese" value="Sin queso crema"
-          ${savedCheese === "Sin queso crema" ? "checked" : ""}>
-        Sin queso crema
-      </label>
-    ` : ""}
-  `;
-} else if (type === "gohan_combo") {
+   options = `
+     <div class="dialog-note">
+       <strong>Personaliza tu Sushi Burger</strong><br>
+       Elige una proteína disponible, hasta 2 vegetales y queso crema con o sin.
+     </div>
+     <h3>Queso crema</h3>
+     <select id="weeklyBurgerCheese">
+       <option value="Con queso crema" ${savedCheese !== "Sin queso crema" ? "selected" : ""}>Con queso crema</option>
+       <option value="Sin queso crema" ${savedCheese === "Sin queso crema" ? "selected" : ""}>Sin queso crema</option>
+     </select>
+     <h3>Elige tus vegetales (máximo 2)</h3>
+     <div id="weeklyBurgerVegetableChoices">
+       ${sharedVegetables.map(item => `
+         <label class="veg-row">
+           <input type="checkbox" class="weekly-burger-vegetable" value="${escapeHTML(item.name)}" ${savedVegetables.includes(item.name) ? "checked" : ""}>
+           ${escapeHTML(item.name)}
+         </label>
+       `).join("")}
+     </div>
+     <p class="dialog-note" id="weeklyBurgerVegetableValidation">Puedes elegir hasta 2 vegetales.</p>
+     <h3>Elige exactamente una proteína (obligatoria)</h3>
+     <select id="weeklyBurgerProtein" required>
+       <option value="">Selecciona una proteína</option>
+       ${sharedProteins.map(item => `
+         <option value="${escapeHTML(item.name)}" data-surcharge="${Number(item.surcharge) || 0}" ${savedProtein === item.name ? "selected" : ""}>
+           ${escapeHTML(item.name)}${Number(item.surcharge) > 0 ? ` (+${money(item.surcharge)})` : ""}
+         </option>
+       `).join("")}
+     </select>
+     <p class="dialog-note" id="weeklyBurgerPriceNote">El precio base no cambia según los ingredientes, salvo recargos de proteína.</p>
+   `;
+ } else if (type === "gohan_combo") {
   const savedGohans = savedConfig.gohans || [];
   const gohanCount = Math.max(1, Number(editingItem?.quantity || 1));
 
@@ -2120,8 +2110,7 @@ if (type === "handroll_combo") {
   if (type === "custom_combo") {
   renderCustomComboConfigs();
 }
-  const getProtein = () =>
-    form.querySelector('[name="weeklyProtein"]:checked')?.value || "";
+  const getProtein = () => form.querySelector("#weeklyBurgerProtein")?.value || "";
 
   const getExtra = () => {
     if (type !== "sushi_burger_combo") return 0;
@@ -2137,6 +2126,12 @@ if (type === "handroll_combo") {
     $("#weeklyQuantity").textContent = quantity;
     $("#weeklyUnitPrice").textContent = money(unitPrice);
     $("#weeklyTotal").textContent = money(unitPrice * quantity);
+      const selectedProtein = form.querySelector("#weeklyBurgerProtein");
+    const priceNote = $("#weeklyBurgerPriceNote");
+    const surcharge = Number(selectedProtein?.selectedOptions?.[0]?.dataset.surcharge || 0);
+    if (priceNote) priceNote.textContent = surcharge > 0
+      ? `Recargo por proteína: ${money(surcharge)} por unidad.`
+      : "Sin recargo adicional por proteína.";
   };
 
  $("#weeklyMinus").addEventListener("click", () => {
@@ -2184,16 +2179,15 @@ if (type === "handroll_combo") {
 });
 
   form.addEventListener("change", event => {
-    if (event.target.name === "weeklyVegetable" &&
-        type === "sushi_burger_combo") {
-      const selected = form.querySelectorAll(
-        '[name="weeklyVegetable"]:checked'
-      );
-
+    if (event.target.classList.contains("weekly-burger-vegetable") && type === "sushi_burger_combo") {
+      const selected = form.querySelectorAll(".weekly-burger-vegetable:checked");
       if (selected.length > 2) {
         event.target.checked = false;
         alert("Puedes elegir máximo 2 vegetales.");
       }
+      const count = form.querySelectorAll(".weekly-burger-vegetable:checked").length;
+      const message = $("#weeklyBurgerVegetableValidation");
+      if (message) message.textContent = `${count} de 2 vegetales seleccionados.`;
     }
 
     if (
@@ -2233,7 +2227,7 @@ if (
 
     const vegetables = type === "handroll_combo"
       ? []
-      : [...form.querySelectorAll('[name="weeklyVegetable"]:checked')]
+      : [...form.querySelectorAll(type === "sushi_burger_combo" ? ".weekly-burger-vegetable:checked" : '[name="weeklyVegetable"]:checked')]
           .map(el => el.value);
 
    const handrolls = type === "handroll_combo"
@@ -2367,9 +2361,9 @@ if (
       return;
     }
 
-    const cheese = form.querySelector(
-      '[name="weeklyCheese"]:checked'
-    )?.value || "";
+    const cheese = type === "sushi_burger_combo"
+      ? (form.querySelector("#weeklyBurgerCheese")?.value || "Con queso crema")
+      : (form.querySelector('[name="weeklyCheese"]:checked')?.value || "");
 
     const extra = getExtra();
 
