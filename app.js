@@ -2655,7 +2655,7 @@ function openProduct(product, editingItem = null) {
     <p class="dialog-note" id="gohanPriceNote">El precio base no cambia según los ingredientes, salvo recargos de proteína.</p>
   `;
 } else if (isDish) {
-  configuration = `<div class="dialog-note">Incluye hasta 2 salsas de cortesía por unidad. No incluye palitos.</div>`;
+  configuration = `<div class="dialog-note">Incluye exactamente 2 salsas de cortesía por unidad. No incluye palitos.</div>`;
 }
 
 
@@ -2769,31 +2769,6 @@ function openProduct(product, editingItem = null) {
   const soy = $("#soyCount");
   const teriyaki = $("#teriyakiCount");
   const quantity = $("#productQuantity");
-  
-  if (isGohan) {
-    const proteinSelect = $("#gohanProtein");
-    const priceNote = $("#gohanPriceNote");
-
-    function updateGohanProteinPrice() {
-      const selectedOption =
-        proteinSelect.options[proteinSelect.selectedIndex];
-
-      const surcharge = Number(
-        selectedOption.dataset.surcharge || 0
-      );
-
-      priceNote.textContent = surcharge > 0
-        ? `Recargo por proteína: ${money(surcharge)} por Gohan.`
-        : "Sin recargo adicional por proteína.";
-    }
-
-    proteinSelect.addEventListener(
-      "change",
-      updateGohanProteinPrice
-    );
-
-    updateGohanProteinPrice();
-  }
 
     if (isPromo) {
   quantity.addEventListener("input", () => {
