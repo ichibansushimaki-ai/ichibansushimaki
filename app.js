@@ -1255,8 +1255,11 @@ function openWeeklyPromo(promo, editingItem = null) {
 
   const handrollProteins = components.handroll_proteins || [];
   const handrollVegetables = components.handroll_vegetables || [];
-  const burgerProteins = components.burger_proteins || [];
-  const burgerVegetables = components.burger_vegetables || [];
+  const sharedDishIngredients = parseOptions(settings.gohan_config);
+  const sharedProteins = (sharedDishIngredients.proteins || []).filter(item => item.active !== false && item.name);
+  const sharedVegetables = (sharedDishIngredients.vegetables || []).filter(item => item.active !== false && item.name);
+  const burgerProteins = sharedProteins.map(item => item.name);
+  const burgerVegetables = sharedVegetables.map(item => item.name);
   const savedConfig = editingItem?.config?.weeklyPromo || {};
     const customComboComponents = Array.isArray(
     components.custom_combo_components
@@ -1465,7 +1468,7 @@ if (type === "sushi_burger_combo") {
       ? "<p>Puedes dejar los vegetales sin seleccionar.</p>"
       : "<p>Debes seleccionar al menos un vegetal.</p>"}
 
-    ${components.burger_cheese ? `
+    ${true ? `
       <strong>Queso crema</strong>
       <label>
         <input type="radio" name="weeklyCheese" value="Con queso crema"
@@ -1480,8 +1483,8 @@ if (type === "sushi_burger_combo") {
     ` : ""}
   `;
 } else if (type === "gohan_combo") {
-  const gohanProteins = components.gohan_proteins || [];
-  const gohanVegetables = components.gohan_vegetable_options || [];
+  const gohanProteins = sharedProteins.map(item => item.name);
+  const gohanVegetables = sharedVegetables.map(item => item.name);
   const savedGohans = savedConfig.gohans || [];
   const gohanCount = Math.max(1, Number(editingItem?.quantity || 1));
 
@@ -1524,7 +1527,7 @@ options = `
             </label>
           `).join("")}
 
-          ${components.gohan_cheese ? `
+          ${true ? `
             <strong>Queso crema</strong>
             <label>
               <input
@@ -1560,6 +1563,10 @@ options = `
   `;
 }
 
+  const initialWeeklySauceCount = ["gohan_combo", "sushi_burger_combo"].includes(type)
+    ? 2 * Math.max(1, Number(editingItem?.quantity || 1))
+    : 0;
+
   // Mostrar el acompañamiento fijo incluido en la promoción
   const accompaniment = (
     components.weekly_accompaniments || []
@@ -1589,6 +1596,15 @@ options = `
 
       <p>Precio unitario: <strong id="weeklyUnitPrice"></strong></p>
       <h3>Total: <span id="weeklyTotal"></span></h3>
+      ${initialWeeklySauceCount ? `
+        <div class="weekly-complimentary-sauces">
+          <h3>Salsas de cortesía</h3>
+          <p>Incluye exactamente 2 salsas por producto. Distribúyelas entre soya y teriyaki.</p>
+          <label>Soya <input id="weeklySoyCount" type="number" min="0" value="${Number(savedConfig.soy ?? initialWeeklySauceCount)}"></label>
+          <label>Teriyaki <input id="weeklyTeriyakiCount" type="number" min="0" value="${Number(savedConfig.teriyaki || 0)}"></label>
+          <p id="weeklySauceValidation" class="dialog-note">Debes seleccionar exactamente ${initialWeeklySauceCount} salsas.</p>
+        </div>
+      ` : ""}
 
       <button type="button" class="dialog-primary" id="weeklyAddCart">
         Agregar al pedido
@@ -1804,7 +1820,7 @@ const renderWeeklyGohanConfigs = () => {
             </label>
           `).join("")}
 
-          ${components.gohan_cheese ? `
+          ${true ? `
             <strong>Queso crema</strong>
             <label>
               <input
@@ -2117,6 +2133,13 @@ if (
 
   $("#weeklyAddCart").addEventListener("click", () => {
     const protein = getProtein();
+    const weeklySauceSoy = Math.max(0, Number($("#weeklySoyCount")?.value || 0));
+    const weeklySauceTeriyaki = Math.max(0, Number($("#weeklyTeriyakiCount")?.value || 0));
+    const expectedWeeklySauces = ["gohan_combo", "sushi_burger_combo"].includes(type) ? 2 * quantity : 0;
+    if (expectedWeeklySauces && weeklySauceSoy + weeklySauceTeriyaki !== expectedWeeklySauces) {
+      alert(`Debes distribuir exactamente ${expectedWeeklySauces} salsas entre soya y teriyaki.`);
+      return;
+    }
 
     const vegetables = type === "handroll_combo"
       ? []
@@ -2306,6 +2329,8 @@ if (
           promoId: promo.id,
           offerType: type,
           protein,
+          soy: weeklySauceSoy,
+          teriyaki: weeklySauceTeriyaki,
 vegetables,
 cheese,
 gohans,
