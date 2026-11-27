@@ -4425,7 +4425,8 @@ function render() {
   const normalizeCatalogName = value => String(value || "")
     .normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase().trim();
   const visible = products.filter(product =>
-    !weeklyPromoOnlyNames.has(normalizeCatalogName(product.name))
+    !weeklyPromoOnlyNames.has(normalizeCatalogName(product.name)) &&
+    parseOptions(product.options).catalog_draft !== true
   );
 
   // PRODUCTOS DESTACADOS
