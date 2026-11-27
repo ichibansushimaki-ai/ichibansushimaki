@@ -496,21 +496,28 @@ function addStoreStyles() {
 }
 
 .cart-line {
-  padding:17px 0;
-  border-bottom:1px solid #d8cbbb;
+  margin:14px 0;
+  padding:18px;
+  border:1px solid #e0d3c1;
+  border-radius:12px;
+  background:#fffaf2;
+  box-shadow:0 4px 14px #3827190b;
 }
 
 .cart-line-top {
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
-  gap:12px;
+  gap:14px;
+  padding-bottom:12px;
+  border-bottom:1px solid #eee4d7;
 }
 
 .cart-line-info h3 {
-  margin:0 0 5px;
+  margin:0 0 6px;
   color:#28231f;
-  font-size:16px;
+  font-size:17px;
+  line-height:1.3;
   font-weight:800;
 }
 
@@ -526,15 +533,14 @@ function addStoreStyles() {
 }
 
 .cart-line-description {
-  margin-top:12px;
-  padding:12px;
-  background:#f3ece1;
-  border:1px solid #e0d3c1;
-  border-left:3px solid #c9a45c;
-  border-radius:8px;
+  margin-top:13px;
+  padding:13px;
+  background:#f7f1e8;
+  border:1px solid #e8ddce;
+  border-radius:9px;
   color:#62584e;
   font-size:12px;
-  line-height:1.5;
+  line-height:1.55;
   display:grid;
   gap:10px;
 }
@@ -633,11 +639,11 @@ function addStoreStyles() {
 }
 
 .cart-summary {
-  margin-top:15px;
-  padding:15px;
-  background:#eee6da;
-  border:1px solid #d8cbbb;
-  border-radius:7px;
+  margin-top:18px;
+  padding:18px;
+  background:#f7f0e6;
+  border:1px solid #dfd0bb;
+  border-radius:12px;
 }
 
 .cart-total {
@@ -970,7 +976,14 @@ function cartItemDescription(item) {
 
     sections.push(`
       <div class="cart-config-section">
-        <strong class="cart-config-title">Personalización del combo</strong>
+        <strong class="cart-config-title">Detalle de la promoción</strong>
+
+        ${weekly.day ? `
+          <div class="cart-config-row">
+            <span class="cart-config-label">Día</span>
+            <span class="cart-option">${escapeHTML(weekly.day)}</span>
+          </div>
+        ` : ""}
 
         ${weekly.protein ? `
           <div class="cart-config-row">
@@ -1578,9 +1591,13 @@ options = `
     : 0;
 
   // Mostrar el acompañamiento fijo incluido en la promoción
-  const accompaniment = (
-    components.weekly_accompaniments || []
-  ).find(item => String(item).trim()) || "";
+  const accompanimentOptions = Array.isArray(components.weekly_accompaniments)
+    ? components.weekly_accompaniments
+    : String(components.weekly_accompaniments || promo.accompaniment || "")
+        .split(/\r?\n/)
+        .map(item => item.trim())
+        .filter(Boolean);
+  const accompaniment = accompanimentOptions.find(item => String(item).trim()) || "";
 
   if (type !== "simple" && accompaniment) {
     options += `
@@ -2059,10 +2076,16 @@ if (type === "handroll_combo") {
   const getProtein = () =>
     form.querySelector('[name="weeklyProtein"]:checked')?.value || "";
 
-  const getExtra = () =>
-    type === "sushi_burger_combo" && getProtein() === "Camarón"
+  const getExtra = () => {
+    const normalizedProtein = getProtein()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase();
+    return type === "sushi_burger_combo" && normalizedProtein === "camaron"
       ? shrimpExtra
       : 0;
+  };
 
   const updatePrice = () => {
     const unitPrice = basePrice + getExtra();
@@ -2345,6 +2368,7 @@ if (
     } : {}),
     weeklyPromo: {
           promoId: promo.id,
+          day: promo.day || "",
           offerType: type,
           protein,
 vegetables,
@@ -2355,7 +2379,8 @@ simpleOffers,
 customCombo,
 shrimpExtra: extra,
 basePrice,
-          accompaniment
+          accompaniment,
+          accompanimentOptions
         },
 
     
@@ -3730,6 +3755,10 @@ if (weekly.offerType === "handroll_combo" && Array.isArray(weekly.handrolls)) {
 
 if (Number(weekly.shrimpExtra) > 0) {
   lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
+}
+
+if (weekly.day) {
+  lines.push(`Día de la promoción: ${weekly.day}`);
 }
 
 if (weekly.accompaniment) {
