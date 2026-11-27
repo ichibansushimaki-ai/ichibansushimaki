@@ -5,10 +5,23 @@ export async function onRequestGet({ env }) {
       .prepare("SELECT * FROM store_settings WHERE id = 1")
       .first();
 
-   return Response.json({
-  ...(result || {}),
-  weekly_promos: result?.weekly_promos || "[]"
-});
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS store_operation (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      hours_enabled INTEGER NOT NULL DEFAULT 1,
+      manual_closed INTEGER NOT NULL DEFAULT 0,
+      closed_message TEXT NOT NULL DEFAULT 'En estos momentos tenemos cerrado. Pronto volveremos a nuestro horario habitual.'
+    )`).run();
+    await env.DB.prepare("INSERT OR IGNORE INTO store_operation (id) VALUES (1)").run();
+    const operation = await env.DB.prepare("SELECT hours_enabled, manual_closed, closed_message FROM store_operation WHERE id = 1").first();
+    return Response.json({
+      ...(result || {}),
+      weekly_promos: result?.weekly_promos || "[]",
+      store_operation: {
+        hours_enabled: operation?.hours_enabled !== 0,
+        manual_closed: operation?.manual_closed === 1,
+        closed_message: operation?.closed_message || "En estos momentos tenemos cerrado. Pronto volveremos a nuestro horario habitual."
+      }
+    });
   } catch (error) {
     return Response.json(
       { error: error.message },
@@ -30,6 +43,21 @@ export async function onRequestPut({ request, env }) {
     }
 
     const data = await request.json();
+    let storeOperation = null;
+    if (data.store_operation !== undefined) {
+      const value = data.store_operation;
+      if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return Response.json({ error: "La configuración de horario no es válida" }, { status: 400 });
+      }
+      storeOperation = {
+        hours_enabled: value.hours_enabled === true ? 1 : 0,
+        manual_closed: value.manual_closed === true ? 1 : 0,
+        closed_message: String(value.closed_message || "").trim().slice(0, 1000)
+      };
+      if (storeOperation.manual_closed && !storeOperation.closed_message) {
+        return Response.json({ error: "Debes escribir un mensaje para el cierre manual" }, { status: 400 });
+      }
+    }
 
    const fields = [
   "store_name",
@@ -152,6 +180,22 @@ if (data.weekly_promos !== undefined) {
       }
     }
     const values = fields.map(field => data[field] ?? "");
+
+    if (storeOperation !== null) {
+      await env.DB.prepare(`CREATE TABLE IF NOT EXISTS store_operation (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        hours_enabled INTEGER NOT NULL DEFAULT 1,
+        manual_closed INTEGER NOT NULL DEFAULT 0,
+        closed_message TEXT NOT NULL DEFAULT 'En estos momentos tenemos cerrado. Pronto volveremos a nuestro horario habitual.'
+      )`).run();
+      await env.DB.prepare(`INSERT INTO store_operation (id, hours_enabled, manual_closed, closed_message)
+        VALUES (1, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          hours_enabled = excluded.hours_enabled,
+          manual_closed = excluded.manual_closed,
+          closed_message = excluded.closed_message
+      `).bind(storeOperation.hours_enabled, storeOperation.manual_closed, storeOperation.closed_message).run();
+    }
 
     await env.DB.prepare(`
       UPDATE store_settings SET
