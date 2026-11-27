@@ -850,6 +850,129 @@ function addStoreStyles() {
   }
 }
 
+/* Presentación uniforme de todas las personalizaciones del carrito */
+.cart-line-info small {
+  font-size:13px;
+  line-height:1.5;
+}
+
+.cart-config-section {
+  gap:9px;
+  padding:12px;
+  border-radius:10px;
+}
+
+.cart-config-title {
+  font-size:13px;
+  line-height:1.45;
+}
+
+.cart-config-row {
+  grid-template-columns:105px minmax(0,1fr);
+  gap:10px;
+  align-items:start;
+}
+
+.cart-config-row > .cart-option {
+  display:block;
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  padding:8px 11px;
+  border-radius:10px;
+  font-size:14px;
+  line-height:1.6;
+  white-space:normal;
+  text-align:left;
+  overflow-wrap:anywhere;
+}
+
+.cart-config-row > .cart-options {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  gap:7px;
+}
+
+.cart-config-row > .cart-options .cart-option {
+  display:inline-flex;
+  width:auto;
+  max-width:100%;
+  padding:7px 10px;
+  border-radius:10px;
+  font-size:14px;
+  line-height:1.5;
+  white-space:normal;
+  text-align:left;
+}
+
+.cart-promotion-rolls .cart-option {
+  padding:13px 15px;
+  border-radius:10px;
+  font-size:14px;
+  line-height:1.7;
+}
+
+.cart-line-actions {
+  gap:9px;
+}
+
+.cart-line-actions button {
+  min-height:38px;
+  padding:9px 12px;
+  font-size:13px;
+}
+
+@media(max-width:600px) {
+  .cart-line {
+    padding:14px 0;
+  }
+
+  .cart-line-description {
+    padding:11px;
+    gap:9px;
+  }
+
+  .cart-config-section {
+    padding:10px;
+    gap:8px;
+  }
+
+  .cart-config-row {
+    grid-template-columns:minmax(0,1fr);
+    gap:5px;
+  }
+
+  .cart-config-label {
+    padding-top:0;
+    font-size:14px;
+  }
+
+  .cart-config-row > .cart-option {
+    font-size:14px;
+    padding:8px 10px;
+  }
+
+  .cart-config-row > .cart-options {
+    gap:6px;
+  }
+
+  .cart-promotion-rolls {
+    gap:8px;
+  }
+
+  .cart-promotion-rolls .cart-option {
+    padding:11px 12px;
+  }
+
+  .cart-line-actions button {
+    min-height:42px;
+    padding:10px 13px;
+    font-size:14px;
+  }
+}
+
 
   `;
 
