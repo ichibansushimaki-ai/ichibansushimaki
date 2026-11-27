@@ -27,8 +27,22 @@ function storeStatus() {
  const v=Object.fromEntries(parts.map(p=>[p.type,p.value])),day=v.weekday,minutes=Number(v.hour)*60+Number(v.minute),closing=day==="Fri"||day==="Sat"?1440:1380;
  return {open:["Mon","Tue","Wed","Thu","Fri","Sat"].includes(day)&&minutes>=780&&minutes<closing,manual:false,message:DEFAULT_HOURS_MESSAGE};
 }
-function requireStoreOpen(){const s=storeStatus();if(!s.open){alert(s.message);return false;}return true;}
-function showManualClosedNotice(){const s=storeStatus();if(!s.manual)return;openDialog('<div class="cart-heading"><p class="cart-eyebrow">ICHIBAN SUSHI MAKI</p><h2>En estos momentos estamos cerrados</h2></div><div class="dialog-note">'+escapeHTML(s.message)+'</div><button type="button" class="dialog-primary" data-close>Entendido</button>');}
+function showStoreClosedNotice(status=storeStatus()){
+ if(status.open)return;
+ const title=status.manual?"En estos momentos estamos cerrados":"Fuera de nuestro horario de atención";
+ openDialog(`
+  <div class="cart-heading">
+   <p class="cart-eyebrow">ICHIBAN SUSHI MAKI</p>
+   <h2>${title}</h2>
+   <p>Gracias por tu interés en nuestros productos</p>
+  </div>
+  <div class="dialog-note">${escapeHTML(status.message)}</div>
+  <p>Podrás revisar nuestro menú y volver a realizar tu pedido cuando estemos atendiendo.</p>
+  <button type="button" class="dialog-primary" data-close>Entendido</button>
+ `);
+}
+function requireStoreOpen(){const s=storeStatus();if(!s.open){showStoreClosedNotice(s);return false;}return true;}
+function showManualClosedNotice(){const s=storeStatus();if(!s.manual)return;showStoreClosedNotice(s);}
 
 const sample = [
   {id:"p1",name:"Golden Ichiban",category:"Rolls Signature",description:"Nuestra preparación especial de la casa.",price:7990,image:"",available:true,featured:true,product_type:"roll"},
