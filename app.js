@@ -2339,8 +2339,10 @@ if (
   quantity,
   product_type: "weekly_promo",
   config: {
-    soy: weeklySauceSoy,
-    teriyaki: weeklySauceTeriyaki,
+    ...(expectedWeeklySauces ? {
+      soy: weeklySauceSoy,
+      teriyaki: weeklySauceTeriyaki
+    } : {}),
     weeklyPromo: {
           promoId: promo.id,
           offerType: type,
