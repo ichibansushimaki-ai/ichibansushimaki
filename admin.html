@@ -1981,10 +1981,12 @@ button:disabled{
         <img id="mobileLogoPreview" alt="Vista previa del logo móvil">
       </div>
 
-      <div class="photo-upload">
-        <strong>Imagen de portada</strong>
-        <input type="file" id="heroFile" accept="image/jpeg,image/png,image/webp">
-        <img id="heroPreview" alt="Vista previa de portada">
+      <div class="hero-gallery-admin">
+        <strong>Fotografías de portada (hasta 4 imágenes)</strong>
+        <p>Selecciona fotografías atractivas de tus productos. Se mostrarán en un carrusel automático. JPG, PNG o WebP; máximo 5 MB por foto.</p>
+        <div class="hero-gallery-slots">
+          <div class="photo-upload"><strong>Fotografía 1</strong><input type="file" id="heroFile1" accept="image/jpeg,image/png,image/webp"><img id="heroPreview1" alt="Vista previa de fotografía 1"></div><div class="photo-upload"><strong>Fotografía 2</strong><input type="file" id="heroFile2" accept="image/jpeg,image/png,image/webp"><img id="heroPreview2" alt="Vista previa de fotografía 2"></div><div class="photo-upload"><strong>Fotografía 3</strong><input type="file" id="heroFile3" accept="image/jpeg,image/png,image/webp"><img id="heroPreview3" alt="Vista previa de fotografía 3"></div><div class="photo-upload"><strong>Fotografía 4</strong><input type="file" id="heroFile4" accept="image/jpeg,image/png,image/webp"><img id="heroPreview4" alt="Vista previa de fotografía 4"></div>
+        </div>
       </div>
 
       <label>Color principal
@@ -2475,3 +2477,13 @@ Configura los estilos de texto para computador y celular. Los cambios se guardan
 
 </body>
 </html>
+
+<style>
+.hero-gallery-admin { padding:16px; margin:14px 0; border:1px solid #d5c5ac; border-radius:12px; background:#fffaf2; }
+.hero-gallery-admin > strong { display:block; font-size:17px; margin-bottom:6px; }
+.hero-gallery-admin > p { color:#62594f; line-height:1.5; }
+.hero-gallery-slots { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.hero-gallery-slots .photo-upload { min-width:0; }
+.hero-gallery-slots img { max-width:100%; max-height:170px; object-fit:cover; }
+@media(max-width:600px){.hero-gallery-slots{grid-template-columns:1fr;}}
+</style>
