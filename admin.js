@@ -515,6 +515,10 @@ renderCustomRollConfig();
   });
 
   fillTypography(settings.typography);
+  const op = settings.store_operation || {};
+  if ($("#storeHoursEnabled")) $("#storeHoursEnabled").checked = op.hours_enabled !== false && op.hours_enabled !== 0 && op.hours_enabled !== "0" && op.hours_enabled !== "false";
+  if ($("#storeManualClosed")) $("#storeManualClosed").checked = op.manual_closed === true || op.manual_closed === 1 || op.manual_closed === "1";
+  if ($("#storeClosedMessage")) $("#storeClosedMessage").value = op.closed_message || "En estos momentos tenemos cerrado. Pronto volveremos a nuestro horario habitual.";
 }
 
 async function loadSettings() {
@@ -2018,6 +2022,40 @@ data.gohan_config = settings.gohan_config || "{}";
     button.disabled = false;
   }
 };
+
+// GUARDAR HORARIO Y ESTADO DE LA TIENDA
+$("#saveStoreOperation")?.addEventListener("click", async () => {
+  const button = $("#saveStoreOperation");
+  const message = $("#storeOperationMsg");
+  const operation = {
+    hours_enabled: $("#storeHoursEnabled").checked,
+    manual_closed: $("#storeManualClosed").checked,
+    closed_message: String($("#storeClosedMessage").value || "").trim()
+  };
+  if (operation.manual_closed && !operation.closed_message) {
+    alert("Escribe el mensaje que verán los clientes cuando la tienda esté cerrada.");
+    return;
+  }
+  button.disabled = true;
+  message.textContent = "Guardando configuración...";
+  try {
+    const response = await api("/api/settings", {
+      method: "PUT",
+      body: JSON.stringify({ store_operation: operation })
+    });
+    if (!response.ok) throw new Error(await response.text());
+    settings = { ...settings, store_operation: operation };
+    message.textContent = operation.manual_closed
+      ? "Tienda cerrada. El mensaje se mostrará a los clientes."
+      : operation.hours_enabled
+        ? "Horario automático guardado."
+        : "Restricción automática desactivada.";
+  } catch (error) {
+    message.textContent = error.message || "No se pudo guardar.";
+  } finally {
+    button.disabled = false;
+  }
+});
 
 // GUARDAR TIPOGRAFÍA
 
