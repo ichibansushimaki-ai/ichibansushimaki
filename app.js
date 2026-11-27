@@ -819,8 +819,9 @@ function addStoreStyles() {
 }
 
 .cart-option {
-  padding:5px 8px;
-  font-size:12px;
+  padding:6px 9px;
+  font-size:14px;
+  line-height:1.55;
 }
   .cart-summary {
     padding:13px;
