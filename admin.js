@@ -11,6 +11,7 @@ const defaults = {
   logo: "",
   mobile_logo: "",
   hero_image: "",
+  hero_images: "[]",
   whatsapp: "56900000000",
   color_primary: "#b51f2b",
   color_background: "#171717",
@@ -500,8 +501,7 @@ renderCustomRollConfig();
 
   [
     ["logo", "logoPreview"],
-    ["mobile_logo", "mobileLogoPreview"],
-    ["hero_image", "heroPreview"]
+    ["mobile_logo", "mobileLogoPreview"]
   ].forEach(([key, previewId]) => {
     const preview = $("#" + previewId);
     if (!preview) return;
@@ -514,6 +514,17 @@ renderCustomRollConfig();
     }
   });
 
+  let heroImages = [];
+  try { heroImages = Array.isArray(settings.hero_images) ? settings.hero_images : JSON.parse(settings.hero_images || "[]"); }
+  catch { heroImages = []; }
+  if (!heroImages.length && settings.hero_image) heroImages = [settings.hero_image];
+  for (let i = 1; i <= 4; i++) {
+    const preview = $("#heroPreview" + i);
+    if (!preview) continue;
+    const src = heroImages[i - 1] || "";
+    preview.src = src;
+    preview.style.display = src ? "block" : "none";
+  }
   fillTypography(settings.typography);
   const op = settings.store_operation || {};
   if ($("#storeHoursEnabled")) $("#storeHoursEnabled").checked = op.hours_enabled !== false && op.hours_enabled !== 0 && op.hours_enabled !== "0" && op.hours_enabled !== "false";
@@ -1980,13 +1991,16 @@ $("#settingsForm").onsubmit = async event => {
     data.logo = settings.logo || "";
     data.mobile_logo = settings.mobile_logo || "";
     data.hero_image = settings.hero_image || "";
+    let heroImages = [];
+    try { heroImages = Array.isArray(settings.hero_images) ? [...settings.hero_images] : JSON.parse(settings.hero_images || "[]"); }
+    catch { heroImages = []; }
+    if (!heroImages.length && settings.hero_image) heroImages = [settings.hero_image];
     data.typography = JSON.stringify(currentTypography);
 data.gohan_config = settings.gohan_config || "{}";
     data.custom_roll_config = settings.custom_roll_config || JSON.stringify(defaultCustomRollConfig);
     const images = [
       ["logoFile", "logo"],
-      ["mobileLogoFile", "mobile_logo"],
-      ["heroFile", "hero_image"]
+      ["mobileLogoFile", "mobile_logo"]
     ];
 
     for (const [inputId, field] of images) {
@@ -1998,6 +2012,16 @@ data.gohan_config = settings.gohan_config || "{}";
       }
     }
 
+    for (let i = 1; i <= 4; i++) {
+      const file = $("#heroFile" + i)?.files[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) throw new Error("Cada fotografía de portada debe pesar máximo 5 MB.");
+        message.textContent = "Subiendo fotografías de portada...";
+        heroImages[i - 1] = await uploadImage(file);
+      }
+    }
+    data.hero_images = JSON.stringify(heroImages.filter(Boolean));
+    data.hero_image = heroImages[0] || "";
     const response = await api("/api/settings", {
       method: "PUT",
       body: JSON.stringify(data)
@@ -2010,7 +2034,7 @@ data.gohan_config = settings.gohan_config || "{}";
     settings = { ...settings, ...data };
     fillSettings(settings);
 
-    ["logoFile", "mobileLogoFile", "heroFile"].forEach(id => {
+    ["logoFile", "mobileLogoFile", "heroFile1", "heroFile2", "heroFile3", "heroFile4"].forEach(id => {
       $("#" + id).value = "";
     });
 
