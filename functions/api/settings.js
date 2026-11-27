@@ -92,14 +92,16 @@ if (data.weekly_promos !== undefined) {
   }
 }
 
-    if (!String(data.store_name || "").trim()) {
+    const hasStoreSettings = fields.some(field => data[field] !== undefined) || data.typography !== undefined || data.gohan_config !== undefined || data.custom_roll_config !== undefined || data.weekly_promos !== undefined;
+
+    if (hasStoreSettings && !String(data.store_name || "").trim()) {
       return Response.json(
         { error: "Falta completar el nombre de la tienda" },
         { status: 400 }
       );
     }
 
-    if (!String(data.whatsapp || "").trim()) {
+    if (hasStoreSettings && !String(data.whatsapp || "").trim()) {
       return Response.json(
         { error: "Falta completar whatsapp" },
         { status: 400 }
@@ -197,31 +199,33 @@ if (data.weekly_promos !== undefined) {
       `).bind(storeOperation.hours_enabled, storeOperation.manual_closed, storeOperation.closed_message).run();
     }
 
-    await env.DB.prepare(`
-      UPDATE store_settings SET
-        store_name = ?,
-        slogan = ?,
-        description = ?,
-        logo = ?,
-        mobile_logo = ?,
-        hero_image = ?,
-        whatsapp = ?,
-        color_primary = ?,
-        color_background = ?,
-        color_cream = ?,
-        color_gold = ?,
-           typography = COALESCE(?, typography),
-        gohan_config = COALESCE(?, gohan_config),
-        custom_roll_config = COALESCE(?, custom_roll_config),
-        weekly_promos = COALESCE(?, weekly_promos)
-      WHERE id = 1
-    `).bind(
-      ...values,
-      typography,
-      gohanConfig,
-      customRollConfig,
-      weeklyPromos === null ? null : JSON.stringify(weeklyPromos)
-    ).run();
+    if (hasStoreSettings) {
+      await env.DB.prepare(`
+        UPDATE store_settings SET
+          store_name = ?,
+          slogan = ?,
+          description = ?,
+          logo = ?,
+          mobile_logo = ?,
+          hero_image = ?,
+          whatsapp = ?,
+          color_primary = ?,
+          color_background = ?,
+          color_cream = ?,
+          color_gold = ?,
+          typography = COALESCE(?, typography),
+          gohan_config = COALESCE(?, gohan_config),
+          custom_roll_config = COALESCE(?, custom_roll_config),
+          weekly_promos = COALESCE(?, weekly_promos)
+        WHERE id = 1
+      `).bind(
+        ...values,
+        typography,
+        gohanConfig,
+        customRollConfig,
+        weeklyPromos === null ? null : JSON.stringify(weeklyPromos)
+      ).run();
+    }
 
     return Response.json({ ok: true });
 
