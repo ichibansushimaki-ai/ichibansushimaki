@@ -1603,8 +1603,8 @@ options = `
         <div class="weekly-complimentary-sauces">
           <h3>Salsas de cortesía</h3>
           <p>Incluye exactamente 2 salsas por producto. Distribúyelas entre soya y teriyaki.</p>
-          <label>Soya <input id="weeklySoyCount" type="number" min="0" value="${Number(savedConfig.soy ?? initialWeeklySauceCount)}"></label>
-          <label>Teriyaki <input id="weeklyTeriyakiCount" type="number" min="0" value="${Number(savedConfig.teriyaki || 0)}"></label>
+          <label>Soya <input id="weeklySoyCount" type="number" min="0" value="${Number(editingItem?.config?.soy ?? initialWeeklySauceCount)}"></label>
+          <label>Teriyaki <input id="weeklyTeriyakiCount" type="number" min="0" value="${Number(editingItem?.config?.teriyaki || 0)}"></label>
           <p id="weeklySauceValidation" class="dialog-note">Debes seleccionar exactamente ${initialWeeklySauceCount} salsas.</p>
         </div>
       ` : ""}
@@ -2341,12 +2341,12 @@ if (
   quantity,
   product_type: "weekly_promo",
   config: {
-            weeklyPromo: {
+    soy: weeklySauceSoy,
+    teriyaki: weeklySauceTeriyaki,
+    weeklyPromo: {
           promoId: promo.id,
           offerType: type,
           protein,
-          soy: weeklySauceSoy,
-          teriyaki: weeklySauceTeriyaki,
 vegetables,
 cheese,
 gohans,
