@@ -4419,8 +4419,14 @@ function card(product) {
 
 
 function render() {
-  // Mostrar también los productos agotados para informar al cliente.
-  const visible = products;
+  // Mostrar también los productos agotados, pero mantener las promociones 2x
+  // fuera del catálogo: se administran exclusivamente en Promociones semanales.
+  const weeklyPromoOnlyNames = new Set(["promo 2x mixto", "promocion 2x pollo"]);
+  const normalizeCatalogName = value => String(value || "")
+    .normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase().trim();
+  const visible = products.filter(product =>
+    !weeklyPromoOnlyNames.has(normalizeCatalogName(product.name))
+  );
 
   // PRODUCTOS DESTACADOS
   const featuredGrid = $("#featuredGrid");
@@ -4568,14 +4574,11 @@ const standardCategories = [
   "Salsas y extras"
 ];
 
-  const usedCategories = standardCategories.filter(item =>
-    visible.some(product => product.category === item)
-  );
-
   const otherCategories = [...new Set(visible.map(product => product.category).filter(Boolean))]
     .filter(item => !standardCategories.includes(item));
 
-  const categories = [...usedCategories, ...otherCategories];
+  // Mantener visibles las nueve categorías acordadas, aunque alguna aún esté vacía.
+  const categories = [...standardCategories, ...otherCategories];
   const categoryContainer = $("#categories");
   const productGrid = $("#productGrid");
 
