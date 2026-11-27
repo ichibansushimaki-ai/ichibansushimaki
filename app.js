@@ -4585,8 +4585,8 @@ const standardCategories = [
 
     const allButton = document.createElement("button");
     allButton.type = "button";
-    allButton.className = "chip category-toggle" + (category === "Todos" ? " active" : "");
-    allButton.textContent = category === "Todos" ? "Ocultar todos" : "Ver todos";
+    allButton.className = "btn btn-outline section-toggle category-toggle" + (category === "Todos" ? " active" : "");
+    allButton.textContent = category === "Todos" ? "Ocultar todos" : "Todos";
     allButton.setAttribute("aria-expanded", String(category === "Todos"));
     allButton.setAttribute("aria-controls", "allCategoryProducts");
     allButton.addEventListener("click", () => {
@@ -4609,8 +4609,8 @@ const standardCategories = [
       const isOpen = category === item;
       const safeId = "category-" + categories.indexOf(item);
       button.type = "button";
-      button.className = "chip category-toggle" + (isOpen ? " active" : "");
-      button.textContent = (isOpen ? "Ocultar " : "Ver ") + item;
+      button.className = "btn btn-outline section-toggle category-toggle" + (isOpen ? " active" : "");
+      button.textContent = item;
       button.setAttribute("aria-expanded", String(isOpen));
       button.setAttribute("aria-controls", safeId);
 
