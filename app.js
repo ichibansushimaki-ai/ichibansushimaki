@@ -1138,6 +1138,14 @@ if (config.handroll) {
       </div>
     `);
   }
+  if (config.sushiBurger) {
+    const burger = config.sushiBurger;
+    sections.push(`<div class="cart-config-section"><strong class="cart-config-title">Personalización Sushi Burger</strong>
+      <div class="cart-config-row"><span class="cart-config-label">Proteína</span><span class="cart-option">${escapeHTML(burger.protein || "Sin proteína")}</span></div>
+      <div class="cart-config-row"><span class="cart-config-label">Queso crema</span><span class="cart-option">${burger.creamCheese ? "Con queso crema" : "Sin queso crema"}</span></div>
+      <div class="cart-config-row"><span class="cart-config-label">Vegetales</span><span class="cart-option">${burger.noVegetables ? "Sin vegetal" : (burger.vegetables || []).map(escapeHTML).join(", ") || "Sin vegetales"}</span></div>
+    </div>`);
+  }
   if (config.gohan) {
     const gohan = config.gohan;
 
@@ -2344,7 +2352,8 @@ function openProduct(product, editingItem = null) {
   const isRoll = type === "roll";
   const isHandroll = type === "handroll";
   const isDish = type === "dish";
-const isGohan = isDish && options.gohan_customizable === true;
+  const isGohan = isDish && options.gohan_customizable === true;
+  const isSushiBurger = isDish && String(product.name || "").toLowerCase().includes("sushi burger");
     const isCustomRoll = isRoll && options.custom_roll === true;
   const rollCount = isPromo
     ? Math.max(1, Number(options.rolls_count || 1))
@@ -2575,76 +2584,34 @@ const isGohan = isDish && options.gohan_customizable === true;
     ` : ""}
   `;
   
-} else if (isGohan) {
-  const gohanSettings = parseOptions(settings.gohan_config);
-
-  const vegetables = (gohanSettings.vegetables || [])
-    .filter(item => item.active && item.name);
-
-  const proteins = (gohanSettings.proteins || [])
-    .filter(item => item.active && item.name);
-
-  const savedGohan = initialConfig.gohan || {};
-  const savedVegetables = savedGohan.vegetables || [];
-
+} else if (isGohan || isSushiBurger) {
+  const ingredientSettings = parseOptions(settings.gohan_config);
+  const vegetables = (ingredientSettings.vegetables || []).filter(item => item.active !== false && item.name);
+  const proteins = (ingredientSettings.proteins || []).filter(item => item.active !== false && item.name);
+  const savedSelection = isGohan ? (initialConfig.gohan || {}) : (initialConfig.sushiBurger || {});
+  const savedVegetables = savedSelection.vegetables || [];
+  const maxVegetables = isGohan ? 3 : 2;
   configuration = `
-    <div class="dialog-note">
-      <strong>Personaliza tu Gohan</strong><br>
-      Incluye arroz sushi. Elige tus ingredientes a tu gusto.
-    </div>
-
+    <div class="dialog-note"><strong>Personaliza tu ${isGohan ? "Gohan" : "Sushi Burger"}</strong><br>
+    ${isGohan ? "Incluye arroz sushi." : "Personaliza tu Sushi Burger."}
+    Elige una proteína disponible, hasta ${maxVegetables} vegetales y queso crema con o sin.</div>
     <h3>Queso crema</h3>
-    <select id="gohanCreamCheese">
-      <option value="yes" ${savedGohan.creamCheese !== false ? "selected" : ""}>Con queso crema</option>
-      <option value="no" ${savedGohan.creamCheese === false ? "selected" : ""}>Sin queso crema</option>
+    <select id="dishCreamCheese">
+      <option value="yes" ${savedSelection.creamCheese !== false ? "selected" : ""}>Con queso crema</option>
+      <option value="no" ${savedSelection.creamCheese === false ? "selected" : ""}>Sin queso crema</option>
     </select>
-
-    <h3>Elige tus vegetales (máximo 3)</h3>
+    <h3>Elige tus vegetales (máximo ${maxVegetables})</h3>
     <div id="gohanVegetableChoices">
-      ${vegetables.map((item, index) => `
-        <label class="veg-row">
-          <input
-            type="checkbox"
-            class="gohan-vegetable"
-            value="${escapeHTML(item.name)}"
-            ${savedVegetables.includes(item.name) ? "checked" : ""}
-          >
-          ${escapeHTML(item.name)}
-        </label>
-      `).join("")}
-
-      <label class="veg-row">
-        <input
-          type="checkbox"
-          id="gohanNoVegetables"
-          ${savedGohan.noVegetables ? "checked" : ""}
-        >
-        Sin vegetal
-      </label>
+      ${vegetables.map(item => `<label class="veg-row"><input type="checkbox" class="gohan-vegetable" value="${escapeHTML(item.name)}" ${savedVegetables.includes(item.name) ? "checked" : ""}>${escapeHTML(item.name)}</label>`).join("")}
+      ${isGohan ? `<label class="veg-row"><input type="checkbox" id="gohanNoVegetables" ${savedSelection.noVegetables ? "checked" : ""}>Sin vegetal</label>` : ""}
     </div>
-
-    <p class="dialog-note" id="gohanVegetableValidation">
-      Puedes elegir hasta 3 vegetales o seleccionar Sin vegetal.
-    </p>
-
-    <h3>Elige tu proteína (opcional)</h3>
-    <select id="gohanProtein">
-      <option value="">Sin proteína</option>
-      ${proteins.map(item => `
-        <option
-          value="${escapeHTML(item.name)}"
-          data-surcharge="${Number(item.surcharge) || 0}"
-          ${savedGohan.protein === item.name ? "selected" : ""}
-        >
-          ${escapeHTML(item.name)}
-          ${Number(item.surcharge) > 0 ? ` (+${money(item.surcharge)})` : ""}
-        </option>
-      `).join("")}
+    <p class="dialog-note" id="gohanVegetableValidation">Puedes elegir hasta ${maxVegetables} vegetales.</p>
+    <h3>Elige exactamente una proteína (obligatoria)</h3>
+    <select id="dishProtein" required>
+      <option value="">Selecciona una proteína</option>
+      ${proteins.map(item => `<option value="${escapeHTML(item.name)}" data-surcharge="${Number(item.surcharge) || 0}" ${savedSelection.protein === item.name ? "selected" : ""}>${escapeHTML(item.name)}${Number(item.surcharge) > 0 ? ` (+${money(item.surcharge)})` : ""}</option>`).join("")}
     </select>
-
-    <p class="dialog-note" id="gohanPriceNote">
-      El precio base no cambia según los ingredientes, salvo los recargos de proteína.
-    </p>
+    <p class="dialog-note" id="gohanPriceNote">El precio base no cambia según los ingredientes, salvo recargos de proteína.</p>
   `;
 } else if (isDish) {
   configuration = `<div class="dialog-note">Incluye hasta 2 salsas de cortesía por unidad. No incluye palitos.</div>`;
@@ -2730,43 +2697,32 @@ const isGohan = isDish && options.gohan_customizable === true;
     <button type="button" class="dialog-secondary" data-close>Seguir mirando la carta</button>
   `);
 
-  if (isGohan) {
-    const vegetableChecks = Array.from(
-      document.querySelectorAll(".gohan-vegetable")
-    );
+  if (isGohan || isSushiBurger) {
+    const checks = Array.from(document.querySelectorAll(".gohan-vegetable"));
     const noVegetables = $("#gohanNoVegetables");
-    const vegetableValidation = $("#gohanVegetableValidation");
-
-    function validateGohanVegetables() {
-      const selected = vegetableChecks.filter(input => input.checked);
-
-      if (selected.length > 3) {
-        const lastSelected = selected[selected.length - 1];
-        lastSelected.checked = false;
+    const message = $("#gohanVegetableValidation");
+    const max = isGohan ? 3 : 2;
+    const validate = () => {
+      const selected = checks.filter(input => input.checked);
+      if (selected.length > max) selected[selected.length - 1].checked = false;
+      if (noVegetables) {
+        noVegetables.disabled = selected.length > 0;
+        checks.forEach(input => { input.disabled = noVegetables.checked; });
       }
-
-      const hasNoVegetables = noVegetables.checked;
-
-      vegetableChecks.forEach(input => {
-        input.disabled = hasNoVegetables;
-      });
-
-      noVegetables.disabled = vegetableChecks.some(
-        input => input.checked
-      );
-
-      vegetableValidation.textContent = hasNoVegetables
-        ? "Has elegido Sin vegetal."
-        : `${vegetableChecks.filter(input => input.checked).length} de 3 vegetales seleccionados.`;
-    }
-
-    vegetableChecks.forEach(input => {
-      input.addEventListener("change", validateGohanVegetables);
-    });
-
-    noVegetables.addEventListener("change", validateGohanVegetables);
-
-    validateGohanVegetables();
+      if (message) message.textContent = noVegetables?.checked ? "Has elegido Sin vegetal." : `${checks.filter(input => input.checked).length} de ${max} vegetales seleccionados.`;
+    };
+    checks.forEach(input => input.addEventListener("change", validate));
+    noVegetables?.addEventListener("change", validate);
+    validate();
+    const proteinSelect = $("#dishProtein");
+    const priceNote = $("#gohanPriceNote");
+    const updateProteinPrice = () => {
+      const selected = proteinSelect.options[proteinSelect.selectedIndex];
+      const surcharge = Number(selected?.dataset.surcharge || 0);
+      if (priceNote) priceNote.textContent = surcharge > 0 ? `Recargo por proteína: ${money(surcharge)} por unidad.` : "Sin recargo adicional por proteína.";
+    };
+    proteinSelect?.addEventListener("change", updateProteinPrice);
+    updateProteinPrice();
   }
 
   const soy = $("#soyCount");
@@ -2980,26 +2936,21 @@ if (isHandroll) {
   };
 }
 
-    if (isGohan) {
-      const selectedVegetables = Array.from(
-        document.querySelectorAll(".gohan-vegetable:checked")
-      ).map(input => input.value);
-
-      const noVegetables = $("#gohanNoVegetables").checked;
-
-      const proteinSelect = $("#gohanProtein");
-      const selectedProtein =
-        proteinSelect.options[proteinSelect.selectedIndex];
-
-      config.gohan = {
-        creamCheese: $("#gohanCreamCheese").value === "yes",
+    if (isGohan || isSushiBurger) {
+      const selectedVegetables = Array.from(document.querySelectorAll(".gohan-vegetable:checked")).map(input => input.value);
+      const noVegetables = Boolean($("#gohanNoVegetables")?.checked);
+      const proteinSelect = $("#dishProtein");
+      if (!proteinSelect?.value) { alert("Debes seleccionar exactamente una proteína disponible."); return; }
+      const selectedProtein = proteinSelect.options[proteinSelect.selectedIndex];
+      const selection = {
+        creamCheese: $("#dishCreamCheese").value === "yes",
         vegetables: noVegetables ? [] : selectedVegetables,
         noVegetables,
         protein: proteinSelect.value,
-        proteinSurcharge: Number(
-          selectedProtein.dataset.surcharge || 0
-        )
+        proteinSurcharge: Number(selectedProtein.dataset.surcharge || 0)
       };
+      if (isGohan) config.gohan = selection;
+      else config.sushiBurger = selection;
     }
 
     if (isRoll || isPromo) {
@@ -3534,14 +3485,8 @@ handrolls.length = totalHandrolls;
 function getFreeSaucesPerUnit(item) {
   if (item.product_type === "weekly_promo") {
     const weekly = item.config?.weeklyPromo;
-
-    if (
-      weekly?.offerType === "handroll_combo" &&
-      Array.isArray(weekly.handrolls)
-    ) {
-      return weekly.handrolls.length / Math.max(1, Number(item.quantity || 1));
-    }
-
+    if (weekly?.offerType === "handroll_combo" && Array.isArray(weekly.handrolls)) return weekly.handrolls.length / Math.max(1, Number(item.quantity || 1));
+    if (weekly?.offerType === "gohan_combo" || weekly?.offerType === "sushi_burger_combo") return 2;
     return 0;
   }
 
