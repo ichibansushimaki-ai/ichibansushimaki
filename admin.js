@@ -1080,7 +1080,6 @@ function renderWeeklyPromoComponents(type) {
     sushi_burger_combo: `
       <h4>Configuración de Sushi Burger</h4>
       <p>Las proteínas y vegetales se administran desde «Configuración Gohan» y se comparten entre los productos individuales y las promociones. El cliente elige una proteína y hasta 2 vegetales.</p>
-      <label><input type="checkbox" name="burger_no_vegetable" checked> Permitir sin vegetales</label>
       <label>Recargo por camarón ($)</label>
       <input type="number" name="burger_shrimp_extra" min="0" value="1000">
     `,
@@ -1540,7 +1539,7 @@ simple_nori: simpleConfig.nori,
 
   burger_proteins: readGohanConfig().proteins.filter(item => item.active !== false).map(item => item.name),
   burger_vegetables: readGohanConfig().vegetables.filter(item => item.active !== false).map(item => item.name),
-  burger_no_vegetable: form.querySelector('[name="burger_no_vegetable"]')?.checked ?? true,
+  burger_no_vegetable: true,
   burger_cheese: true,
   burger_shrimp_extra: Number(form.querySelector('[name="burger_shrimp_extra"]')?.value || 0),
   gohan_proteins: readGohanConfig().proteins.filter(item => item.active !== false).map(item => item.name),
