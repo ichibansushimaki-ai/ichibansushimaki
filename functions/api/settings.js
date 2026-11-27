@@ -1,6 +1,14 @@
 
+async function ensureHeroImagesColumn(DB) {
+  try {
+    await DB.prepare("ALTER TABLE store_settings ADD COLUMN hero_images TEXT NOT NULL DEFAULT '[]'").run();
+  } catch (error) {
+    if (!String(error.message || error).toLowerCase().includes("duplicate column")) throw error;
+  }
+}
 export async function onRequestGet({ env }) {
   try {
+    await ensureHeroImagesColumn(env.DB);
     const result = await env.DB
       .prepare("SELECT * FROM store_settings WHERE id = 1")
       .first();
@@ -67,6 +75,7 @@ export async function onRequestPut({ request, env }) {
   "logo",
   "mobile_logo",
   "hero_image",
+  "hero_images",
   "whatsapp",
   "color_primary",
   "color_background",
@@ -209,6 +218,7 @@ if (data.weekly_promos !== undefined) {
           logo = ?,
           mobile_logo = ?,
           hero_image = ?,
+          hero_images = ?,
           whatsapp = ?,
           color_primary = ?,
           color_background = ?,
