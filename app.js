@@ -276,7 +276,7 @@ function getType(product) {
   if (category.includes("promoc")) return "promotion";
   if (name.includes("handroll")) return "handroll";
   if (name.includes("gohan") || name.includes("bowl") ||
-      name.includes("sushi burger") || name.includes("plato")) return "dish";
+      name.includes("burger") || name.includes("plato")) return "dish";
   if (category.includes("roll")) return "roll";
   if (category.includes("bebida")) return "beverage";
   if (category.includes("salsa")) return "sauce";
@@ -2394,7 +2394,7 @@ function openProduct(product, editingItem = null) {
   const isHandroll = type === "handroll";
   const isDish = type === "dish";
   const isGohan = isDish && options.gohan_customizable === true;
-  const isSushiBurger = isDish && String(product.name || "").toLowerCase().includes("sushi burger");
+  const isSushiBurger = isDish && String(product.name || "").toLowerCase().includes("burger");
     const isCustomRoll = isRoll && options.custom_roll === true;
   const rollCount = isPromo
     ? Math.max(1, Number(options.rolls_count || 1))
