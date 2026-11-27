@@ -1532,12 +1532,12 @@ if (type === "sushi_burger_combo") {
          </label>
        `).join("")}
      </div>
-     <p class="dialog-note" id="weeklyBurgerVegetableValidation">Puedes elegir hasta 2 vegetales.</p>
+     <p class="dialog-note" id="weeklyBurgerVegetableValidation">${savedVegetables.length} de 2 vegetales seleccionados.</p>
      <h3>Elige exactamente una proteína (obligatoria)</h3>
      <select id="weeklyBurgerProtein" required>
        <option value="">Selecciona una proteína</option>
        ${sharedProteins.map(item => `
-         <option value="${escapeHTML(item.name)}" data-surcharge="${Number(item.surcharge) || 0}" ${savedProtein === item.name ? "selected" : ""}>
+         <option value="${escapeHTML(item.name)}" data-surcharge="${Number(item.surcharge) || 0}" ${savedProtein === item.name || (!savedProtein && sharedProteins[0] === item) ? "selected" : ""}>
            ${escapeHTML(item.name)}${Number(item.surcharge) > 0 ? ` (+${money(item.surcharge)})` : ""}
          </option>
        `).join("")}
