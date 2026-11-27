@@ -17,6 +17,18 @@ let category = "";
 let settings = {};
 let cart = JSON.parse(localStorage.getItem("ichiban-cart") || "[]");
 let currentProduct = null;
+const DEFAULT_HOURS_MESSAGE = "Recuerda nuestro horarios de atención Lunes a jueves de 13:00 a 23:00 y viernes y sábado de 13:00 a 00:00 te esperamos";
+function storeStatus() {
+ const op=settings.store_operation||{};
+ if(op.manual_closed===true||op.manual_closed===1||op.manual_closed==="1") return {open:false,manual:true,message:String(op.closed_message||"En estos momentos tenemos cerrado. Pronto volveremos a nuestro horario habitual.")};
+ const enabled=op.hours_enabled!==false&&op.hours_enabled!==0&&op.hours_enabled!=="0"&&op.hours_enabled!=="false";
+ if(!enabled)return {open:true,manual:false,message:""};
+ const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/Santiago",weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date());
+ const v=Object.fromEntries(parts.map(p=>[p.type,p.value])),day=v.weekday,minutes=Number(v.hour)*60+Number(v.minute),closing=day==="Fri"||day==="Sat"?1440:1380;
+ return {open:["Mon","Tue","Wed","Thu","Fri","Sat"].includes(day)&&minutes>=780&&minutes<closing,manual:false,message:DEFAULT_HOURS_MESSAGE};
+}
+function requireStoreOpen(){const s=storeStatus();if(!s.open){alert(s.message);return false;}return true;}
+function showManualClosedNotice(){const s=storeStatus();if(!s.manual)return;openDialog('<div class="cart-heading"><p class="cart-eyebrow">ICHIBAN SUSHI MAKI</p><h2>En estos momentos estamos cerrados</h2></div><div class="dialog-note">'+escapeHTML(s.message)+'</div><button type="button" class="dialog-primary" data-close>Entendido</button>');}
 
 const sample = [
   {id:"p1",name:"Golden Ichiban",category:"Rolls Signature",description:"Nuestra preparación especial de la casa.",price:7990,image:"",available:true,featured:true,product_type:"roll"},
@@ -1316,6 +1328,7 @@ if (config.handroll) {
 
 
 function openWeeklyPromo(promo, editingItem = null) {
+  if (!requireStoreOpen()) return;
   const components = promo.components || {};
   const type = promo.offer_type || "simple";
 
@@ -2216,6 +2229,7 @@ if (
   });
 
   $("#weeklyAddCart").addEventListener("click", () => {
+    if (!requireStoreOpen()) return;
     const protein = getProtein();
     const weeklySauceSoy = Math.max(0, Number($("#weeklySoyCount")?.value || 0));
     const weeklySauceTeriyaki = Math.max(0, Number($("#weeklyTeriyakiCount")?.value || 0));
@@ -2446,6 +2460,7 @@ if (editingItem) {
 }
 
 function openProduct(product, editingItem = null) {
+  if (!requireStoreOpen()) return;
   currentProduct = product;
 
   const type = getType(product);
@@ -2959,6 +2974,7 @@ if (isCustomRoll) {
   updateCustomRollPrice();
 }
   $("#confirmAdd").addEventListener("click", () => {
+    if (!requireStoreOpen()) return;
     const qty = Math.max(1, Math.min(20, Number(quantity.value) || 1));
     const config = {};
 if (isCustomRoll) {
@@ -3081,6 +3097,7 @@ if (isHandroll) {
 
 
 function openFulfillment() {
+  if (!requireStoreOpen()) return;
   openDialog(`
     <h2>¿Cómo deseas recibir tu pedido?</h2>
 
@@ -4403,6 +4420,7 @@ async function initialize() {
   await loadProducts();
   updateCartCount();
   askPendingCart();
+  showManualClosedNotice();
 }
 
 initialize();
