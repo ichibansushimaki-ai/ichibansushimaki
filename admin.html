@@ -2012,6 +2012,18 @@ button:disabled{
 
 </details>
 
+<details class="box admin-panel" id="storeHoursPanel">
+ <summary class="admin-panel-summary"><span><strong>Horario y estado de la tienda</strong><small>Controla los pedidos por horario o realiza un cierre de emergencia.</small></span><span class="admin-panel-toggle">Abrir sección</span></summary>
+ <div class="admin-panel-content"><div class="form">
+  <label><input type="checkbox" id="storeHoursEnabled" checked> Activar restricción automática por horario</label>
+  <p>Lunes a jueves: 13:00 a 23:00. Viernes y sábado: 13:00 a 00:00. Domingo: cerrado.</p>
+  <label><input type="checkbox" id="storeManualClosed"> Cierre manual / emergencia</label>
+  <p>Este cierre tiene prioridad sobre el horario automático.</p>
+  <label>Mensaje que verá el cliente cuando la tienda esté cerrada<textarea id="storeClosedMessage" rows="4">En estos momentos tenemos cerrado. Pronto volveremos a nuestro horario habitual.</textarea></label>
+  <p class="dialog-note">La carta seguirá visible, pero no se podrán agregar productos ni enviar pedidos. Para probar fuera de horario, desactiva temporalmente la restricción automática.</p>
+  <button type="button" class="btn btn-red" id="saveStoreOperation">Guardar horario y estado de la tienda</button><p id="storeOperationMsg" aria-live="polite"></p>
+ </div></div>
+</details>
 
 <details class="box admin-panel" id="typographyBox">
 
