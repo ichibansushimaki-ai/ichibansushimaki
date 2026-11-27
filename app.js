@@ -1013,10 +1013,10 @@ function cartItemDescription(item) {
           </div>
         ` : ""}
 
-        ${weekly.shrimpExtra > 0 ? `
+        ${Number(weekly.proteinSurcharge ?? weekly.shrimpExtra) > 0 ? `
           <div class="cart-config-row">
-            <span class="cart-config-label">Recargo por camarón</span>
-            <span class="cart-option">+${money(weekly.shrimpExtra)}</span>
+            <span class="cart-config-label">Recargo por proteína</span>
+            <span class="cart-option">+${money(weekly.proteinSurcharge ?? weekly.shrimpExtra)}</span>
           </div>
         ` : ""}
                 ${Array.isArray(weekly.gohans) && weekly.gohans.length ? `
@@ -1476,7 +1476,13 @@ if (type === "sushi_burger_combo") {
     <h3>Personaliza tu Sushi Burger</h3>
 
     <strong>Elige tu proteína</strong>
-    ${choices(burgerProteins, "weeklyProtein", true, savedProtein)}
+    ${sharedProteins.map(item => `
+      <label>
+        <input type="radio" name="weeklyProtein" value="${escapeHTML(item.name)}"
+          ${item.name === savedProtein || (!savedProtein && sharedProteins[0] === item) ? "checked" : ""}>
+        ${escapeHTML(item.name)}${Number(item.surcharge) > 0 ? ` (+${money(item.surcharge)})` : ""}
+      </label>
+    `).join("")}
 
     <strong>Elige hasta 2 vegetales</strong>
     ${burgerVegetables.map(value => `
@@ -2058,7 +2064,7 @@ const renderCustomComboConfigs = () => {
 };
 
   const basePrice = Number(savedConfig.basePrice ?? promo.price ?? 0);
-  const shrimpExtra = Number(components.burger_shrimp_extra || 0);
+  const burgerProteinConfig = sharedProteins;
 
  const form = $("#ichibanDialogContent");
 
@@ -2077,14 +2083,11 @@ if (type === "handroll_combo") {
     form.querySelector('[name="weeklyProtein"]:checked')?.value || "";
 
   const getExtra = () => {
-    const normalizedProtein = getProtein()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .trim()
-      .toLowerCase();
-    return type === "sushi_burger_combo" && normalizedProtein === "camaron"
-      ? shrimpExtra
-      : 0;
+    if (type !== "sushi_burger_combo") return 0;
+    const selected = burgerProteinConfig.find(item =>
+      String(item.name).trim().toLowerCase() === getProtein().trim().toLowerCase()
+    );
+    return Math.max(0, Number(selected?.surcharge || 0));
   };
 
   const updatePrice = () => {
@@ -2377,7 +2380,7 @@ gohans,
 handrolls,
 simpleOffers,
 customCombo,
-shrimpExtra: extra,
+proteinSurcharge: extra,
 basePrice,
           accompaniment,
           accompanimentOptions
@@ -3753,8 +3756,8 @@ if (weekly.offerType === "handroll_combo" && Array.isArray(weekly.handrolls)) {
   }
 }
 
-if (Number(weekly.shrimpExtra) > 0) {
-  lines.push(`Recargo por camarón: +${money(weekly.shrimpExtra)}`);
+if (Number(weekly.proteinSurcharge ?? weekly.shrimpExtra) > 0) {
+  lines.push(`Recargo por proteína: +${money(weekly.proteinSurcharge ?? weekly.shrimpExtra)}`);
 }
 
 if (weekly.day) {
