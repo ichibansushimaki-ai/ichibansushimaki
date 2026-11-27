@@ -1272,6 +1272,8 @@ function openWeeklyPromo(promo, editingItem = null) {
   const sharedVegetables = (sharedDishIngredients.vegetables || []).filter(item => item.active !== false && item.name);
   const burgerProteins = sharedProteins.map(item => item.name);
   const burgerVegetables = sharedVegetables.map(item => item.name);
+  const gohanProteins = sharedProteins.map(item => item.name);
+  const gohanVegetables = sharedVegetables.map(item => item.name);
   const savedConfig = editingItem?.config?.weeklyPromo || {};
     const customComboComponents = Array.isArray(
     components.custom_combo_components
@@ -1495,8 +1497,6 @@ if (type === "sushi_burger_combo") {
     ` : ""}
   `;
 } else if (type === "gohan_combo") {
-  const gohanProteins = sharedProteins.map(item => item.name);
-  const gohanVegetables = sharedVegetables.map(item => item.name);
   const savedGohans = savedConfig.gohans || [];
   const gohanCount = Math.max(1, Number(editingItem?.quantity || 1));
 
