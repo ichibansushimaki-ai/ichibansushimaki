@@ -1957,6 +1957,7 @@ $("#loginBtn").onclick = async () => {
     ensureProductFields();
     await loadSettings();
     await load();
+    await ensureInitialBeverages();
     await loadOrders();
   } catch (error) {
     alert(error.message);
@@ -2308,6 +2309,43 @@ async function load() {
   products = await response.json();
   syncCatalogFilters();
   renderProducts();
+}
+
+// Agrega las bebidas iniciales una sola vez, sin sobrescribir productos existentes.
+async function ensureInitialBeverages() {
+  const initialBeverages = [
+    { id: "ichiban-bebida-coca-cola-15lt", name: "Coca-Cola 1,5 litros", price: 2700 },
+    { id: "ichiban-bebida-coca-cola-lata-350cc", name: "Coca-Cola lata 350 cc", price: 1500 },
+    { id: "ichiban-bebida-score", name: "Score", price: 1800 }
+  ];
+
+  for (const beverage of initialBeverages) {
+    const exists = products.some(product =>
+      String(product.name || "").trim().toLocaleLowerCase("es-CL") ===
+      beverage.name.toLocaleLowerCase("es-CL")
+    );
+    if (exists) continue;
+
+    const response = await api("/api/products", {
+      method: "POST",
+      body: JSON.stringify({
+        ...beverage,
+        category: "Bebidas",
+        description: "Bebida para acompañar tu pedido.",
+        image: "",
+        available: true,
+        featured: false,
+        product_type: "beverage",
+        options: {}
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo agregar " + beverage.name + ": " + await response.text());
+    }
+  }
+
+  await load();
 }
 
 // ACTUALIZAR DISPONIBILIDAD O DESTACADO
