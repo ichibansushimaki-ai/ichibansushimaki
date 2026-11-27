@@ -551,10 +551,10 @@ function addStoreStyles() {
   border:1px solid #e8ddce;
   border-radius:9px;
   color:#62584e;
-  font-size:12px;
-  line-height:1.55;
+  font-size:14px;
+  line-height:1.65;
   display:grid;
-  gap:10px;
+  gap:12px;
 }
 
 .cart-config-section {
@@ -570,7 +570,7 @@ function addStoreStyles() {
 .cart-config-title {
   display:block;
   color:#9d2029;
-  font-size:11px;
+  font-size:13px;
   font-weight:800;
   letter-spacing:.5px;
   text-transform:uppercase;
@@ -585,7 +585,7 @@ function addStoreStyles() {
 
 .cart-config-label {
   color:#81766b;
-  font-size:11px;
+  font-size:13px;
   font-weight:700;
   padding-top:4px;
 }
@@ -593,8 +593,23 @@ function addStoreStyles() {
 .cart-options {
   display:flex;
   flex-wrap:wrap;
-  gap:6px;
+  gap:8px;
   min-width:0;
+}
+
+.cart-promotion-rolls {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:9px;
+}
+
+.cart-promotion-rolls .cart-option {
+  display:block;
+  width:100%;
+  padding:11px 13px;
+  border-radius:11px;
+  font-size:14px;
+  line-height:1.6;
 }
 
 .cart-option {
@@ -606,9 +621,9 @@ function addStoreStyles() {
   border-radius:20px;
   background:#f7f0e5;
   color:#453b32;
-  font-size:11px;
+  font-size:13px;
   font-weight:700;
-  line-height:1.35;
+  line-height:1.5;
   overflow-wrap:anywhere;
 }
 
@@ -773,8 +788,14 @@ function addStoreStyles() {
   }
 
    .cart-line-description {
-    font-size:13px;
+    font-size:14px;
+    line-height:1.65;
   }
+
+  .cart-config-title { font-size:13px; }
+  .cart-config-label { font-size:14px; }
+  .cart-option { font-size:14px; line-height:1.55; }
+  .cart-promotion-rolls .cart-option { font-size:14px; padding:11px 12px; }
 .cart-line-description {
   padding:10px;
   gap:8px;
@@ -1245,7 +1266,7 @@ if (config.handroll) {
         </div>
         <div class="cart-config-row">
           <span class="cart-config-label">Proteína</span>
-          <div class="cart-options">${protein}</div>
+          <div class="cart-options cart-promotion-rolls">${protein}</div>
         </div>
       </div>
     `);
