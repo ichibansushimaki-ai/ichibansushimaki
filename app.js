@@ -4062,6 +4062,12 @@ function card(product) {
   const title = document.createElement("h3");
   title.textContent = product.name || "";
 
+  const status = document.createElement("span");
+  if (!isEnabled(product.available)) {
+    status.textContent = "AGOTADO";
+    status.style.cssText = "display:inline-block;width:max-content;margin:2px 0;padding:5px 10px;border-radius:4px;background:#6f2525;color:#fff;font-size:11px;font-weight:800;letter-spacing:1px;";
+  }
+
   const description = document.createElement("p");
   description.textContent = product.description || "";
 
@@ -4072,10 +4078,17 @@ function card(product) {
   const addButton = document.createElement("button");
   addButton.className = "product-add";
   addButton.type = "button";
-  addButton.textContent = "Agregar al pedido";
-  addButton.addEventListener("click", () => openProduct(product));
+  addButton.textContent = isEnabled(product.available) ? "Agregar al pedido" : "Agotado";
+  addButton.disabled = !isEnabled(product.available);
+  if (addButton.disabled) {
+    addButton.style.cssText = "opacity:.55;cursor:not-allowed;filter:grayscale(.45);";
+  } else {
+    addButton.addEventListener("click", () => openProduct(product));
+  }
 
-  inside.append(title, description, price, addButton);
+  inside.append(title);
+  if (!isEnabled(product.available)) inside.append(status);
+  inside.append(description, price, addButton);
   article.append(img, inside);
 
   return article;
@@ -4083,7 +4096,8 @@ function card(product) {
 
 
 function render() {
-  const visible = products.filter(product => isEnabled(product.available));
+  // Mostrar también los productos agotados para informar al cliente.
+  const visible = products;
 
   // PRODUCTOS DESTACADOS
   const featuredGrid = $("#featuredGrid");
@@ -4092,7 +4106,7 @@ function render() {
     featuredGrid.replaceChildren();
 
     const featured = visible
-      .filter(product => isEnabled(product.featured))
+      .filter(product => isEnabled(product.available) && isEnabled(product.featured))
       .slice(0, 3);
 
     if (featured.length) {
