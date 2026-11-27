@@ -1,4 +1,3 @@
-
 export async function onRequestPost({ request, env }) {
   const auth = request.headers.get("Authorization") || "";
   const token = auth.replace("Bearer ", "");
@@ -37,11 +36,16 @@ export async function onRequestPost({ request, env }) {
   const key = `${crypto.randomUUID()}.${ext}`;
 
   await env.IMAGENES.put(key, file.stream(), {
-  httpMetadata: { contentType: file.type }
-});
+    httpMetadata: { contentType: file.type }
+  });
+
+  // Preview usa su propia URL pública; producción conserva la dirección actual.
+  const publicBase = (
+    env.IMAGENES_PUBLIC_URL || "https://imagenes.ichibansushimaki.com"
+  ).replace(/\/+$/, "");
 
   return Response.json({
     ok: true,
-    url: `https://imagenes.ichibansushimaki.com/${key}`
+    url: `${publicBase}/${key}`
   });
 }
