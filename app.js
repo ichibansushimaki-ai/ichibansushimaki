@@ -1478,9 +1478,7 @@ if (type === "sushi_burger_combo") {
       </label>
     `).join("")}
 
-    ${components.burger_no_vegetable
-      ? "<p>Puedes dejar los vegetales sin seleccionar.</p>"
-      : "<p>Debes seleccionar al menos un vegetal.</p>"}
+    <p>Puedes elegir hasta 2 vegetales o dejarlo sin vegetales.</p>
 
     ${true ? `
       <strong>Queso crema</strong>
@@ -2299,15 +2297,6 @@ if (
       handrolls.some(handroll => !handroll.protein || !handroll.vegetable)
     ) {
       alert("Selecciona proteína y vegetal para cada Handroll.");
-      return;
-    }
-
-    if (
-      type === "sushi_burger_combo" &&
-      !components.burger_no_vegetable &&
-      !vegetables.length
-    ) {
-      alert("Debes seleccionar al menos un vegetal.");
       return;
     }
 
