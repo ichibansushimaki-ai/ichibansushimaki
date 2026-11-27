@@ -3187,6 +3187,8 @@ const lines = cart.map(item => {
 
   const gohanSurcharge =
     Number(item.config?.gohan?.proteinSurcharge || 0) * quantity;
+  const sushiBurgerSurcharge =
+    Number(item.config?.sushiBurger?.proteinSurcharge || 0) * quantity;
 const customRollSurcharge =
   (
     Number(item.config?.customRoll?.coveringSurcharge || 0) +
@@ -3195,12 +3197,14 @@ const customRollSurcharge =
  const itemTotal =
   Number(item.price || 0) * quantity +
   gohanSurcharge +
+  sushiBurgerSurcharge +
   customRollSurcharge +
   getPaidSaucesTotal(item);
 
 const unitPrice =
   Number(item.price || 0) +
   Number(item.config?.gohan?.proteinSurcharge || 0) +
+  Number(item.config?.sushiBurger?.proteinSurcharge || 0) +
   Number(item.config?.customRoll?.coveringSurcharge || 0) +
   Number(item.config?.customRoll?.proteinSurcharge || 0);
 
@@ -3615,6 +3619,8 @@ async function sendOrder(fulfillment = {}) {
 
   const gohanSurcharge =
   Number(config.gohan?.proteinSurcharge || 0) * quantity;
+const sushiBurgerSurcharge =
+  Number(config.sushiBurger?.proteinSurcharge || 0) * quantity;
 
 const customRollSurcharge =
   (
@@ -3625,6 +3631,7 @@ const customRollSurcharge =
 const itemPrice =
   Number(item.price || 0) * quantity +
   gohanSurcharge +
+  sushiBurgerSurcharge +
   customRollSurcharge;
        const lines = [
       `${quantity} × ${item.name} — ${money(itemPrice)}`
@@ -3770,6 +3777,13 @@ if (config.handroll) {
     lines.push(`Nori: ${handroll.nori}`);
   }
 }
+    if (config.sushiBurger) {
+      const burger = config.sushiBurger;
+      lines.push("PERSONALIZACIÓN SUSHI BURGER:");
+      lines.push(`Proteína: ${burger.protein || "Sin proteína"}${burger.proteinSurcharge > 0 ? ` (+${money(burger.proteinSurcharge)})` : ""}`);
+      lines.push(burger.creamCheese ? "Queso crema: Sí" : "Queso crema: No");
+      lines.push(burger.noVegetables ? "Vegetales: Sin vegetal" : "Vegetales: " + ((burger.vegetables || []).join(", ") || "Ninguno"));
+    }
     if (config.gohan) {
       const gohan = config.gohan;
 
