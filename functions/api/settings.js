@@ -32,6 +32,7 @@ export async function onRequestGet({ env }) {
 
 export async function onRequestPut({ request, env }) {
   try {
+    await ensureHeroImagesColumn(env.DB);
     const auth = request.headers.get("Authorization") || "";
     const token = auth.replace("Bearer ", "");
 
