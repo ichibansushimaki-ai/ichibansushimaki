@@ -604,12 +604,18 @@ function addStoreStyles() {
 }
 
 .cart-promotion-rolls .cart-option {
-  display:block;
+  display:block !important;
+  box-sizing:border-box;
   width:100%;
-  padding:11px 13px;
+  max-width:none;
+  min-width:0;
+  padding:13px 15px;
   border-radius:11px;
   font-size:14px;
-  line-height:1.6;
+  line-height:1.65;
+  white-space:normal;
+  text-align:left;
+  overflow-wrap:break-word;
 }
 
 .cart-option {
@@ -1267,7 +1273,7 @@ if (config.handroll) {
         </div>
         <div class="cart-config-row">
           <span class="cart-config-label">Proteína</span>
-          <div class="cart-options cart-promotion-rolls">${protein}</div>
+          <div class="cart-options">${protein}</div>
         </div>
       </div>
     `);
@@ -1286,7 +1292,7 @@ if (config.handroll) {
     sections.push(`
       <div class="cart-config-section">
         <strong class="cart-config-title">Personalización Promoción Ichiban</strong>
-        <div class="cart-options">
+        <div class="cart-options cart-promotion-rolls">
           ${Array.from({ length: totalRolls }, (_, index) => `
             <span class="cart-option">
               <strong>Roll ${index + 1}</strong><br>
