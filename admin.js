@@ -1958,6 +1958,7 @@ $("#loginBtn").onclick = async () => {
     await loadSettings();
     await load();
     await ensureInitialBeverages();
+    await ensureCatalogBaseProducts();
     await loadOrders();
   } catch (error) {
     alert(error.message);
@@ -2232,6 +2233,7 @@ function renderProducts() {
     const price = money(product.price);
     const available = isTrue(product.available);
     const featured = isTrue(product.featured);
+    const draft = parseOptions(product.options).catalog_draft === true;
     const image = safeImageURL(product.image);
 
     return `
@@ -2250,6 +2252,7 @@ function renderProducts() {
           <div class="product-admin-meta">
             <span class="product-admin-category">${category}</span>
             <span class="product-admin-type">Tipo: ${type}</span>
+            ${draft ? '<span class="product-admin-type">Borrador · completar datos</span>' : ''}
           </div>
           ${description ? `<p class="product-admin-description">${description}</p>` : '<p class="product-admin-description product-admin-no-description">Sin descripción agregada.</p>'}
           <div class="product-admin-status">
@@ -2346,6 +2349,116 @@ async function ensureInitialBeverages() {
   }
 
   await load();
+}
+
+// Completa el catálogo base sin duplicar ni alterar productos existentes.
+// Los registros nuevos quedan como borradores: precio 0, no disponibles y ocultos en la web.
+function catalogNameKey(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es-CL")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+async function ensureCatalogBaseProducts() {
+  const catalogBase = [
+    { name: "Golden Ichiban Ebi o Sake", category: "Rolls Signature", type: "roll", aliases: ["Golden Ichiban"] },
+    { name: "Snow Ebi Tropical", category: "Rolls Signature", type: "roll" },
+    { name: "Norimaki Furay", category: "Rolls Signature", type: "roll" },
+    { name: "Masago Ichiban", category: "Rolls Signature", type: "roll" },
+    { name: "Acevichado Ebi", category: "Rolls Signature", type: "roll" },
+    { name: "Acevichado Sake", category: "Rolls Signature", type: "roll" },
+    { name: "Acevichado Salsa", category: "Rolls Signature", type: "roll" },
+
+    { name: "Hosomaki Salmón", category: "Rolls clásicos", type: "roll" },
+    { name: "Hosomaki Camarón", category: "Rolls clásicos", type: "roll" },
+    { name: "Hosomaki Furay", category: "Rolls clásicos", type: "roll" },
+    { name: "Gunkan Salmón", category: "Rolls clásicos", type: "roll" },
+    { name: "Gunkan Camarón", category: "Rolls clásicos", type: "roll" },
+    { name: "Gunkan Teri", category: "Rolls clásicos", type: "roll" },
+    { name: "Onigiri", category: "Rolls clásicos", type: "roll" },
+    { name: "Nigiri Salmón", category: "Rolls clásicos", type: "roll" },
+    { name: "Nigiri Camarón", category: "Rolls clásicos", type: "roll" },
+    { name: "Roll Fresa Ichiban", category: "Rolls clásicos", type: "roll" },
+    { name: "Mango Ichiban", category: "Rolls clásicos", type: "roll" },
+    { name: "Arma tu Roll", category: "Rolls clásicos", type: "roll", aliases: ["Arma tu Roll clásico"] },
+
+    { name: "Handroll Pollo", category: "Street Food", type: "handroll" },
+    { name: "Handroll Ebi", category: "Street Food", type: "handroll", aliases: ["Handroll Camarón"] },
+    { name: "Handroll Kanikama", category: "Street Food", type: "handroll" },
+    { name: "Handroll Beef", category: "Street Food", type: "handroll" },
+    { name: "Handroll Especial", category: "Street Food", type: "handroll" },
+    { name: "Sushi Burger Pollo", category: "Street Food", type: "dish" },
+    { name: "Sushi Burger Ebi", category: "Street Food", type: "dish", aliases: ["Sushi Burger Camarón"] },
+    { name: "Sushipleto Ebi o Sake Acevichado", category: "Street Food", type: "other" },
+    { name: "Sushipleto Ebi o Sake", category: "Street Food", type: "other" },
+    { name: "Sushipleto Chicken", category: "Street Food", type: "other" },
+
+    { name: "Ichiban Balls", category: "Entradas & para compartir", type: "side" },
+    { name: "Empanadas de queso", category: "Entradas & para compartir", type: "side" },
+    { name: "Arrollados primavera", category: "Entradas & para compartir", type: "side" },
+    { name: "Arrollados jamón y queso", category: "Entradas & para compartir", type: "side" },
+    { name: "Empanaditas pollo mandarín", category: "Entradas & para compartir", type: "side" },
+    { name: "Papas fritas grandes", category: "Entradas & para compartir", type: "side" },
+    { name: "Papas fritas individuales", category: "Entradas & para compartir", type: "side" },
+    { name: "Ebi masa filo", category: "Entradas & para compartir", type: "side" },
+    { name: "Ebi Furay", category: "Entradas & para compartir", type: "side" },
+    { name: "Gyozas de cerdo", category: "Entradas & para compartir", type: "side" },
+    { name: "Empanadas camarón queso", category: "Entradas & para compartir", type: "side" },
+    { name: "Wantan", category: "Entradas & para compartir", type: "side" },
+
+    { name: "Promoción 20 piezas mixtas", category: "Promociones Ichiban", type: "promotion" },
+    { name: "Promoción 30 piezas Panko", category: "Promociones Ichiban", type: "promotion" },
+    { name: "Promoción 30 piezas mixtas", category: "Promociones Ichiban", type: "promotion" },
+    { name: "Promoción 40 piezas mixtas", category: "Promociones Ichiban", type: "promotion" },
+    { name: "Promoción 50 piezas mixtas", category: "Promociones Ichiban", type: "promotion" },
+    { name: "Promoción 60 piezas mixtas", category: "Promociones Ichiban", type: "promotion" },
+
+    { name: "Torta Corazón Ichiban", category: "Tortas Ichiban", type: "other" },
+    { name: "Torta Sushi 60 piezas", category: "Tortas Ichiban", type: "other" },
+    { name: "Torta Ichiban", category: "Tortas Ichiban", type: "other" }
+  ];
+
+  const existingNames = new Set(products.map(product => catalogNameKey(product.name)));
+  let added = 0;
+
+  for (const item of catalogBase) {
+    const possibleNames = [item.name, ...(item.aliases || [])].map(catalogNameKey);
+    if (possibleNames.some(name => existingNames.has(name))) continue;
+
+    const id = "ichiban-base-" + catalogNameKey(item.name).replace(/\s+/g, "-");
+    const response = await api("/api/products", {
+      method: "POST",
+      body: JSON.stringify({
+        id,
+        name: item.name,
+        category: item.category,
+        description: "",
+        price: 0,
+        image: "",
+        available: false,
+        featured: false,
+        product_type: item.type,
+        options: {
+          catalog_draft: true,
+          catalog_draft_note: "Completar precio, descripción, fotografía e ingredientes antes de publicar."
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo preparar " + item.name + ": " + await response.text());
+    }
+
+    existingNames.add(catalogNameKey(item.name));
+    added++;
+  }
+
+  if (added) await load();
+  return added;
 }
 
 // ACTUALIZAR DISPONIBILIDAD O DESTACADO
@@ -2547,10 +2660,16 @@ $("#productForm").onsubmit = async event => {
       Math.min(100, Number($("#rollsCount").value) || 1)
     );
 
-   data.options = buildProductOptions(
-  data.product_type,
-  rollsCount
-);
+    const previousProduct = products.find(product => String(product.id) === String(data.id));
+    const previousOptions = parseOptions(previousProduct?.options);
+    data.options = {
+      ...previousOptions,
+      ...buildProductOptions(data.product_type, rollsCount)
+    };
+    if (previousOptions.catalog_draft && data.price > 0 && data.available) {
+      delete data.options.catalog_draft;
+      delete data.options.catalog_draft_note;
+    }
     if (data.product_type === "handroll") {
   data.options.handroll_vegetables =
     readProductHandrollVegetables();
