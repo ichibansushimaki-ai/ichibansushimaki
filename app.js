@@ -4575,46 +4575,75 @@ const standardCategories = [
   const otherCategories = [...new Set(visible.map(product => product.category).filter(Boolean))]
     .filter(item => !standardCategories.includes(item));
 
-  const categories = ["Todos", ...usedCategories, ...otherCategories];
-
+  const categories = [...usedCategories, ...otherCategories];
   const categoryContainer = $("#categories");
+  const productGrid = $("#productGrid");
 
-  if (categoryContainer) {
+  if (categoryContainer && productGrid) {
     categoryContainer.replaceChildren();
+    productGrid.replaceChildren();
+
+    const allButton = document.createElement("button");
+    allButton.type = "button";
+    allButton.className = "chip category-toggle" + (category === "Todos" ? " active" : "");
+    allButton.textContent = category === "Todos" ? "Ocultar todos" : "Ver todos";
+    allButton.setAttribute("aria-expanded", String(category === "Todos"));
+    allButton.setAttribute("aria-controls", "allCategoryProducts");
+    allButton.addEventListener("click", () => {
+      category = category === "Todos" ? "" : "Todos";
+      render();
+    });
+    categoryContainer.appendChild(allButton);
+
+    const allGrid = document.createElement("div");
+    allGrid.id = "allCategoryProducts";
+    allGrid.className = "grid category-products";
+    allGrid.hidden = category !== "Todos";
+    if (category === "Todos") {
+      visible.forEach(product => allGrid.appendChild(card(product)));
+    }
+    productGrid.appendChild(allGrid);
 
     categories.forEach(item => {
       const button = document.createElement("button");
-      button.className = "chip" + (category === item ? " active" : "");
-      button.textContent = item;
+      const isOpen = category === item;
+      const safeId = "category-" + categories.indexOf(item);
+      button.type = "button";
+      button.className = "chip category-toggle" + (isOpen ? " active" : "");
+      button.textContent = (isOpen ? "Ocultar " : "Ver ") + item;
+      button.setAttribute("aria-expanded", String(isOpen));
+      button.setAttribute("aria-controls", safeId);
 
-      button.onclick = () => {
-        category = item;
+      const group = document.createElement("div");
+      group.id = safeId;
+      group.className = "grid category-products";
+      group.hidden = !isOpen;
+
+      if (isOpen) {
+        const filtered = visible.filter(product => product.category === item);
+        if (filtered.length) {
+          filtered.forEach(product => group.appendChild(card(product)));
+        } else {
+          group.textContent = "No hay productos en esta categoría.";
+        }
+      }
+
+      button.addEventListener("click", () => {
+        category = category === item ? "" : item;
         render();
-      };
+      });
 
       categoryContainer.appendChild(button);
+      productGrid.appendChild(group);
     });
-  }
 
-  const productGrid = $("#productGrid");
-
-  if (productGrid) {
-    productGrid.replaceChildren();
-
-    if (!category) {
-      productGrid.textContent =
-        "Selecciona una categoría para descubrir nuestros productos.";
-    } else {
-      const filtered = visible.filter(product =>
-        category === "Todos" || product.category === category
-      );
-
-      if (filtered.length) {
-        filtered.forEach(product => productGrid.appendChild(card(product)));
-      } else {
-        productGrid.textContent =
-          "No hay productos disponibles en esta categoría.";
-      }
+    if (!categories.length) {
+      productGrid.textContent = "Pronto agregaremos productos a nuestra carta.";
+    } else if (!category) {
+      const hint = document.createElement("p");
+      hint.className = "category-hint";
+      hint.textContent = "Selecciona una categoría para desplegar sus productos.";
+      productGrid.appendChild(hint);
     }
   }
 
