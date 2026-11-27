@@ -1617,6 +1617,15 @@ options = `
   `);
 
   let quantity = Number(editingItem?.quantity || 1);
+  const updateWeeklySauceCounts = () => {
+    const soyInput = $("#weeklySoyCount");
+    const teriyakiInput = $("#weeklyTeriyakiCount");
+    if (!soyInput || !teriyakiInput) return;
+    const total = 2 * quantity;
+    const teriyaki = Math.max(0, Math.min(total, Number(teriyakiInput.value) || 0));
+    soyInput.value = total - teriyaki;
+    $("#weeklySauceValidation").textContent = `Debes distribuir exactamente ${total} salsas entre soya y teriyaki.`;
+  };
 let weeklyGohanDrafts = (savedConfig.gohans || []).map(gohan => ({
   ...gohan,
   vegetables: [...(gohan.vegetables || [])]
@@ -2056,7 +2065,9 @@ if (type === "handroll_combo") {
  $("#weeklyMinus").addEventListener("click", () => {
   if (quantity > 1) quantity--;
 
-  updatePrice();
+  
+   updateWeeklySauceCounts();
+updatePrice();
      if (type === "simple") {
     renderSimpleOffers();
   }
@@ -2076,7 +2087,9 @@ if (type === "handroll_combo") {
 $("#weeklyPlus").addEventListener("click", () => {
   quantity++;
 
-  updatePrice();
+  
+   updateWeeklySauceCounts();
+updatePrice();
     if (type === "simple") {
     renderSimpleOffers();
   }
