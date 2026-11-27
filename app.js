@@ -1521,6 +1521,15 @@ if (config.handroll) {
     sections.push(`<div class="cart-config-section">${escapeHTML(config.note)}</div>`);
   }
 
+  if (config.soy !== undefined || config.teriyaki !== undefined) {
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Salsas de cortesía</strong>
+        <span class="cart-option">${Number(config.soy || 0)} soya · ${Number(config.teriyaki || 0)} teriyaki</span>
+      </div>
+    `);
+  }
+
   if (config.paidSauces?.length) {
     const sauces = config.paidSauces.map(sauce => {
       const product = products.find(
@@ -1536,15 +1545,6 @@ if (config.handroll) {
       <div class="cart-config-section">
         <strong class="cart-config-title">Salsas adicionales</strong>
         <div class="cart-options">${sauces}</div>
-      </div>
-    `);
-  }
-
-  if (config.soy !== undefined || config.teriyaki !== undefined) {
-    sections.push(`
-      <div class="cart-config-section">
-        <strong class="cart-config-title">Salsas de cortesía</strong>
-        <span class="cart-option">${Number(config.soy || 0)} soya · ${Number(config.teriyaki || 0)} teriyaki</span>
       </div>
     `);
   }
