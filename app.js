@@ -1060,8 +1060,34 @@ function ensureCartUI() {
   updateCartCount();
 }
 
+function enhanceSauceSteppers() {
+  const root = $("#ichibanDialogContent");
+  if (!root) return;
+  if (!$("#ichibanSauceStepperStyles")) {
+    const style = document.createElement("style"); style.id = "ichibanSauceStepperStyles";
+    style.textContent = ".sauce-stepper{display:inline-flex;align-items:center;justify-content:flex-end;gap:10px;min-width:112px}.sauce-stepper-btn{width:31px;height:31px;min-width:31px;border:2px solid #292929;border-radius:50%;background:#fff;color:#292929;font-size:22px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer}.sauce-stepper-btn:hover{background:#b51f2b;border-color:#b51f2b;color:#fff}.sauce-stepper-value{min-width:18px;text-align:center;font-size:16px;font-weight:800;color:#292929;font-variant-numeric:tabular-nums}.paid-sauce-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eadfce}.paid-sauce-name{font-weight:700;color:#29231f;line-height:1.35}.paid-sauce-price{display:block;color:#8a7664;font-size:12px;margin-top:3px}.sauce-stepper input{display:none}@media(max-width:520px){.sauce-stepper{gap:8px;min-width:104px}.sauce-stepper-btn{width:29px;height:29px;min-width:29px}.paid-sauce-row{gap:8px}}";
+    document.head.appendChild(style);
+  }
+  root.querySelectorAll("#soyCount,#teriyakiCount,#weeklySoyCount,#weeklyTeriyakiCount,.paid-sauce-quantity").forEach(input => {
+    if (input.dataset.stepperReady) return; input.dataset.stepperReady = "1";
+    const wrap = document.createElement("div"); wrap.className = "sauce-stepper";
+    const minus = document.createElement("button"); minus.type = "button"; minus.className = "sauce-stepper-btn"; minus.textContent = "−";
+    const value = document.createElement("span"); value.className = "sauce-stepper-value";
+    const plus = document.createElement("button"); plus.type = "button"; plus.className = "sauce-stepper-btn"; plus.textContent = "+";
+    const refresh = () => value.textContent = String(Math.max(0, Number(input.value) || 0));
+    const change = n => { input.value = String(Math.max(0, (Number(input.value) || 0) + n)); input.dispatchEvent(new Event("input", {bubbles:true})); input.dispatchEvent(new Event("change", {bubbles:true})); refresh(); };
+    minus.addEventListener("click", () => change(-1)); plus.addEventListener("click", () => change(1));
+    input.insertAdjacentElement("afterend", wrap); wrap.append(minus, value, plus); input.hidden = true; refresh();
+  });
+}
 function openDialog(content) {
   $("#ichibanDialogContent").innerHTML = content;
+  $("#ichibanOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function openDialog(content) {
+  $("#ichibanDialogContent").innerHTML = content;
+  enhanceSauceSteppers();
   $("#ichibanOverlay").classList.add("open");
   document.body.style.overflow = "hidden";
 }
@@ -2688,12 +2714,7 @@ function openProduct(product, editingItem = null) {
         ? 2
         : 0;
 
-  const paidSauceProducts = (isRoll || isPromo || isHandroll || isDish)
-    ? products.filter(p =>
-        isEnabled(p.available) &&
-        getType(p) === "sauce"
-      )
-    : [];
+  const paidSauceProducts = products.filter(p => isEnabled(p.available) && getType(p) === "sauce");
 
   let configuration = "";
 
@@ -2978,8 +2999,8 @@ function openProduct(product, editingItem = null) {
       );
 
       return `
-        <div class="veg-row">
-          <label>${escapeHTML(sauce.name)} · ${money(sauce.price)}</label>
+        <div class="paid-sauce-row">
+          <div class="paid-sauce-name">${escapeHTML(sauce.name)}<span class="paid-sauce-price">${money(sauce.price)} c/u</span></div>
           <input
             type="number"
             class="paid-sauce-quantity"
