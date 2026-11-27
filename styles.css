@@ -1363,3 +1363,67 @@ button:disabled {
     margin-bottom: 22px;
   }
 }
+
+
+/* CATEGORÍAS DESPLEGABLES DE NUESTRA CARTA */
+#categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+#categories .category-toggle {
+  min-height: 48px;
+  padding: 12px 19px;
+  border: 1px solid var(--gold);
+  border-left: 4px solid var(--red);
+  border-radius: 9px;
+  background: linear-gradient(135deg, #29231e, #171513);
+  color: #fffaf2;
+  font-weight: 800;
+  box-shadow: 0 5px 15px #0004;
+  transition: transform .2s ease, background .2s ease, border-color .2s ease;
+}
+#categories .category-toggle:hover {
+  transform: translateY(-2px);
+  border-color: #f0d18b;
+  background: linear-gradient(135deg, #702329, #2b1b19);
+}
+#categories .category-toggle.active {
+  color: #171513;
+  background: linear-gradient(135deg, #e3c77f, #c9a45c);
+  border-color: #f0d18b;
+  box-shadow: 0 6px 18px #c9a45c33;
+}
+.category-products {
+  margin-top: 4px;
+  margin-bottom: 25px;
+  animation: categoryReveal .24s ease;
+}
+.category-products[hidden],
+#productGrid[hidden] {
+  display: none !important;
+}
+.category-hint {
+  grid-column: 1 / -1;
+  margin: 4px 0 0;
+  color: #c4b9aa;
+  font-size: 15px;
+}
+@keyframes categoryReveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 600px) {
+  #categories { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  #categories .category-toggle {
+    min-height: 50px;
+    padding: 10px 11px;
+    font-size: 13px;
+    line-height: 1.25;
+  }
+  .category-products { margin-bottom: 20px; }
+}
+@media (max-width: 380px) {
+  #categories { grid-template-columns: 1fr; }
+}
