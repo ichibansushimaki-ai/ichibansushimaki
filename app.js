@@ -1962,6 +1962,11 @@ options = `
         : `Excediste el máximo: puedes elegir hasta ${maximum} salsas de cortesía.`;
     }
   };
+  [$("#weeklySoyCount"), $("#weeklyTeriyakiCount")].filter(Boolean).forEach(input => {
+    input.addEventListener("input", updateWeeklySauceCounts);
+  });
+  updateWeeklySauceCounts();
+
 let weeklyGohanDrafts = (savedConfig.gohans || []).map(gohan => ({
   ...gohan,
   vegetables: [...(gohan.vegetables || [])]
