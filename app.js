@@ -215,6 +215,42 @@ function updateBrand(data) {
 }
 
 
+function renderHeroCarousel(images) {
+  const container = $("#heroCarousel"), dots = $("#heroDots");
+  const previous = $("#heroPrev"), next = $("#heroNext"), frame = $(".hero-art");
+  if (!container || !dots || !frame) return;
+  const validImages = (Array.isArray(images) ? images : []).filter(Boolean).slice(0, 4);
+  container.innerHTML = ""; dots.innerHTML = "";
+  frame.classList.toggle("has-slides", validImages.length > 0);
+  if (!validImages.length) { if (previous) previous.hidden = true; if (next) next.hidden = true; return; }
+  let active = 0;
+  validImages.forEach((src, index) => {
+    const slide = document.createElement("div");
+    slide.className = "hero-slide" + (index === 0 ? " active" : "");
+    const img = document.createElement("img");
+    img.src = src; img.alt = "Preparaciones de Ichiban Sushi Maki"; img.loading = index === 0 ? "eager" : "lazy";
+    slide.appendChild(img); container.appendChild(slide);
+    const dot = document.createElement("button");
+    dot.type = "button"; dot.className = "hero-dot" + (index === 0 ? " active" : "");
+    dot.setAttribute("aria-label", "Ver fotografía " + (index + 1));
+    dot.addEventListener("click", () => show(index)); dots.appendChild(dot);
+  });
+  const slides = [...container.children], indicators = [...dots.children];
+  function show(index) {
+    active = (index + validImages.length) % validImages.length;
+    slides.forEach((slide, i) => slide.classList.toggle("active", i === active));
+    indicators.forEach((dot, i) => dot.classList.toggle("active", i === active));
+  }
+  if (previous) { previous.hidden = validImages.length < 2; previous.onclick = () => show(active - 1); }
+  if (next) { next.hidden = validImages.length < 2; next.onclick = () => show(active + 1); }
+  if (window.ichibanHeroTimer) clearInterval(window.ichibanHeroTimer);
+  if (validImages.length > 1) {
+    window.ichibanHeroTimer = setInterval(() => show(active + 1), 4500);
+    frame.onmouseenter = () => clearInterval(window.ichibanHeroTimer);
+    frame.onmouseleave = () => { clearInterval(window.ichibanHeroTimer); window.ichibanHeroTimer = setInterval(() => show(active + 1), 4500); };
+  }
+}
+
 function applySettings(data) {
   settings = { ...defaultSettings, ...data };
 
@@ -241,11 +277,12 @@ function applySettings(data) {
   if (description) description.textContent = settings.description || "";
 
   const hero = $(".hero-art");
-
-  if (hero && settings.hero_image) {
-    hero.style.backgroundImage = `url("${settings.hero_image}")`;
-    hero.style.backgroundSize = "cover";
-    hero.style.backgroundPosition = "center";
+  if (hero) {
+    let heroImages = [];
+    try { heroImages = Array.isArray(settings.hero_images) ? settings.hero_images : JSON.parse(settings.hero_images || "[]"); }
+    catch { heroImages = []; }
+    if (!heroImages.length && settings.hero_image) heroImages = [settings.hero_image];
+    renderHeroCarousel(heroImages);
   }
 
 
