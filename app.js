@@ -1246,6 +1246,15 @@ if (config.handroll) {
     `);
   }
 
+  if (config.soy !== undefined || config.teriyaki !== undefined) {
+    sections.push(`
+      <div class="cart-config-section">
+        <strong class="cart-config-title">Salsas de cortesía</strong>
+        <span class="cart-option">${Number(config.soy || 0)} soya · ${Number(config.teriyaki || 0)} teriyaki</span>
+      </div>
+    `);
+  }
+
   return sections.join("");
 }
 
