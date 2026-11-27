@@ -102,6 +102,32 @@ export async function onRequestPost({ request, env }) {
     }
 
     const body = JSON.parse(rawBody);
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS store_operation (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      hours_enabled INTEGER NOT NULL DEFAULT 1,
+      manual_closed INTEGER NOT NULL DEFAULT 0,
+      closed_message TEXT NOT NULL DEFAULT 'En estos momentos tenemos cerrado. Pronto volveremos a nuestro horario habitual.'
+    )`).run();
+    const operation = await env.DB.prepare("SELECT hours_enabled, manual_closed, closed_message FROM store_operation WHERE id = 1").first();
+    if (operation?.manual_closed === 1) {
+      return jsonError(operation.closed_message || "La tienda se encuentra cerrada temporalmente.", 403);
+    }
+    if (operation?.hours_enabled !== 0) {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Santiago",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23"
+      }).formatToParts(new Date());
+      const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+      const day = values.weekday;
+      const minutes = Number(values.hour) * 60 + Number(values.minute);
+      const closing = day === "Fri" || day === "Sat" ? 1440 : 1380;
+      if (!["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].includes(day) || minutes < 780 || minutes >= closing) {
+        return jsonError("Recuerda nuestro horarios de atención Lunes a jueves de 13:00 a 23:00 y viernes y sábado de 13:00 a 00:00 te esperamos", 403);
+      }
+    }
 
     if (!Array.isArray(body.items) ||
         body.items.length === 0 ||
