@@ -1079,38 +1079,15 @@ function renderWeeklyPromoComponents(type) {
 
     sushi_burger_combo: `
       <h4>Configuración de Sushi Burger</h4>
-
-      <label>Proteínas disponibles</label>
-      <label><input type="checkbox" name="burger_protein" value="Pollo" checked> Pollo</label>
-      <label><input type="checkbox" name="burger_protein" value="Camarón" checked> Camarón</label>
-
+      <p>Las proteínas y vegetales se administran desde «Configuración Gohan» y se comparten entre los productos individuales y las promociones. El cliente elige una proteína y hasta 2 vegetales.</p>
+      <label><input type="checkbox" name="burger_no_vegetable" checked> Permitir sin vegetales</label>
       <label>Recargo por camarón ($)</label>
       <input type="number" name="burger_shrimp_extra" min="0" value="1000">
-
-      <label>Vegetales disponibles (máximo 2)</label>
-      <label><input type="checkbox" name="burger_vegetable" value="Cebollín" checked> Cebollín</label>
-      <label><input type="checkbox" name="burger_vegetable" value="Palta" checked> Palta</label>
-      <label><input type="checkbox" name="burger_no_vegetable" checked> Permitir sin vegetales</label>
-
-      <label><input type="checkbox" name="burger_cheese" checked> Permitir elegir queso crema con o sin</label>
     `,
 
     gohan_combo: `
       <h4>Configuración del Combo Gohan</h4>
-
-      <h4>Proteínas disponibles</h4>
-      <label><input type="checkbox" name="gohan_protein" value="Pollo"> Pollo</label>
-      <label><input type="checkbox" name="gohan_protein" value="Camarón"> Camarón</label>
-      <label><input type="checkbox" name="gohan_protein" value="Kanikama"> Kanikama</label>
-      <label><input type="checkbox" name="gohan_protein" value="Salmón"> Salmón</label>
-
-      <h4>Vegetales disponibles para los Gohan</h4>
-      <p>Escribe un vegetal por línea.</p>
-      <textarea name="gohan_vegetable_options" rows="6" placeholder="Palta&#10;Cebollín&#10;Maíz&#10;Champiñones"></textarea>
-      <p>El cliente podrá elegir hasta 3 vegetales por cada Gohan.</p>
-
-      <h4>Queso crema</h4>
-      <label><input type="checkbox" name="gohan_cheese"> Permitir elegir con o sin queso crema</label>
+      <p>Las proteínas y vegetales se administran desde «Configuración Gohan». Cada Gohan permite elegir una proteína y hasta 3 vegetales.</p>
     `,
 
  
@@ -1561,20 +1538,15 @@ simple_nori: simpleConfig.nori,
 
   handroll_quantity: Number(form.querySelector('[name="handroll_quantity"]')?.value || 2),
 
-  burger_proteins: [...form.querySelectorAll('input[name="burger_protein"]:checked')].map(el => el.value),
-  burger_vegetables: [...form.querySelectorAll('input[name="burger_vegetable"]:checked')].map(el => el.value),
-  burger_no_vegetable: form.querySelector('[name="burger_no_vegetable"]')?.checked ?? false,
-  burger_cheese: form.querySelector('[name="burger_cheese"]')?.checked ?? false,
+  burger_proteins: readGohanConfig().proteins.filter(item => item.active !== false).map(item => item.name),
+  burger_vegetables: readGohanConfig().vegetables.filter(item => item.active !== false).map(item => item.name),
+  burger_no_vegetable: form.querySelector('[name="burger_no_vegetable"]')?.checked ?? true,
+  burger_cheese: true,
   burger_shrimp_extra: Number(form.querySelector('[name="burger_shrimp_extra"]')?.value || 0),
-
-  gohan_proteins: [...form.querySelectorAll('input[name="gohan_protein"]:checked')].map(el => el.value),
-
+  gohan_proteins: readGohanConfig().proteins.filter(item => item.active !== false).map(item => item.name),
   gohan_vegetables: [],
-
-  gohan_vegetable_options: (form.querySelector('[name="gohan_vegetable_options"]')?.value || "")
-    .split("\n").map(item => item.trim()).filter(item => item !== ""),
-
-  gohan_cheese: form.querySelector('[name="gohan_cheese"]')?.checked ?? false,
+  gohan_vegetable_options: readGohanConfig().vegetables.filter(item => item.active !== false).map(item => item.name),
+  gohan_cheese: true,
 
   custom_product_type: form.querySelector('[name="custom_product_type"]')?.value || "",
   custom_quantity: Number(form.querySelector('[name="custom_quantity"]')?.value || 1),
