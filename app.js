@@ -1570,6 +1570,7 @@ function openWeeklyPromo(promo, editingItem = null) {
   const gohanProteins = sharedProteins.map(item => item.name);
   const gohanVegetables = sharedVegetables.map(item => item.name);
   const savedConfig = editingItem?.config?.weeklyPromo || {};
+  const weeklyPaidSauces = products.filter(p => isEnabled(p.available) && getType(p) === "sauce");
     const customComboComponents = Array.isArray(
     components.custom_combo_components
   )
@@ -1911,6 +1912,14 @@ options = `
         </div>
       ` : ""}
 
+      <section class="cart-config-section">
+        <strong class="cart-config-title">Salsas adicionales (con costo)</strong>
+        <p>Se agregan aparte de las salsas de cortesía.</p>
+        ${weeklyPaidSauces.length ? weeklyPaidSauces.map(sauce => {
+          const saved = (editingItem?.config?.paidSauces || []).find(item => String(item.id) === String(sauce.id));
+          return `<div class="paid-sauce-row"><div class="paid-sauce-name">${escapeHTML(sauce.name)}<span class="paid-sauce-price">${money(sauce.price)} c/u</span></div><input type="number" class="paid-sauce-quantity" data-sauce-id="${escapeHTML(sauce.id)}" min="0" value="${Number(saved?.quantity || 0)}"></div>`;
+        }).join("") : "<p>No hay salsas adicionales disponibles.</p>"}
+      </section>
       <button type="button" class="dialog-primary" id="weeklyAddCart">
         Agregar al pedido
       </button>
@@ -2646,6 +2655,7 @@ if (
       soy: weeklySauceSoy,
       teriyaki: weeklySauceTeriyaki
     } : {}),
+    paidSauces: Array.from(form.querySelectorAll(".paid-sauce-quantity")).map(input => ({ id: input.dataset.sauceId, quantity: Math.max(0, Number(input.value) || 0) })).filter(sauce => sauce.quantity > 0),
     weeklyPromo: {
           promoId: promo.id,
           day: promo.day || "",
