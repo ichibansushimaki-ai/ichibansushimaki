@@ -1907,6 +1907,7 @@ options = `
     <div class="weekly-promo-dialog">
       <h2>${escapeHTML(promo.name || "Promoción Ichiban")}</h2>
       <p>${escapeHTML(promo.description || "")}</p>
+      <p class="weekly-promo-price"><strong id="weeklyUnitPrice"></strong></p>
 
       ${options}
 
@@ -1917,7 +1918,6 @@ options = `
         <button type="button" id="weeklyPlus">+</button>
       </div>
 
-      <p>Precio unitario: <strong id="weeklyUnitPrice"></strong></p>
       <h3>Total: <span id="weeklyTotal"></span></h3>
       ${initialWeeklySauceCount ? `
         <div class="weekly-complimentary-sauces">
