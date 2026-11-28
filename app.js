@@ -334,7 +334,7 @@ function isSauceProduct(product) {
   const type = normalize(product?.product_type);
   const category = normalize(product?.category);
   const name = normalize(product?.name);
-  const sauceNames = /\b(soya|soy|teriyaki|acevichada|maracuya|mango|spicy|ponzu|unagi|tartara|ajo|sesamo)\b/;
+  const sauceNames = /\b(soya|soy|teriyaki|acevichada|maracuya|spicy|ponzu|unagi|tartara|ajo|sesamo)\b/;
   return ["sauce", "salsa"].includes(type) ||
     category.includes("salsa") ||
     name.includes("salsa") ||
