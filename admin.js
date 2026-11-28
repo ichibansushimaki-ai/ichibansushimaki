@@ -2566,6 +2566,7 @@ form.elements.gohan_customizable.checked =
     $("#rollsCount").value = "1";
   }
 
+  syncSauceProductType();
   updateProductRules();
 
   $("#preview").style.display = product.image ? "block" : "none";
@@ -2576,6 +2577,23 @@ form.elements.gohan_customizable.checked =
   $("#productEditorPanel").open = true;
   $("#productEditorPanel").scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+// La categoría comercial determina el tipo técnico de las salsas.
+function syncSauceProductType() {
+  const category = $("#productForm")?.elements.category;
+  const type = $("#productForm")?.elements.product_type;
+  if (!category || !type) return;
+  const isSaucesCategory = category.value.trim().toLocaleLowerCase("es-CL") === "salsas y extras";
+  if (isSaucesCategory) {
+    type.value = "sauce";
+    type.dispatchEvent(new Event("change", { bubbles: true }));
+  } else if (type.value === "sauce") {
+    type.value = "other";
+    type.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+}
+
+$("#productForm")?.elements.category?.addEventListener("change", syncSauceProductType);
 
 // ACCIONES DEL CATÁLOGO
 
