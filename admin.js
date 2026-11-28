@@ -2383,7 +2383,6 @@ async function ensureCatalogBaseProducts() {
     { name: "Nigiri Salmón", category: "Rolls clásicos", type: "roll" },
     { name: "Nigiri Camarón", category: "Rolls clásicos", type: "roll" },
     { name: "Roll Fresa Ichiban", category: "Rolls clásicos", type: "roll" },
-    { name: "Mango Ichiban", category: "Rolls clásicos", type: "roll" },
     { name: "Arma tu Roll", category: "Rolls clásicos", type: "roll", aliases: ["Arma tu Roll clásico"] },
 
     { name: "Handroll Pollo", category: "Street Food", type: "handroll" },
