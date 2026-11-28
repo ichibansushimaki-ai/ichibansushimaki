@@ -331,14 +331,18 @@ function parseOptions(value) {
 function isSauceProduct(product) {
   const normalize = value => String(value || "")
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-  const type = normalize(product?.product_type);
   const category = normalize(product?.category);
-  const name = normalize(product?.name);
-  const sauceNames = /\b(soya|soy|teriyaki|acevichada|maracuya|spicy|ponzu|unagi|tartara|ajo|sesamo)\b/;
-  return ["sauce", "salsa"].includes(type) ||
-    category.includes("salsa") ||
-    name.includes("salsa") ||
-    sauceNames.test(name);
+  const type = normalize(product?.product_type);
+  const options = parseOptions(product?.options);
+
+  // El catálogo de "Salsas y extras" es la única fuente de salsas pagadas.
+  // Solo ofrecer productos tipificados como salsa, disponibles, con precio
+  // mayor que cero y que no sean borradores del administrador.
+  return category === "salsas y extras" &&
+    type === "sauce" &&
+    isEnabled(product?.available) &&
+    Number(product?.price || 0) > 0 &&
+    options.catalog_draft !== true;
 }
 
 function getType(product) {
@@ -1156,7 +1160,7 @@ function getPaidSaucesTotal(item) {
       p => String(p.id) === String(sauce.id)
     );
 
-    if (!product) return total;
+    if (!product || !isSauceProduct(product)) return total;
 
     return total + Number(product.price || 0) * Number(sauce.quantity || 0);
   }, 0);
@@ -1549,7 +1553,7 @@ if (config.handroll) {
         p => String(p.id) === String(sauce.id)
       );
 
-      if (!product) return "";
+      if (!product || !isSauceProduct(product)) return "";
 
       return `<span class="cart-option">${escapeHTML(product.name)}: ${sauce.quantity} × ${money(product.price)} = ${money(product.price * sauce.quantity)}</span>`;
     }).join("");
