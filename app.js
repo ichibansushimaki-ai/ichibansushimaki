@@ -1907,7 +1907,7 @@ options = `
     <div class="weekly-promo-dialog">
       <h2>${escapeHTML(promo.name || "Promoción Ichiban")}</h2>
       <p>${escapeHTML(promo.description || "")}</p>
-      <p class="weekly-promo-price"><strong id="weeklyUnitPrice"></strong></p>
+      <p class="weekly-promo-price"><strong id="weeklyUnitPrice" style="font-size:1.4em;font-weight:700;display:inline-block;"></strong></p>
 
       ${options}
 
